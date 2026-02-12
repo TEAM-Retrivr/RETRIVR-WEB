@@ -4,7 +4,7 @@
 
 ### 1. 프로젝트 소개 - 이 프로젝트가 **무엇을 해결하기 위한 서비스인지** 한 문장으로 정의
 
-배포 링크 바로 클릭할 수 있게 배치
+배포 링크 : (바로 클릭할 수 있게 배치)
 
 - **프로젝트 명칭 및 로고**
 - **핵심 기능 요약**
@@ -16,27 +16,27 @@
 
 **2-1. 프레임워크 / 라이브러리 (Framework / Library)**
 
-2-1-1. React
+  ***2-1-1. React
 
-2-1-2. Vite
+  ***2-1-2. Vite
 
 **2-2. 상태 관리 (State Management)**:
 
-2-2-1. TanStack Query
+  ***2-2-1. TanStack Query
 
-2-2-2. Zustand
+  ***2-2-2. Zustand
 
 **2-3. CSS 스타일링 (CSS Styling)**:
 
-2-3-1. Tailwind CSS
+  2-3-1. Tailwind CSS
 
 **2-4. 툴 (Tools)**: 
 
-2-4-1. TypeScript
+  ***2-4-1. TypeScript
 
-2-4-2. ESLint
+  ***2-4-2. ESLint
 
-2-4-3. Prettier
+  ***2-4-3. Prettier
 
 ---
 
