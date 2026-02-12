@@ -1,73 +1,64 @@
-# React + TypeScript + Vite
+# README-Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+---
 
-Currently, two official plugins are available:
+### 1. 프로젝트 소개 - 이 프로젝트가 **무엇을 해결하기 위한 서비스인지** 한 문장으로 정의
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+배포 링크 바로 클릭할 수 있게 배치
 
-## React Compiler
+- **프로젝트 명칭 및 로고**
+- **핵심 기능 요약**
+- **배포 URL / 데모 영상 (GIF)**: 실제 동작 화면을 GIF나 이미지로 첨부
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+### 2. 기술 스택 - 사용되는 기술 스택에 대한 설명 (필요한가?)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+**2-1. 프레임워크 / 라이브러리 (Framework / Library)**
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+2-1-1. React
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+2-1-2. Vite
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+**2-2. 상태 관리 (State Management)**:
+
+2-2-1. TanStack Query
+
+2-2-2. Zustand
+
+**2-3. CSS 스타일링 (CSS Styling)**:
+
+2-3-1. Tailwind CSS
+
+**2-4. 툴 (Tools)**: 
+
+2-4-1. TypeScript
+
+2-4-2. ESLint
+
+2-4-3. Prettier
+
+---
+
+### 3. 주요 기능 및 구현 상세 - MVP 기능 소개 + FE 관점에서 고민한 부분 or 자랑할 만한 부분 작성해두기
+
+1. 성능 최적화 (이미지 최적화, 렌더링 최적화 등)
+2. 사용자 경험 (Skeleton UI 적용, 인터랙션 처리 등)
+3. 기술적 도전 (복잡한 폼 상태 관리, 실시간 데이터 처리 등)
+
+---
+
+### 4. 프로젝트 구조
 ```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+src/
+├── api/             # Tanstack Query (Axios 인스턴스 및 API 함수)
+├── components/      # 공통 UI 컴포넌트 (Button, Input, Modal 등)
+├── constants/       # 상수 관리 (에러 메시지, API 경로 등)
+├── hooks/           # 커스텀 훅
+├── pages/           # 라우트별 페이지 컴포넌트
+│   ├── admin/       # 관리자 전용 페이지 (기자재 관리, 대여 승인 등)
+│   └── user/        # 대여자용 페이지 (기자재 리스트, 예약 등)
+├── store/           # Zustand (상태 관리 로직)
+├── styles/          # Tailwind CSS 설정 및 글로벌 스타일
+└── types/           # 공통 TypeScript 인터페이스/타입 정의
 ```
