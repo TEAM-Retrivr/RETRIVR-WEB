@@ -1,35 +1,27 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import TestPage from "./pages/TestPage";
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <Router>
+      {/* 전체 배경색을 주고(bg-gray-100), 
+        콘텐츠는 중앙에 정렬(flex justify-center)합니다.
+      */}
+      <div className="min-h-screen bg-gray-100 flex justify-center">
+        {/* 실제 앱 화면 영역:
+          - 기본적으로 너비는 100%(w-full)
+          - 데스크탑에서도 시안 너비인 402px 유지(max-w-[402px])
+          - 배경은 흰색, 그림자로 입체감 부여
+        */}
+        <main className="w-full max-w-[402px] min-h-screen bg-white shadow-2xl overflow-x-hidden">
+          <Routes>
+            {/* 테스트 페이지 */}
+            <Route path="/test" element={<TestPage />} />
+          </Routes>
+        </main>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </Router>
+  );
 }
 
-export default App
+export default App;
