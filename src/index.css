@@ -1,3 +1,40 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  /* 1. 폰트 */
+  --font-family: Pretendard;
+
+  /* 2. 컬러 팔레트 */
+  /* Neutral Colors */
+  --color-neutral-white: #ffffff;
+  --color-neutral-dark: #444444;
+  --color-neutral-gray: #cdd6de;
+
+  /* Primary Color */
+  --color-primary: #76adff;
+  --color-brand-blue: #84adff;
+
+  /* Secondary Colors */
+  --color-secondary-dark: #2d4e7f;
+  --color-secondary-light: #7998c5;
+  --color-secondary-pale: #b5f4ff;
+
+  /* Gradient & Background Colors */
+  --color-grad-blue: #7fb5f7;
+  --color-bg-pale: #d6f4ff;
+
+  /* 3. 그라데이션 및 배경 이미지 */
+  --background-image-logo-gradient: linear-gradient(
+    to bottom right,
+    #7fb5f7,
+    #cdd6de
+  );
+
+  /* 4. 그림자 */
+  --shadow-primary: 0 0 16px 1px rgba(181, 244, 255, 0.5);
+  --shadow-outline: 0 0 16px 1px rgba(82, 229, 255, 0.7);
+
+  /* 5. 래디우스 */
+  --radius-large: 23.164px;
+  --radius-medium: 13.977px;
+}

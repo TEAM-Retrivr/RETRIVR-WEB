@@ -1,0 +1,7 @@
+# .coderabbit.yaml
+language: "ko-KR" # 리뷰 언어를 한국어로 설정
+
+reviews:
+  profile: assertive # 꼼꼼한 리뷰스타일
+  prompt: "모든 리뷰와 피드백은 한국어로 작성해 줘. 특히 React와 Tailwind CSS 컨벤션을 잘 지켰는지 중점적으로 봐줘."
+  assess_linked_issues: true # PR에 연결된 이슈 반영 평가 (기본값: true)
