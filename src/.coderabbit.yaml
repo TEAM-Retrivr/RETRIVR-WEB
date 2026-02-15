@@ -1,0 +1,5 @@
+# .coderabbit.yaml
+language: "ko-KR" # 리뷰 언어를 한국어로 설정
+
+reviews:
+  prompt: "모든 리뷰와 피드백은 한국어로 작성해 줘. 특히 React와 Tailwind CSS 컨벤션을 잘 지켰는지 중점적으로 봐줘."

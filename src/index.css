@@ -1,15 +1,10 @@
 @import "tailwindcss";
 
 @theme {
-  /* 1. 화면 비율 (Breakpoints) 설정 */
-  --breakpoint-xs: 402px;
-  --breakpoint-md: 768px;
-  --breakpoint-lg: 1024px;
-
-  /* 2. 폰트 */
+  /* 1. 폰트 */
   --font-family: Pretendard;
 
-  /* 3. 컬러 팔레트 */
+  /* 2. 컬러 팔레트 */
   /* Neutral Colors */
   --color-neutral-white: #ffffff;
   --color-neutral-dark: #444444;
@@ -28,18 +23,18 @@
   --color-grad-blue: #7fb5f7;
   --color-bg-pale: #d6f4ff;
 
-  /* 4. 그라데이션 및 배경 이미지 */
+  /* 3. 그라데이션 및 배경 이미지 */
   --background-image-logo-gradient: linear-gradient(
     to bottom right,
     #7fb5f7,
     #cdd6de
   );
 
-  /* 5. 그림자 */
+  /* 4. 그림자 */
   --shadow-primary: 0 0 16px 1px rgba(181, 244, 255, 0.5);
   --shadow-outline: 0 0 16px 1px rgba(82, 229, 255, 0.7);
 
-  /* 6. 래디우스 */
+  /* 5. 래디우스 */
   --radius-large: 23.164px;
   --radius-medium: 13.977px;
 }
