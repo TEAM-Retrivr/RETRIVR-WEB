@@ -7,7 +7,7 @@
   /* 2. 컬러 팔레트 */
   /* Neutral Colors */
   --color-neutral-white: #ffffff;
-  --color-neutral-dark: #444444;
+  --color-neutral-dark: #4f4f4f;
   --color-neutral-gray: #cdd6de;
 
   /* Primary Color */
@@ -30,10 +30,22 @@
     #cdd6de
   );
 
+  --background-image-home-gradient: linear-gradient(
+    248deg,
+    #cdd6de 3.56%,
+    #7fb5f7 64.28%
+  );
+
+  --background-image-rental-gradient: linear-gradient(
+    305deg,
+    rgba(214, 244, 255, 0.42) 2.77%,
+    rgba(255, 255, 255, 0.42) 94.61%
+  );
+
   /* 4. 그림자 */
   --shadow-primary: 0 0 16px 1px rgba(181, 244, 255, 0.5);
   --shadow-outline: 0 0 16px 1px rgba(82, 229, 255, 0.7);
-
+  --shadow-profile: 0 0 4px rgba(0, 0, 0, 0.14);
   /* 5. 래디우스 */
   --radius-large: 23.164px;
   --radius-medium: 13.977px;

@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import TestPage from "./pages/TestPage";
+import HomePage from "./pages/admin/HomePage";
 
 function App() {
   return (
@@ -14,6 +15,10 @@ function App() {
           - 배경은 흰색, 그림자로 입체감 부여
         */}
         <main className="w-full max-w-[402px] min-h-screen bg-white shadow-2xl overflow-x-hidden">
+          <Routes>
+            {/* 홈 페이지 */}
+            <Route path="/home" element={<HomePage />} />
+          </Routes>
           <Routes>
             {/* 테스트 페이지 */}
             <Route path="/test" element={<TestPage />} />
