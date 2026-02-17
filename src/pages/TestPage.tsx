@@ -1,10 +1,12 @@
 import Button from "../components/Button";
-// import Input from '../components/Input';
+import { MenuCard } from "../components/cards/home/MenuCard";
+import { RentRequestCard } from "../components/cards/home/RentRequestCard";
+import { HOME_MENUS } from "../types/menu";
 
 const TestPage = () => {
   return (
     <div className="p-10 flex flex-col gap-5">
-      <h1 className="text-xl font-bold">컴포넌트 테스트</h1>
+      <h1 className="text-xl font-bold">버튼 컴포넌트 테스트</h1>
 
       {/* 1. 기본 버튼 확인 */}
       <Button variant="primary" size="small">
@@ -29,6 +31,16 @@ const TestPage = () => {
       <Button variant="outline" size="large">
         회원가입
       </Button>
+
+      <h1 className="text-xl font-bold">홈화면 카드 컴포넌트 테스트</h1>
+      <RentRequestCard
+        itemName="8핀 충전기"
+        count="(2/5)"
+        applicant="조윤아 | 동물자원학과"
+        time="2026-01-21 17:00"
+      />
+
+      <MenuCard menu={HOME_MENUS[0]} />
     </div>
   );
 };
