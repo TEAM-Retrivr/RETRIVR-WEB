@@ -13,7 +13,22 @@ const Home = () => {
   // const rentRequestCount = data?.count ?? 0;
 
   // 임시: API 연동 전까지 빈 배열과 0 사용
-  const rentRequests: RentRequest[] = [];
+  const rentRequests: RentRequest[] = [
+    {
+      id: "1",
+      itemName: "8핀 충전기",
+      count: "(2/5)",
+      applicant: "조윤아 | 동물자원학과",
+      time: "2026-01-21 17:00",
+    },
+    {
+      id: "2",
+      itemName: "노트북 거치대",
+      count: "(1/3)",
+      applicant: "조성호 | 컴퓨터공학부",
+      time: "2026-01-21 16:30",
+    },
+  ];
   const rentRequestCount = 0;
 
   // TODO: 로딩/에러 상태 처리 예시
@@ -67,7 +82,7 @@ const Home = () => {
             </div>
           ) : (
             /* 대여 요청 있는 경우 - 수직으로 가장 오래된 요청부터 하단으로 나열 */
-            <div className="flex flex-col gap-3 justify-center">
+            <div className="flex flex-col gap-3 justify-center mt-[9.034%]">
               {rentRequests.map((request) => (
                 <RentRequestCard
                   key={request.id}
