@@ -20,7 +20,7 @@ const LandingPage = () => {
           </Button>
           <button
             onClick={() => navigate("")} //TODO: 라우팅 경로 짜기
-            className="w-full max-w-[89px] text-[0.875rem] text-center text-[#000000] opacity-51 mt-[3.74%] cursor-pointer hover:opacity-80"
+            className="w-full max-w-[89px] text-[0.875rem] text-center text-[#000000] opacity-50 mt-[3.74%] cursor-pointer hover:opacity-80"
           >
             관리자로 로그인
           </button>
