@@ -3,6 +3,12 @@
 @theme {
   /* 1. 폰트 */
   --font-family: Pretendard;
+  --font-size-card-20: 1.25rem; /* 20px */
+  --font-size-card-18: 1.125rem; /* 18px */
+  --font-size-card-16: 1rem; /* 16px */
+  --font-size-card-14: 0.875rem; /* 14px */
+  --font-size-card-12: 0.75rem; /* 12px */
+  --font-size-card-10: 0.625rem; /* 10px */
 
   /* 2. 컬러 팔레트 */
   /* Neutral Colors */
@@ -46,7 +52,12 @@
   --shadow-primary: 0 0 16px 1px rgba(181, 244, 255, 0.5);
   --shadow-outline: 0 0 16px 1px rgba(82, 229, 255, 0.7);
   --shadow-profile: 0 0 4px rgba(0, 0, 0, 0.14);
+  --shadow-menu: 0 0 12px -4px rgba(0, 0, 0, 0.04);
+
   /* 5. 래디우스 */
   --radius-large: 23.164px;
   --radius-medium: 13.977px;
+
+  /* 보더 컬러 */
+  --color-menu-border: rgba(118, 173, 255, 0.1);
 }

@@ -1,7 +1,25 @@
 import { Layout } from "../../components/Layout";
 import { UserIcon } from "../../components/UserIcon";
+import { MenuCard } from "../../components/cards/home/MenuCard";
+import { RentRequestCard } from "../../components/cards/home/RentRequestCard";
+import { HOME_MENUS } from "../../types/menu";
+import type { RentRequest } from "../../types/rentRequest";
 
 const Home = () => {
+  // TODO: 백엔드 API 연동 시 아래 주석을 해제하고 사용하기
+  // import { useRentRequests } from "../../hooks/useRentRequests";
+  // const { data, isLoading, error } = useRentRequests();
+  // const rentRequests = data?.requests ?? [];
+  // const rentRequestCount = data?.count ?? 0;
+
+  // 임시: API 연동 전까지 빈 배열과 0 사용
+  const rentRequests: RentRequest[] = [];
+  const rentRequestCount = 0;
+
+  // TODO: 로딩/에러 상태 처리 예시
+  // if (isLoading) return <div>로딩 중...</div>;
+  // if (error) return <div>에러가 발생했습니다.</div>;
+
   return (
     <Layout>
       {/* 화면 상단 영역 - 프로필 사진, 주소 및 단체명 */}
@@ -31,13 +49,44 @@ const Home = () => {
         </div>
       </div>
       {/* 대여 요청 섹션 */}
-      <div className="mt-[30px] mx-[26px] bg-rental-gradient w-[87.06%] max-w-[350px] h-[320px] rounded-[33px]"></div>
+      <div className="mt-[30px] mx-[26px] bg-rental-gradient w-[87.06%] max-w-[350px] h-[320px] rounded-[33px] p-5 overflow-y-auto">
+        <div className="flex justify-between pt-[4.195%]">
+          <div className="w-full flex text-[1.75rem] font-[700] pl-[3.228%] leading-none">
+            <p className="text-[#444] pr-[2%]">대여 요청</p>
+            <p className="text-[#68A5FF]">{rentRequestCount}</p>
+            <p className="text-[#444]">건</p>
+          </div>
+          <button className="object-fit cursor-pointer pr-[7.099%]">
+            <img src="/icons/home/right-arrow.svg" alt="더보기 버튼" />
+          </button>
+        </div>
+        <div>
+          {rentRequests.length === 0 ? (
+            <div className="flex items-center justify-center h-full text-neutral-dark/50 text-sm pt-[40%]">
+              대여 요청이 없습니다
+            </div>
+          ) : (
+            /* 대여 요청 있는 경우 - 수직으로 가장 오래된 요청부터 하단으로 나열 */
+            <div className="flex flex-col gap-3 justify-center">
+              {rentRequests.map((request) => (
+                <RentRequestCard
+                  key={request.id}
+                  itemName={request.itemName}
+                  count={request.count}
+                  applicant={request.applicant}
+                  time={request.time}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
       {/* 관리 섹션 - 반납 관리, 물품 관리 */}
-      <div className="flex mt-[26px] mx-[26px] w-[87.06%] max-w-[350px] h-[127px] justify-between">
+      <div className="flex mt-[26px] mx-[7.962%] w-[84.08%] max-w-[350px] h-[127px] justify-between">
         {/* 반납 관리 탭 */}
-        <div className="bg-neutral-gray rounded-[16px] w-[161px] h-[127px]"></div>
+        <MenuCard menu={HOME_MENUS[0]} />
         {/* 물품 관리 탭 */}
-        <div className="bg-neutral-gray rounded-[16px] w-[161px] h-[127px]"></div>
+        <MenuCard menu={HOME_MENUS[1]} />
       </div>
       {/* QR 코드 생성 버튼 */}
       <button className="absolute bottom-[5.03%] right-[7.96%] w-[19.4%] max-w-[78px] h-[8.924%] max-h-[78px] cursor-pointer">
