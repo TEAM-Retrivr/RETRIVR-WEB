@@ -11,14 +11,8 @@ const Home = () => {
       >
         {/* 상단 로고 텍스트 및 사람 아이콘 */}
         <div className="w-full flex justify-between">
-          <img
-            src="../../../public/icons/home/retrivr_text_outline.svg"
-            alt="로고 텍스트"
-          />
-          <img
-            src="../../../public/icons/home/man_icon.svg"
-            alt="사람 아이콘"
-          />
+          <img src="/icons/home/retrivr_text_outline.svg" alt="로고 텍스트" />
+          <img src="/icons/home/man_icon.svg" alt="사람 아이콘" />
         </div>
         <div className="flex w-full max-h-[72px] mt-[50.64px]">
           {/* 프로필 사진 */}
@@ -48,7 +42,7 @@ const Home = () => {
       {/* QR 코드 생성 버튼 */}
       <button className="absolute bottom-[5.03%] right-[7.96%] w-[19.4%] max-w-[78px] h-[8.924%] max-h-[78px] cursor-pointer">
         <img
-          src="../../../public/icons/home/QR.svg"
+          src="/icons/home/QR.svg"
           alt="QR 생성 버튼"
           className="w-full max-w-[78px] h-screen max-h-[78px] border-none"
         />
