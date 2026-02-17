@@ -28,7 +28,7 @@ const Button = ({
   ...props
 }: ButtonProps) => {
   const baseStyles =
-    "flex items-center justify-center font-[Pretendard] font-bold";
+    "flex items-center justify-center font-[Pretendard] font-bold cursor-pointer";
 
   const variantStyles: Record<"primary" | "outline", string> = {
     primary:

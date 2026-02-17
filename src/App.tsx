@@ -1,10 +1,15 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import TestPage from "./pages/TestPage";
 import HomePage from "./pages/admin/HomePage";
+import LandingPage from "./pages/LandingPage";
 
 function App() {
   return (
     <Router>
+      <Routes>
+        {/* 랜딩 페이지 */}
+        <Route path="/" element={<LandingPage />} />
+      </Routes>
       <Routes>
         {/* 홈 페이지 */}
         <Route path="/home" element={<HomePage />} />
