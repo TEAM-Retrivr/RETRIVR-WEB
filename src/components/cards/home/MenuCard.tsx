@@ -4,7 +4,7 @@ import type { HomeMenuData } from "../../../types/menu";
 export const MenuCard = ({ menu }: { menu: HomeMenuData }) => {
   const navigate = useNavigate();
 
-  // 한형 님이 가지고 계신 SVG들을 id에 맞춰 리턴하는 함수
+  // getIcon() : 각 메뉴에 맞는 아이콘 삽입하는 함수
   const getIcon = (id: HomeMenuData["id"]) => {
     switch (id) {
       case "return":
