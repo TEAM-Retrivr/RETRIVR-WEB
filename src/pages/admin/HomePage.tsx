@@ -29,7 +29,7 @@ const Home = () => {
       time: "2026-01-21 16:30",
     },
   ];
-  const rentRequestCount = 0;
+  const rentRequestCount = 2;
 
   // TODO: 로딩/에러 상태 처리 예시
   // if (isLoading) return <div>로딩 중...</div>;
