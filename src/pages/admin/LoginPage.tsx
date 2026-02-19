@@ -18,6 +18,7 @@ const LoginPage = () => {
         </div>
         {/* 로그인 영역 - 입력창, 로그인 버튼 */}
         <div className="flex flex-col w-full items-center gap-3">
+          {/* TODO : 로그인 페이지 라우팅 설정 */}
           <Button variant="primary" size="large" onClick={() => navigate("")}>
             로그인
           </Button>
@@ -30,7 +31,7 @@ const LoginPage = () => {
           </button>
         </div>
         {/* 회원가입 영역 - 텍스트, 회원가입 버튼 */}
-        <div className="flex flex-col w-full items-center gap-3 mb-[5%]">
+        <div className="flex flex-col w-full items-center gap-3 mt-auto mb-[13.02%]">
           <p className="text-center text-[#9c9c9c] text-[0.875rem] leading-none">
             회원이 아니신가요?
           </p>

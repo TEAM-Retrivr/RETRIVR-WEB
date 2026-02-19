@@ -12,7 +12,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
       </Routes>
       <Routes>
-        {/* 랜딩 페이지 */}
+        {/* 로그인 페이지 */}
         <Route path="/login" element={<LoginPage />} />
       </Routes>
       <Routes>
