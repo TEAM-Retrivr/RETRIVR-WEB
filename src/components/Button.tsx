@@ -28,13 +28,12 @@ const Button = ({
   ...props
 }: ButtonProps) => {
   const baseStyles =
-    "flex items-center justify-center font-[Pretendard] font-bold cursor-pointer";
+    "flex items-center justify-center font-[Pretendard] font-bold cursor-pointer shadow-primary";
 
   const variantStyles: Record<"primary" | "outline", string> = {
-    primary:
-      "bg-primary text-neutral-white hover:bg-secondary-light shadow-primary",
+    primary: "bg-primary text-neutral-white hover:bg-secondary-light ",
     outline:
-      "border border-primary text-primary bg-neutral-white hover:bg-bg-pale shadow-outline",
+      "border border-primary text-primary bg-neutral-white hover:bg-bg-pale ",
   };
 
   const sizeStyles: Record<"small" | "medium" | "large", string> = {
