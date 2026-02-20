@@ -16,10 +16,10 @@ const CommonInput = forwardRef<HTMLInputElement, InputProps>(
           required={isRequired} // 해당 입력의 필수 여부 : true, false 중 하나
           className={`
             w-full max-w-[305px] max-h-[48px] px-5 py-4 bg-[#F8F9F9] rounded-[14px] 
-            text-[#333] text-[1rem] font-[Pretendard] outline-none transition-all
+            text-[#333] text-[1rem] font-[Pretendard] outline-hidden transition-all
             placeholder:text-gray-400 placeholder:text-[1rem] leading-none
             focus:ring-2 focus:ring-blue-100
-            ${className}
+            ${className ?? ""}
           `}
           {...props}
         />
