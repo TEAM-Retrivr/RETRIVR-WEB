@@ -19,6 +19,7 @@ const CommonInput = forwardRef<HTMLInputElement, InputProps>(
             text-[#333] text-[1rem] font-[Pretendard] outline-hidden transition-all
             placeholder:text-gray-400 placeholder:text-[1rem] leading-none
             focus:ring-2 focus:ring-blue-100
+            transition duration-300 ease-in-out focus:-translate-y-1 focus:scale-101
             ${className ?? ""}
           `}
           {...props}
