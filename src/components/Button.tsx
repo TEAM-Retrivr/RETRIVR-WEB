@@ -28,7 +28,7 @@ const Button = ({
   ...props
 }: ButtonProps) => {
   const baseStyles =
-    "flex items-center justify-center font-[Pretendard] font-bold cursor-pointer shadow-primary transition duration-300 ease-in-out hover:-translate-y-1 hover:scale-101";
+    "flex items-center justify-center font-[Pretendard] font-bold cursor-pointer shadow-primary hover-lift";
 
   const variantStyles: Record<"primary" | "outline", string> = {
     primary: "bg-primary text-neutral-white hover:bg-secondary-light ",

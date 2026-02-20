@@ -64,14 +64,14 @@ const Home = () => {
         </div>
       </div>
       {/* 대여 요청 섹션 */}
-      <div className="mt-[30px] mx-[26px] bg-rental-gradient w-[87.06%] max-w-[350px] h-[320px] rounded-[33px] p-5 overflow-y-auto">
+      <div className="mt-[7.464%] mx-[6.468%] bg-rental-gradient w-[87.06%] max-w-[350px] h-[320px] rounded-[33px] p-5 overflow-y-auto">
         <div className="flex justify-between pt-[4.195%]">
-          <div className="w-full flex text-[1.75rem] font-[700] pl-[3.228%] leading-none">
+          <div className="w-full flex text-[1.75rem] font-bold pl-[3.228%] leading-none">
             <p className="text-[#444] pr-[2%]">대여 요청</p>
             <p className="text-[#68A5FF]">{rentRequestCount}</p>
             <p className="text-[#444]">건</p>
           </div>
-          <button className="object-fit cursor-pointer pr-[7.099%]">
+          <button className="transition duration-300 ease-in-out hover:-translate-y-1 hover:scale-101 object-fit cursor-pointer pr-[7.099%]">
             <img src="/icons/home/right-arrow.svg" alt="더보기 버튼" />
           </button>
         </div>
@@ -97,14 +97,14 @@ const Home = () => {
         </div>
       </div>
       {/* 관리 섹션 - 반납 관리, 물품 관리 */}
-      <div className="flex mt-[26px] mx-[7.962%] w-[84.08%] max-w-[350px] h-[127px] justify-between">
+      <div className="flex mt-[6.468%] mx-[7.962%] w-[84.08%] max-w-[350px] h-[127px] justify-between">
         {/* 반납 관리 탭 */}
         <MenuCard menu={HOME_MENUS[0]} />
         {/* 물품 관리 탭 */}
         <MenuCard menu={HOME_MENUS[1]} />
       </div>
       {/* QR 코드 생성 버튼 */}
-      <button className="absolute bottom-[5.03%] right-[7.96%] w-[19.4%] max-w-[78px] h-[8.924%] max-h-[78px] cursor-pointer">
+      <button className=" hover-lift absolute bottom-[5.03%] right-[7.96%] w-[19.4%] max-w-[78px] h-[8.924%] max-h-[78px] cursor-pointer">
         <img
           src="/icons/home/QR.svg"
           alt="QR 생성 버튼"

@@ -1,5 +1,29 @@
 @import "tailwindcss";
 
+@utility hover-lift {
+  transition-property: all;
+  transition-duration: 300ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    transform: translateY(-4px) scale(1.01);
+    /* 만약 배경색도 바꾸고 싶다면 여기에 추가 */
+    /* background-color: var(--color-secondary-light); */
+  }
+}
+
+@utility focus-lift {
+  transition-property: all;
+  transition-duration: 300ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:focus {
+    transform: translateY(-4px) scale(1.01);
+    /* 만약 배경색도 바꾸고 싶다면 여기에 추가 */
+    /* background-color: var(--color-secondary-light); */
+  }
+}
+
 @theme {
   /* 1. 폰트 */
   --font-family: Pretendard;

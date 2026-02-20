@@ -27,7 +27,7 @@ export const MenuCard = ({ menu }: { menu: HomeMenuData }) => {
   return (
     <div
       onClick={() => navigate(menu.path)} // 클릭 시 메뉴에 알맞은 경로로 이동 : path는 types/menu.ts 에서 확인 가능
-      className="w-full max-w-[161px] max-h-[127px] flex flex-col align-center gap-2 bg-neutral-white  px-[7.014%] pt-[7.014%] pb-[8.232%] cursor-pointer rounded-[16px] border-2 border-menu-border shadow-menu"
+      className="w-full max-w-[161px] max-h-[127px] hover-lift flex flex-col align-center gap-2 bg-neutral-white  px-[7.014%] pt-[7.014%] pb-[8.232%] cursor-pointer rounded-[16px] border-2 border-menu-border shadow-menu"
     >
       <div className="w-full max-w-[26.905px] max-h-[26.428px]">
         {getIcon(menu.id)} {/* 메뉴에 맞는 아이콘 불러오기 */}
