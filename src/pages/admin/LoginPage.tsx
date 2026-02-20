@@ -1,4 +1,5 @@
 import { Layout } from "../../components/Layout";
+import CommonInput from "../../components/CommonInput";
 import Button from "../../components/Button";
 import { useNavigate } from "react-router-dom";
 
@@ -17,22 +18,24 @@ const LoginPage = () => {
           />
         </div>
         {/* 로그인 영역 - 입력창, 로그인 버튼 */}
-        <div className="flex flex-col w-full items-center gap-3">
+        <form className="flex flex-col w-full items-center mt-[23.888%] gap-3">
+          <CommonInput placeholder="이메일" type="email" />
+          <CommonInput placeholder="비밀번호" type="password" />
           {/* TODO : 로그인 페이지 라우팅 설정 */}
           <Button variant="primary" size="large" onClick={() => navigate("")}>
             로그인
           </Button>
           {/* TODO : 찾기 페이지 라우팅 설정 */}
           <button
-            className="text-center text-[#9c9c9c] text-[0.875rem] leading-none"
+            className="text-center text-[#9c9c9c] text-[0.875rem] font-normal leading-none cursor-pointer hover:text-neutral-dark"
             onClick={() => navigate("")}
           >
             이메일 / 비밀번호 찾기
           </button>
-        </div>
+        </form>
         {/* 회원가입 영역 - 텍스트, 회원가입 버튼 */}
         <div className="flex flex-col w-full items-center gap-3 mt-auto mb-[13.02%]">
-          <p className="text-center text-[#9c9c9c] text-[0.875rem] leading-none">
+          <p className="text-center text-[#9c9c9c] text-[0.875rem] font-normal leading-none">
             회원이 아니신가요?
           </p>
           {/* TODO : 회원가입 페이지 라우팅 설정 */}
