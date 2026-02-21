@@ -3,6 +3,7 @@ import { MenuCard } from "../components/cards/home/MenuCard";
 import { RentRequestCard } from "../components/cards/home/RentRequestCard";
 import { HOME_MENUS } from "../types/menu";
 import CommonInput from "../components/CommonInput";
+import RentalStatusToggle from "../components/RentalStatusToggle";
 
 const TestPage = () => {
   return (
@@ -59,6 +60,9 @@ const TestPage = () => {
 
       {/* 3. 이메일 입력 */}
       <CommonInput placeholder="example@gmail.com" type="email" />
+
+      <h1 className="text-xl font-bold">입력창 컴포넌트 테스트</h1>
+      <RentalStatusToggle />
     </div>
   );
 };
