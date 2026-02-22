@@ -48,7 +48,7 @@ const RegisterPage = () => {
           </div>
         </div>
         {/* 비밀번호 영역 */}
-        <div className="flex-col w-full gap-2">
+        <div className="flex flex-col w-full gap-2">
           <div>
             <p className="inline text-[0.875rem] font-bold leading-none">
               비밀번호
@@ -84,7 +84,11 @@ const RegisterPage = () => {
           <p className="text-neutral-3 text-[0.75rem] font-normal leading-none">
             물품 관리 등 중요할 때 쓰이는 코드로, 숫자만 입력 가능해요.
           </p>
-          <CommonInput placeholder="010101"></CommonInput>
+          <CommonInput
+            placeholder="010101"
+            inputMode="numeric"
+            pattern="[0-9]*"
+          ></CommonInput>
         </div>
       </div>
       <div className="w-full flex flex-col items-center mt-auto mb-10">
