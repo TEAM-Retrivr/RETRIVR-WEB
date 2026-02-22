@@ -3,6 +3,7 @@ import TestPage from "./pages/TestPage";
 import LoginPage from "./pages/admin/LoginPage";
 import HomePage from "./pages/admin/HomePage";
 import LandingPage from "./pages/LandingPage";
+import RegisterPage from "./pages/admin/RegisterPage";
 
 function App() {
   return (
@@ -14,6 +15,10 @@ function App() {
       <Routes>
         {/* 로그인 페이지 */}
         <Route path="/login" element={<LoginPage />} />
+      </Routes>
+      <Routes>
+        {/* 회원가입 페이지 */}
+        <Route path="/register" element={<RegisterPage />} />
       </Routes>
       <Routes>
         {/* 홈 페이지 */}
