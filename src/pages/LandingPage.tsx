@@ -18,8 +18,9 @@ const LandingPage = () => {
           <Button variant="primary" size="large" onClick={() => navigate("")}>
             <p>대여하기</p>
           </Button>
+          {/* 관리자 로그인 버튼 : /login 으로 이동 */}
           <button
-            onClick={() => navigate("")} //TODO: 라우팅 경로 짜기
+            onClick={() => navigate("/login")}
             className="w-full max-w-[89px] text-[0.875rem] text-center text-[#000000] opacity-50 mt-[3.74%] cursor-pointer hover:opacity-80"
           >
             관리자로 로그인

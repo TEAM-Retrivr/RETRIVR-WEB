@@ -38,8 +38,12 @@ const LoginPage = () => {
           <p className="text-center text-[#9c9c9c] text-[0.875rem] font-normal leading-none">
             회원이 아니신가요?
           </p>
-          {/* TODO : 회원가입 페이지 라우팅 설정 */}
-          <Button variant="outline" size="large" onClick={() => navigate("")}>
+          {/* 회원가입 버튼 : /register 로 이동 */}
+          <Button
+            variant="outline"
+            size="large"
+            onClick={() => navigate("/register")}
+          >
             회원가입
           </Button>
         </div>
