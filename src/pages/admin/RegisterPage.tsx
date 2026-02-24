@@ -23,9 +23,17 @@ const RegisterPage = () => {
     if (!email) return alert("이메일을 입력해주세요.");
 
     // API 요청 실행
-    sendCode({ email });
+    sendCode(
+      { email, purpose: "SIGNUP" },
+      {
+        onSuccess: (data) => {
+          // 예: data.expiresInSeconds 사용
+          setTimeLeft(data.expiresInSeconds);
+          setIsTimerActive(true);
+        },
+      },
+    );
   };
-
   {
     /* 인증 코드 관련 */
   }
@@ -47,7 +55,7 @@ const RegisterPage = () => {
     if (!authCode) return alert("인증번호를 입력해주세요.");
 
     verifyCode(
-      { email, code: authCode }, // 이메일과 인증번호를 함께 백엔드로 전달
+      { email, code: authCode, purpose: "SIGNUP" }, // 이메일과 인증번호를 함께 백엔드로 전달
       {
         onSuccess: () => {
           alert("이메일 인증이 완료되었습니다.");
