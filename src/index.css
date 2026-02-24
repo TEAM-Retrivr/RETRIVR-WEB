@@ -37,18 +37,18 @@
   /* 2. 컬러 팔레트 */
   /* Neutral Colors */
   --color-neutral-white: #ffffff;
-  --color-neutral-dark: #4f4f4f;
-  --color-neutral-gray: #cdd6de;
-  --color-neutral-3: #9c9c9c;
+  --color-neutral-gray-1: #444444;
+  --color-neutral-gray-2: #4f4f4f;
+  --color-neutral-gray-3: #9c9c9c;
+  --color-neutral-gray-4: #cdd6de;
 
   /* Primary Color */
   --color-primary: #76adff;
-  --color-brand-blue: #84adff;
 
   /* Secondary Colors */
-  --color-secondary-dark: #2d4e7f;
-  --color-secondary-light: #7998c5;
-  --color-secondary-pale: #b5f4ff;
+  --color-secondary-1: #2d4e7f;
+  --color-secondary-2: #7998c5;
+  --color-secondary-3: #b5f4ff;
 
   /* Gradient & Background Colors */
   --color-grad-blue: #7fb5f7;
