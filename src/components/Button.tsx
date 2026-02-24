@@ -1,7 +1,7 @@
 import React from "react";
 
 // React.ButtonHTMLAttributes를 상속받으면 onClick, onMouseEnter 등
-// 모든 기본 버튼 이벤트를 자동으로 지원하게 됩니다.
+// 모든 기본 버튼 이벤트를 자동으로 지원
 
 /*
     variant는 색상 지정
@@ -15,30 +15,32 @@ import React from "react";
     // large: 로그인하기 버튼 크기
 */
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "outline";
-  size?: "small" | "medium" | "large";
+  variant?: "primary" | "gray" | "outline";
+  size?: "xs" | "sm" | "md" | "lg";
 }
 
 const Button = ({
   variant = "primary", // 디폴트 색상
-  size = "medium", // 디폴트 사이즈
+  size = "md", // 디폴트 사이즈
   children, // 텍스트, 이미지가 들어갈 자리 (element)
   onClick, // 버튼별 이벤트 리스너 -> 각 페이지에서 정의한 후 대입
   ...props
 }: ButtonProps) => {
   const baseStyles =
-    "flex items-center justify-center font-[Pretendard] font-bold cursor-pointer shadow-primary hover-lift";
+    "flex items-center justify-center font-[Pretendard] font-bold cursor-pointer";
 
-  const variantStyles: Record<"primary" | "outline", string> = {
-    primary: "bg-primary text-neutral-white hover:bg-secondary-light ",
+  const variantStyles: Record<"primary" | "gray" | "outline", string> = {
+    primary: "bg-primary text-neutral-white hover:bg-secondary-2",
+    gray: "bg-neutral-gray-4 text-neutral-white hover:bg-neutral-gray-3",
     outline:
       "border border-primary text-primary bg-neutral-white hover:bg-bg-pale ",
   };
 
-  const sizeStyles: Record<"small" | "medium" | "large", string> = {
-    small: "w-full max-w-[85px] min-h-[38px] rounded-[16px] text-[16px] ",
-    medium: "w-full max-w-[145px] min-h-[52px] rounded-medium text-[19px] ",
-    large: "w-full max-w-[305px] min-h-[45px] rounded-large text-[18px]",
+  const sizeStyles: Record<"xs" | "sm" | "md" | "lg", string> = {
+    xs: "w-full max-w-[86px] min-h-[38px] rounded-medium text-14px",
+    sm: "w-full max-w-[100px] min-h-[46px] rounded-[16px] text-14px",
+    md: "w-full max-w-[145px] min-h-[52px] rounded-medium text-18px",
+    lg: "w-full max-w-[335px] min-h-[45px] rounded-large text-18px",
   };
 
   return (

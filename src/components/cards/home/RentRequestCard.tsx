@@ -26,7 +26,7 @@ export const RentRequestCard = ({
         </p>
       </div>
       {/* TODO : 확인하기 버튼 클릭 시 세부사항 페이지로 라우팅 */}
-      <Button size="small">확인하기</Button>
+      <Button size="xs">확인하기</Button>
     </div>
   );
 };

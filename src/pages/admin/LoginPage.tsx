@@ -22,7 +22,7 @@ const LoginPage = () => {
           <CommonInput placeholder="이메일" type="email" />
           <CommonInput placeholder="비밀번호" type="password" />
           {/* TODO : 로그인 페이지 라우팅 설정 */}
-          <Button variant="primary" size="large" onClick={() => navigate("")}>
+          <Button variant="primary" size="lg" onClick={() => navigate("")}>
             로그인
           </Button>
           {/* TODO : 찾기 페이지 라우팅 설정 */}
@@ -41,7 +41,7 @@ const LoginPage = () => {
           {/* 회원가입 버튼 : /register 로 이동 */}
           <Button
             variant="outline"
-            size="large"
+            size="lg"
             onClick={() => navigate("/register")}
           >
             회원가입
