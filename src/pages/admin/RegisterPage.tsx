@@ -100,7 +100,7 @@ const RegisterPage = () => {
 
             <Button
               variant="primary"
-              size="small"
+              size="sm"
               onClick={handleSendCode}
               disabled={isPending || isVerified} // 인증 완료 시 버튼 비활성화
             >
@@ -117,7 +117,7 @@ const RegisterPage = () => {
             />
             <Button
               variant="primary"
-              size="small"
+              size="sm"
               onClick={handleVerifyCode}
               disabled={!isTimerActive || isVerifying || isVerified} // 타이머가 끝났거나 인증 중이거나 인증 완료 시 버튼 비활성화
             >
