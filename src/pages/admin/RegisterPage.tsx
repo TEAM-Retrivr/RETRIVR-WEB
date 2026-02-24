@@ -36,13 +36,13 @@ const RegisterPage = () => {
               type="email"
               placeholder="retrivr@gmail.com"
             ></CommonInput>
-            <Button variant="primary" size="small">
+            <Button variant="primary" size="sm">
               인증번호 전송
             </Button>
           </div>
           <div className="flex justify-between">
             <CommonInput placeholder="인증번호 입력"></CommonInput>
-            <Button variant="primary" size="small">
+            <Button variant="primary" size="sm">
               인증번호 확인
             </Button>
           </div>
@@ -92,7 +92,7 @@ const RegisterPage = () => {
         </div>
       </div>
       <div className="w-full flex flex-col items-center mt-auto mb-10">
-        <Button variant="primary" size="large">
+        <Button variant="primary" size="lg">
           Retrivr 시작하기
         </Button>
       </div>
