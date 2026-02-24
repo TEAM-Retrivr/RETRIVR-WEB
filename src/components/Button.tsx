@@ -10,9 +10,10 @@ import React from "react";
 */
 /*
     size는 버튼의 크기에 따라서 다르게 설정
-    // small: 주로 확인하기 버튼 크기
-    // medium: 승인/거절 버튼 크기
-    // large: 로그인하기 버튼 크기
+    // xs : 가장 작은 버튼 크기 -> RentalRequestCard에서 사용
+    // sm: 작은 버튼 크기 -> RegisterPage에서 사용
+    // md: 중간 길이 버튼 크기 -> 관리자 대여 신청 확인에서 사용
+    // lg: 가장 긴 버튼 크기 -> LandingPage 등에서 사용
 */
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "gray" | "outline";
@@ -24,6 +25,8 @@ const Button = ({
   size = "md", // 디폴트 사이즈
   children, // 텍스트, 이미지가 들어갈 자리 (element)
   onClick, // 버튼별 이벤트 리스너 -> 각 페이지에서 정의한 후 대입
+  className,
+  type,
   ...props
 }: ButtonProps) => {
   const baseStyles =
@@ -46,8 +49,9 @@ const Button = ({
   return (
     <button
       onClick={onClick} // 전달받은 클릭 핸들러를 연결 -> 각 페이지별로 필요한 이벤트 리스너 이름 넣으면 됨
+      type={type ?? "button"} // 버튼의 타입
       {...props} // 나머지 속성(type, disabled 등)을 한꺼번에 전달
-      className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]}`}
+      className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className ?? ""}`}
     >
       {children}
     </button>
