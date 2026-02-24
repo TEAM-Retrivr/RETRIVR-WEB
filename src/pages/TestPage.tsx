@@ -11,27 +11,33 @@ const TestPage = () => {
       <h1 className="text-xl font-bold">버튼 컴포넌트 테스트</h1>
 
       {/* 1. 기본 버튼 확인 */}
-      <Button variant="primary" size="small">
+      <Button variant="primary" size="sm">
         확인하기
       </Button>
-      <Button variant="outline" size="small">
+      <Button variant="outline" size="sm">
         확인하기
       </Button>
 
       {/* 2. 중간 버튼 확인 */}
-      <Button variant="primary" size="medium">
+      <Button variant="primary" size="md">
         승인
       </Button>
-      <Button variant="outline" size="medium">
+      <Button variant="gray" size="md">
+        거부
+      </Button>
+      <Button variant="outline" size="md">
         거부
       </Button>
 
       {/* 3. 큰 버튼 확인 */}
-      <Button variant="primary" size="large">
-        로그인
+      <Button variant="primary" size="lg">
+        하단 버튼 블루
       </Button>
-      <Button variant="outline" size="large">
-        회원가입
+      <Button variant="gray" size="lg">
+        하단 버튼 회색
+      </Button>
+      <Button variant="outline" size="lg">
+        하단 버튼 라인 블루
       </Button>
 
       <h1 className="text-xl font-bold">홈화면 카드 컴포넌트 테스트</h1>

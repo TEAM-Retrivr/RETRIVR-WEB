@@ -97,6 +97,7 @@ const RegisterPage = () => {
               placeholder="retrivr@gmail.com"
               disabled={isVerified} // 인증 성공 시 이메일 변경 불가
             ></CommonInput>
+
             <Button
               variant="primary"
               size="small"
@@ -169,7 +170,7 @@ const RegisterPage = () => {
         </div>
       </div>
       <div className="w-full flex flex-col items-center mt-auto mb-10">
-        <Button variant="primary" size="large">
+        <Button variant="primary" size="lg">
           Retrivr 시작하기
         </Button>
       </div>

@@ -27,28 +27,28 @@
 @theme {
   /* 1. 폰트 */
   --font-family: Pretendard;
-  --font-size-card-20: 1.25rem; /* 20px */
-  --font-size-card-18: 1.125rem; /* 18px */
-  --font-size-card-16: 1rem; /* 16px */
-  --font-size-card-14: 0.875rem; /* 14px */
-  --font-size-card-12: 0.75rem; /* 12px */
-  --font-size-card-10: 0.625rem; /* 10px */
+  --text-20px: 1.25rem; /* 20px */
+  --text-18px: 1.125rem; /* 18px */
+  --text-16px: 1rem; /* 16px */
+  --text-14px: 0.875rem; /* 14px */
+  --text-12px: 0.75rem; /* 12px */
+  --text-10px: 0.625rem; /* 10px */
 
   /* 2. 컬러 팔레트 */
   /* Neutral Colors */
   --color-neutral-white: #ffffff;
-  --color-neutral-dark: #4f4f4f;
-  --color-neutral-gray: #cdd6de;
-  --color-neutral-3: #9c9c9c;
+  --color-neutral-gray-1: #444444;
+  --color-neutral-gray-2: #4f4f4f;
+  --color-neutral-gray-3: #9c9c9c;
+  --color-neutral-gray-4: #cdd6de;
 
   /* Primary Color */
   --color-primary: #76adff;
-  --color-brand-blue: #84adff;
 
   /* Secondary Colors */
-  --color-secondary-dark: #2d4e7f;
-  --color-secondary-light: #7998c5;
-  --color-secondary-pale: #b5f4ff;
+  --color-secondary-1: #2d4e7f;
+  --color-secondary-2: #7998c5;
+  --color-secondary-3: #b5f4ff;
 
   /* Gradient & Background Colors */
   --color-grad-blue: #7fb5f7;
@@ -82,6 +82,8 @@
   /* 5. 래디우스 */
   --radius-large: 23.164px;
   --radius-medium: 13.977px;
+  --radius-small: 12px;
+  --radius-xsmall: 14px;
 
   /* 보더 컬러 */
   --color-menu-border: rgba(118, 173, 255, 0.1);
