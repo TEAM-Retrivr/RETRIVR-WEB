@@ -142,7 +142,9 @@ const RegisterPage = () => {
           <div className="flex justify-between relative">
             <CommonInput
               placeholder="인증번호 입력"
-              type="numeric"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]{6}"
               maxLength={6}
               value={authCode}
               onChange={(e) => setAuthCode(e.target.value)}
@@ -155,6 +157,7 @@ const RegisterPage = () => {
             >
               {isTimerActive && timeLeft > 0 ? formatTime(timeLeft) : ""}
             </span>
+            {/* 인증 코드 확인 버튼 */}
             <Button
               variant="primary"
               size="sm"

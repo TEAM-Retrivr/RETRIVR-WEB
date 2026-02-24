@@ -9,7 +9,6 @@ export const useSendEmailCode = () => {
     mutationFn: sendEmailCode,
     onSuccess: () => {
       // 성공 시 백엔드에서 보내준 메시지를 활용 가능
-      // 예: alert(data.message) 또는 토스트(Toast) 알림 띄우기
       console.log("이메일 발송 성공:");
 
       // data.expiresInSeconds (600)을 활용해 여기서부터 타이머 시작 가능
