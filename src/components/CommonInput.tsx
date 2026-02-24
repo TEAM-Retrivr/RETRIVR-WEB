@@ -8,7 +8,8 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 const sizeStyles: Record<"small" | "medium" | "large", string> = {
   small: "max-w-[180px] min-h-[36px] px-3 py-2 text-[0.875rem] rounded-[10px]",
-  medium: "max-w-[260px] min-h-[42px] px-4 py-3 text-[0.9375rem] rounded-[12px]",
+  medium:
+    "max-w-[260px] min-h-[42px] px-4 py-3 text-[0.9375rem] rounded-[12px]",
   large: "max-w-[338px] min-h-[48px] px-5 py-4 text-[1rem] rounded-[14px]",
 };
 
@@ -19,7 +20,10 @@ const wrapperSizeStyles: Record<"small" | "medium" | "large", string> = {
 };
 
 const CommonInput = forwardRef<HTMLInputElement, InputProps>(
-  ({ inputSize = "large", isRequired, className, type = "text", ...props }, ref) => {
+  (
+    { inputSize = "large", isRequired, className, type = "text", ...props },
+    ref,
+  ) => {
     return (
       <div
         className={`flex flex-col w-full items-center gap-2 ${wrapperSizeStyles[inputSize]}`}
@@ -31,9 +35,9 @@ const CommonInput = forwardRef<HTMLInputElement, InputProps>(
           required={isRequired} // 해당 입력의 필수 여부 : true, false 중 하나
           className={`
             w-full bg-[#F8F9F9] text-[#333] font-[Pretendard] outline-hidden transition-all
-            placeholder:text-gray-400 leading-none
+            placeholder:text-gray-400 leading-none text-14px
             focus:ring-2 focus:ring-blue-100
-            transition duration-300 ease-in-out focus:-translate-y-1 focus:scale-101
+            
             ${sizeStyles[inputSize]}
             ${className ?? ""}
           `}

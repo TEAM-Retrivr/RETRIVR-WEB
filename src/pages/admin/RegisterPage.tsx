@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   useSendEmailCode,
   useVerifyEmailCode,
@@ -28,11 +28,20 @@ const RegisterPage = () => {
       {
         onSuccess: (data) => {
           // 예: data.expiresInSeconds 사용
+          alert("이메일로 인증 코드가 전송되었습니다.");
           setTimeLeft(data.expiresInSeconds);
           setIsTimerActive(true);
         },
       },
     );
+  };
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60)
+      .toString()
+      .padStart(2, "0");
+    const s = (seconds % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
   };
   {
     /* 인증 코드 관련 */
@@ -40,10 +49,6 @@ const RegisterPage = () => {
 
   // 인증코드: number
   const [authCode, setAuthCode] = useState("");
-
-  // 인증 유효시간: 현재 600초로 설정
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [isTimerActive, setIsTimerActive] = useState(false);
 
   // 인증이 최종적으로 완료되었는지에 대한 여부
   const [isVerified, setIsVerified] = useState(false);
@@ -68,6 +73,24 @@ const RegisterPage = () => {
       },
     );
   };
+
+  // 인증 유효시간: 현재 600초로 설정
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [isTimerActive, setIsTimerActive] = useState(false);
+  // 타이머 useEffect
+  useEffect(() => {
+    if (!isTimerActive) return;
+    if (timeLeft <= 0) {
+      setIsTimerActive(false);
+      return;
+    }
+
+    const timerId = window.setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+
+    return () => window.clearInterval(timerId);
+  }, [isTimerActive, timeLeft]);
 
   return (
     <Layout>
@@ -116,13 +139,22 @@ const RegisterPage = () => {
             </Button>
           </div>
           {/* 인증 번호 확인 영역 */}
-          <div className="flex justify-between">
+          <div className="flex justify-between relative">
             <CommonInput
               placeholder="인증번호 입력"
+              type="numeric"
+              maxLength={6}
               value={authCode}
               onChange={(e) => setAuthCode(e.target.value)}
               disabled={!isTimerActive || isVerified} // 타이머가 끝났거나 인증 완료 시 입력 불가
             />
+            {/* 남은 시간 표시 */}
+            <span
+              className="absolute 
+            top-4.5 right-30 ml-2 w-14 text-right text-primary text-14px leading-none"
+            >
+              {isTimerActive && timeLeft > 0 ? formatTime(timeLeft) : ""}
+            </span>
             <Button
               variant="primary"
               size="sm"
