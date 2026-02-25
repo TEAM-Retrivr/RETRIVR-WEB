@@ -3,8 +3,15 @@ import { UserIcon } from "../../components/UserIcon";
 import { MenuCard } from "../../components/cards/home/MenuCard";
 import { RentRequestCard } from "../../components/cards/home/RentRequestCard";
 import { HOME_MENUS } from "../../types/menu";
-import type { RentRequest } from "../../types/rentRequest";
 import { useLoadHome } from "../../hooks/queries/useAuthQueries";
+
+interface RentRequestCardData {
+  id: string;
+  itemName: string;
+  count: string;
+  applicant: string;
+  time: string;
+}
 
 const Home = () => {
   // TODO: 백엔드 API 연동 시 아래 주석을 해제하고 사용하기
@@ -23,14 +30,15 @@ const Home = () => {
     requestCount: data?.requestCount, // 대여 요청 개수
   };
 
-  const rentRequests: RentRequest[] =
-    data?.recentRequests.map((req) => ({
+  const rentRequests: RentRequestCardData[] =
+    data?.recentRequests?.map((req) => ({
       id: String(req.rentalId),
       itemName: req.itemName,
       count: `(${req.availableQuantity}/${req.totalQuantity})`,
       applicant: `${req.borrowerName} | ${req.borrowerMajor}`,
       time: req.requestedAt,
     })) ?? [];
+
   // TODO: 로딩/에러 상태 처리 예시
   if (isLoading) return <div>로딩 중...</div>;
   if (error) return <div>에러가 발생했습니다.</div>;
