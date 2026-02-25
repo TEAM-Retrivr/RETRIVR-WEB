@@ -57,6 +57,9 @@ const RegisterPage = () => {
           );
           navigate("/");
         },
+        onError: () => {
+          alert("회원가입에 실패했습니다. 회원가입을 다시 진행해주세요.");
+        },
       },
     );
   };
