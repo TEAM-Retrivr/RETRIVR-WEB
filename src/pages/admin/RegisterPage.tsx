@@ -24,7 +24,8 @@ const RegisterPage = () => {
   const [adminCode, setAdminCode] = useState("");
   const [signupToken, setSignupToken] = useState("");
 
-  const { mutate: requestRegisteration } = useRequestRegisteration();
+  const { mutate: requestRegisteration, isPending: isRegistering } =
+    useRequestRegisteration();
   // 이벤트 핸들러
   const handleRequestRegisteration = () => {
     if (!organizationName) return alert("이름(단체명)을 입력해주세요.");
@@ -36,8 +37,11 @@ const RegisterPage = () => {
     if (!isPasswordSame)
       return alert("비밀번호가 일치하지 않습니다. 다시 입력해주세요.");
     if (adminCode == null) return alert("관리자 코드를 입력해주세요.");
-    if (adminCode.length != 6)
+    // 정규식으로 관리자 콛드 확인
+    if (!/^\d{6}$/.test(adminCode))
       return alert("관리자 코드는 6자리 숫자여야 합니다.");
+
+    if (isRegistering) return; // 회원가입 중복 요청 방지
 
     requestRegisteration(
       {
@@ -275,7 +279,7 @@ const RegisterPage = () => {
           size="lg"
           onClick={handleRequestRegisteration}
         >
-          Retrivr 시작하기
+          {isRegistering ? "요청 중 ..." : "Retrivr 시작하기"}
         </Button>
       </div>
     </Layout>
