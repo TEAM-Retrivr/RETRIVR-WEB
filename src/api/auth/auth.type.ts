@@ -29,7 +29,7 @@ export interface VerifyEmailCodeResponse {
   expiresInSeconds: number; // 인증 코드 유효 시간 (코드가 일치하더라도 유효 시간 이후에 인증 받으면 실패)
 }
 
-// 3. 회원가입 마무리
+// 3. 회원가입 요청
 
 // 3-1. 회원가입 요청 바디
 export interface RegisterRequest {
@@ -46,4 +46,20 @@ export interface RegisterResponse {
   organizationName: string; // 관리자명 (혹은 단체명)
   email: string; // 관리자 이메일
   status: string;
+}
+
+// 4. 로그인 요청
+
+// 4-1. 로그인 요청 바디
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+// 4-2. 로그인 응답 바디
+export interface LoginResponse {
+  orgId: number; // 서버에서 식별자로 쓰이는 key
+  email: string; // 사용자 이메일
+  accessToken: string; // 엑세스 토큰
+  refreshToken: string; // 리프레시 토큰
 }

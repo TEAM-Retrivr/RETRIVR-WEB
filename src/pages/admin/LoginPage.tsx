@@ -1,11 +1,44 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Layout } from "../../components/Layout";
 import CommonInput from "../../components/CommonInput";
 import Button from "../../components/Button";
-import { useNavigate } from "react-router-dom";
+import { useLogin } from "../../hooks/queries/useAuthQueries";
 
 const LoginPage = () => {
   const navigate = useNavigate();
 
+  {
+    /* 상태변수 */
+  }
+
+  // 이메일: string
+  const [email, setEmail] = useState("");
+
+  // 비밀번호: string
+  const [password, setPassword] = useState("");
+
+  {
+    /* 이벤트 핸들러 */
+  }
+  const { mutate: requestLogin, isPending: isInLogin } = useLogin();
+
+  const handleRequestLogin = () => {
+    requestLogin(
+      { email, password },
+      {
+        onSuccess: () => {
+          navigate("/home");
+        },
+        onError: () => {
+          alert("로그인에 실패했습니다. 다시 시도해주세요.");
+        },
+      },
+    );
+  };
+  {
+    /* */
+  }
   return (
     <Layout>
       {/* 뒤로가기 버튼 : 랜딩페이지로 이동 */}
@@ -31,11 +64,21 @@ const LoginPage = () => {
           <p className="text-neutral-gray-1 text-16px font-bold">
             관리자 로그인
           </p>
-          <CommonInput placeholder="이메일" type="email" />
-          <CommonInput placeholder="비밀번호" type="password" />
+          <CommonInput
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="이메일"
+            type="email"
+          />
+          <CommonInput
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="비밀번호"
+            type="password"
+          />
           {/* TODO : 로그인 페이지 라우팅 및 이벤트 핸들러 설정 */}
-          <Button variant="primary" size="lg" onClick={() => navigate("")}>
-            로그인
+          <Button variant="primary" size="lg" onClick={handleRequestLogin}>
+            {isInLogin ? "로그인 중 ..." : "로그인"}
           </Button>
           {/* TODO : 찾기 페이지 라우팅 설정 */}
           <button
