@@ -3,6 +3,7 @@ import {
   sendEmailCode,
   verifyEmailCode,
   requestRegisteration,
+  requestLogin,
 } from "../../api/auth/auth.api";
 
 //
@@ -57,6 +58,21 @@ export const useRequestRegisteration = () => {
     },
     onError: (error: any) => {
       console.log("회원가입 요청 실패", error);
+    },
+  });
+};
+
+//
+// 4. 로그인 요청
+//
+export const useLogin = () => {
+  return useMutation({
+    mutationFn: requestLogin,
+    onSuccess: () => {
+      console.log("로그인 요청 성공");
+    },
+    onError: (error: any) => {
+      console.log("로그인 요청 실패", error);
     },
   });
 };
