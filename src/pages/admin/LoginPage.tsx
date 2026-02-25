@@ -84,12 +84,18 @@ const LoginPage = () => {
             disabled={isInLogin}
           />
           {/* TODO : 로그인 페이지 라우팅 및 이벤트 핸들러 설정 */}
-          <Button variant="primary" size="lg" onClick={handleRequestLogin}>
+          <Button
+            variant="primary"
+            size="lg"
+            type="button"
+            onClick={handleRequestLogin}
+          >
             {isInLogin ? "로그인 중 ..." : "로그인"}
           </Button>
           {/* TODO : 찾기 페이지 라우팅 설정 */}
           <button
             className="text-center text-[#9c9c9c] text-[0.875rem] font-normal leading-none cursor-pointer hover:text-neutral-dark"
+            type="button"
             onClick={() => navigate("")}
           >
             이메일 / 비밀번호 찾기
