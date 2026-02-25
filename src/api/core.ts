@@ -11,4 +11,18 @@ export const apiClient = axios.create({
     "Content-Type": "application/json",
   },
 });
-// 로그인 성공 시 : 토큰을 매 요청마다 자동으로 헤더에 넣어주는 설정(인터셉터)도 이곳에 작성하기
+// 로그인 성공 시 : 토큰을 매 요청마다 자동으로 헤더에 넣어주는 설정(인터셉터)
+apiClient.interceptors.request.use(
+  (config) => {
+    const accessToken = localStorage.getItem("accessToken");
+    const refreshToken = localStorage.getItem("refreshToken");
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  },
+);

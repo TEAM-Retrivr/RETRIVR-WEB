@@ -24,10 +24,15 @@ const LoginPage = () => {
   const { mutate: requestLogin, isPending: isInLogin } = useLogin();
 
   const handleRequestLogin = () => {
+    if (!email.trim()) return alert("이메일을 입력해주세요.");
+    if (!password.trim()) return alert("비밀번호를 입력해주세요.");
+
     requestLogin(
       { email, password },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
+          localStorage.setItem("accessToken", data.accessToken);
+          localStorage.setItem("refreshToken", data.refreshToken);
           navigate("/home");
         },
         onError: () => {
@@ -69,12 +74,14 @@ const LoginPage = () => {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="이메일"
             type="email"
+            disabled={isInLogin}
           />
           <CommonInput
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="비밀번호"
             type="password"
+            disabled={isInLogin}
           />
           {/* TODO : 로그인 페이지 라우팅 및 이벤트 핸들러 설정 */}
           <Button variant="primary" size="lg" onClick={handleRequestLogin}>
