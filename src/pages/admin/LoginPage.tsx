@@ -41,9 +41,7 @@ const LoginPage = () => {
       },
     );
   };
-  {
-    /* */
-  }
+
   return (
     <Layout>
       {/* 뒤로가기 버튼 : 랜딩페이지로 이동 */}
@@ -64,7 +62,13 @@ const LoginPage = () => {
           />
         </div>
         {/* 로그인 영역 - 입력창, 로그인 버튼 */}
-        <form className="flex flex-col w-full  mt-[23.888%] gap-3">
+        <form
+          className="flex flex-col w-full  mt-[23.888%] gap-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleRequestLogin();
+          }}
+        >
           {/* 텍스트 영역 - 관리자 로그인 */}
           <p className="text-neutral-gray-1 text-16px font-bold">
             관리자 로그인
@@ -87,7 +91,7 @@ const LoginPage = () => {
           <Button
             variant="primary"
             size="lg"
-            type="button"
+            type="submit"
             onClick={handleRequestLogin}
           >
             {isInLogin ? "로그인 중 ..." : "로그인"}
