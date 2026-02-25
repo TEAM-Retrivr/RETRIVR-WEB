@@ -28,15 +28,14 @@ const RegisterPage = () => {
     useRequestRegisteration();
   // 이벤트 핸들러
   const handleRequestRegisteration = () => {
-    if (!organizationName) return alert("이름(단체명)을 입력해주세요.");
+    if (!organizationName.trim()) return alert("이름(단체명)을 입력해주세요.");
     if (!isVerified) return alert("이메일 인증을 진행해주세요.");
-    if (password == null) return alert("비밀번호를 입력해주세요.");
+    if (!password) return alert("비밀번호를 입력해주세요.");
     if (password.length < 8) return alert("비밀번호는 최소 8자여야 합니다.");
-    if (passwordChecked == null)
-      return alert("비밀번호 확인 입력을 진행해주세요.");
+    if (!passwordChecked) return alert("비밀번호 확인 입력을 진행해주세요.");
     if (!isPasswordSame)
       return alert("비밀번호가 일치하지 않습니다. 다시 입력해주세요.");
-    if (adminCode == null) return alert("관리자 코드를 입력해주세요.");
+    if (!adminCode.trim()) return alert("관리자 코드를 입력해주세요.");
     // 정규식으로 관리자 콛드 확인
     if (!/^\d{6}$/.test(adminCode))
       return alert("관리자 코드는 6자리 숫자여야 합니다.");
