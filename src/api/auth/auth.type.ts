@@ -63,3 +63,26 @@ export interface LoginResponse {
   accessToken: string; // 엑세스 토큰
   refreshToken: string; // 리프레시 토큰
 }
+
+// 5. 홈 화면 출력 요청
+// 홈 화면 출력 요청 바디 없음
+
+// 5-1. 홈 화면 출력 응답 바디
+export interface LoadHomeResponse {
+  organizationName: string; // 관리자 이름 (단체명)
+  profileImageUrl: string; // 프로필 사진 URL
+  requestCount: number; // 대여 요청 개수
+
+  // 최근 요청 -> RentalRequsetCard에 쓰일 값
+  recentRequests: [
+    {
+      rentalId: number; // 대여번호
+      itemName: string; // 대여 품목 이름
+      availableQuantity: number; // 대여 가능한 수량
+      totalQuantity: number; // 총 수량
+      borrowerName: string; // 대여자 이름
+      borrowerMajor: string; // 대여자 전공
+      requestedAt: string; // 요청 일자 (언제 요청을 보냈는지, 가장 오래된 요청부터 화면에 보일 것)
+    },
+  ];
+}

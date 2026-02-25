@@ -4,36 +4,36 @@ import { MenuCard } from "../../components/cards/home/MenuCard";
 import { RentRequestCard } from "../../components/cards/home/RentRequestCard";
 import { HOME_MENUS } from "../../types/menu";
 import type { RentRequest } from "../../types/rentRequest";
+import { useLoadHome } from "../../hooks/queries/useAuthQueries";
 
 const Home = () => {
   // TODO: 백엔드 API 연동 시 아래 주석을 해제하고 사용하기
   // import { useRentRequests } from "../../hooks/useRentRequests";
   // const { data, isLoading, error } = useRentRequests();
   // const rentRequests = data?.requests ?? [];
-  // const rentRequestCount = data?.count ?? 0;
 
+  //
+  const { data, isLoading, error } = useLoadHome();
+  // 최근 대여 요청 개수
   // 임시: API 연동 전까지 빈 배열과 0 사용
-  const rentRequests: RentRequest[] = [
-    {
-      id: "1",
-      itemName: "8핀 충전기",
-      count: "(2/5)",
-      applicant: "조윤아 | 동물자원학과",
-      time: "2026-01-21 17:00",
-    },
-    {
-      id: "2",
-      itemName: "노트북 거치대",
-      count: "(1/3)",
-      applicant: "조성호 | 컴퓨터공학부",
-      time: "2026-01-21 16:30",
-    },
-  ];
-  const rentRequestCount = 2;
 
+  const UserProfile = {
+    organizationName: data?.organizationName, // 관리자 이름 (단체명)
+    profileImageUrl: data?.profileImageUrl, // 프로필 사진 URL
+    requestCount: data?.requestCount, // 대여 요청 개수
+  };
+
+  const rentRequests: RentRequest[] =
+    data?.recentRequests.map((req) => ({
+      id: String(req.rentalId),
+      itemName: req.itemName,
+      count: `(${req.availableQuantity}/${req.totalQuantity})`,
+      applicant: `${req.borrowerName} | ${req.borrowerMajor}`,
+      time: req.requestedAt,
+    })) ?? [];
   // TODO: 로딩/에러 상태 처리 예시
-  // if (isLoading) return <div>로딩 중...</div>;
-  // if (error) return <div>에러가 발생했습니다.</div>;
+  if (isLoading) return <div>로딩 중...</div>;
+  if (error) return <div>에러가 발생했습니다.</div>;
 
   return (
     <Layout>
@@ -51,14 +51,15 @@ const Home = () => {
           {/* 프로필 사진 */}
           <div className="w-full h-screen max-w-[72px] max-h-[72px] bg-neutral-gray rounded-full shadow-profile overflow-hidden bg-white flex items-center justify-center">
             {/* 사용자 프로필 사진 들어가는 자리 */}
+            <img src={UserProfile.profileImageUrl} alt="프로필 사진" />
           </div>
           {/* 주소 및 단체 이름 */}
           <div className="pl-[12px] pt-[12.68px] gap-[4px] font-[Pretendard] leading-none flex flex-col">
             <span className="text-neutral-dark text-start text-[12px] font-[400]">
-              능동로 120 상허기념도서관
+              {/* 주소 영역 - 아직 구현 X */}
             </span>
             <span className="text-neutral-white text-start text-[16px] font-[600]">
-              건국대학교 도서관자치위원회
+              {UserProfile.organizationName}
             </span>
           </div>
         </div>
@@ -68,7 +69,7 @@ const Home = () => {
         <div className="flex justify-between pt-[4.195%]">
           <div className="w-full flex text-[1.75rem] font-bold pl-[3.228%] leading-none">
             <p className="text-[#444] pr-[2%]">대여 요청</p>
-            <p className="text-[#68A5FF]">{rentRequestCount}</p>
+            <p className="text-[#68A5FF]">{UserProfile.requestCount}</p>
             <p className="text-[#444]">건</p>
           </div>
           <button className="transition duration-300 ease-in-out hover:-translate-y-1 hover:scale-101 object-fit cursor-pointer pr-[7.099%]">
@@ -83,13 +84,13 @@ const Home = () => {
           ) : (
             /* 대여 요청 있는 경우 - 수직으로 가장 오래된 요청부터 하단으로 나열 */
             <div className="flex flex-col gap-3 justify-center mt-[9.034%]">
-              {rentRequests.map((request) => (
+              {rentRequests.map((items) => (
                 <RentRequestCard
-                  key={request.id}
-                  itemName={request.itemName}
-                  count={request.count}
-                  applicant={request.applicant}
-                  time={request.time}
+                  key={items.id}
+                  itemName={items.itemName}
+                  count={items.count}
+                  applicant={items.applicant}
+                  time={items.time}
                 />
               ))}
             </div>

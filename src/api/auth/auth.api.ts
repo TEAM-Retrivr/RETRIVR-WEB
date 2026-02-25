@@ -8,6 +8,7 @@ import type {
   RegisterResponse,
   LoginRequest,
   LoginResponse,
+  LoadHomeResponse,
 } from "./auth.type";
 
 //
@@ -59,5 +60,13 @@ export const requestLogin = async (
     "/api/admin/v1/auth/login",
     data,
   );
+  return response.data;
+};
+
+//
+// 5. 홈 화면 출력 API (GET)
+// 엔드포인트 : "/api/admin/v1/home"
+export const requestLoadHome = async (): Promise<LoadHomeResponse> => {
+  const response = await apiClient.get<LoadHomeResponse>("/api/admin/v1/home");
   return response.data;
 };
