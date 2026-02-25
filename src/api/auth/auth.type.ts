@@ -28,3 +28,22 @@ export interface VerifyEmailCodeResponse {
   signupToken: string; // 인증 성공 시 발급되는 토큰 (일회성/단기만료)
   expiresInSeconds: number; // 인증 코드 유효 시간 (코드가 일치하더라도 유효 시간 이후에 인증 받으면 실패)
 }
+
+// 3. 회원가입 마무리
+
+// 3-1. 회원가입 요청 바디
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  organizationName: string;
+  adminCode: string;
+  signupToken: string;
+}
+
+// 3-2. 회원가입 응답 바디
+export interface RegisterResponse {
+  orgId: number; // 가입 번호
+  organizationName: string; // 관리자명 (혹은 단체명)
+  email: string; // 관리자 이메일
+  status: string;
+}

@@ -4,6 +4,8 @@ import type {
   VerifyEmailCodeRequest,
   SendEmailCodeResponse,
   VerifyEmailCodeResponse,
+  RegisterRequest,
+  RegisterResponse,
 } from "./auth.type";
 
 //
@@ -27,6 +29,19 @@ export const verifyEmailCode = async (
 ): Promise<VerifyEmailCodeResponse> => {
   const response = await apiClient.post<VerifyEmailCodeResponse>(
     "/api/public/v1/email/verification/verify",
+    data,
+  );
+  return response.data;
+};
+
+//
+// 3. 회원가입 요청 API (POST)
+// 엔드포인트 : "/api/admin/v1/auth/signup"
+export const requestRegisteration = async (
+  data: RegisterRequest,
+): Promise<RegisterResponse> => {
+  const response = await apiClient.post<RegisterResponse>(
+    "/api/admin/v1/auth/signup",
     data,
   );
   return response.data;

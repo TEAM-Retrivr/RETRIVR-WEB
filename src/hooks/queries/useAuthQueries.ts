@@ -1,5 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
-import { sendEmailCode, verifyEmailCode } from "../../api/auth/auth.api";
+import {
+  sendEmailCode,
+  verifyEmailCode,
+  requestRegisteration,
+} from "../../api/auth/auth.api";
 
 //
 // 1. 회원가입용 이메일 인증 코드 전송
@@ -31,6 +35,21 @@ export const useVerifyEmailCode = () => {
     },
     onError: (error: any) => {
       console.log("인증 실패", error);
+    },
+  });
+};
+
+//
+// 3. 회원가입 요청
+//
+export const useRequestRegisteration = () => {
+  return useMutation({
+    mutationFn: requestRegisteration,
+    onSuccess: () => {
+      console.log("회원 가입 요청 성공");
+    },
+    onError: (error: any) => {
+      console.log("회원가입 요청 실패", error);
     },
   });
 };
