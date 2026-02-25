@@ -6,6 +6,13 @@ import {
 } from "../../api/auth/auth.api";
 
 //
+// useMutation: TanstackQuery(ReactQuery)에서 서버 상태를 변경(POST, PUT, DELETE 등)을 다룰 때 쓰는 hook
+// 데이터를 가져오는 GET 요청일 땐 useQuery 사용
+// 데이터를 변경하는 POST/PUT/DELETE 요청일 땐 useMutation
+//
+//
+
+//
 // 1. 회원가입용 이메일 인증 코드 전송
 //
 export const useSendEmailCode = () => {

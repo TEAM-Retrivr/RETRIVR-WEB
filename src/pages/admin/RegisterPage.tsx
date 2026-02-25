@@ -12,21 +12,109 @@ import Button from "../../components/Button";
 // 관리자 회원가입 페이지
 const RegisterPage = () => {
   const navigate = useNavigate();
+
   {
-    /* 이메일 관련 */
+    /* 상태변수 */
   }
 
   // 단체명: string
   const [organizationName, setOrganizationName] = useState("");
+
+  // 비밀번호 & 확인용 비밀번호: string
   const [password, setPassword] = useState("");
   const [passwordChecked, setPasswordChecked] = useState("");
   const isPasswordSame = password == passwordChecked;
+
+  // 관리자 코드: string
   const [adminCode, setAdminCode] = useState("");
+
+  // 회원가입용 일회성 토큰: string
   const [signupToken, setSignupToken] = useState("");
 
+  // 이메일: string
+  const [email, setEmail] = useState("");
+
+  // 인증 유효시간: number (현재 600초로 설정)
+  const [timeLeft, setTimeLeft] = useState(0);
+
+  // 인증시간 유효성 여부 : boolea
+  const [isTimerActive, setIsTimerActive] = useState(false);
+
+  // 인증코드: number
+  const [authCode, setAuthCode] = useState("");
+
+  // 인증이 최종적으로 완료되었는지에 대한 여부
+  const [isVerified, setIsVerified] = useState(false);
+
+  {
+    /* 이벤트 핸들러 */
+  }
+
+  // TanstackQuery
+  const { mutate: sendCode, isPending } = useSendEmailCode();
+
+  // 이메일 전송 API 요청 핸들러
+  const handleSendCode = () => {
+    if (!email) return alert("이메일을 입력해주세요.");
+
+    // API 요청 실행
+    sendCode(
+      { email, purpose: "SIGNUP" },
+      {
+        onSuccess: (data) => {
+          alert("이메일로 인증 코드가 전송되었습니다.");
+          setTimeLeft(data.expiresInSeconds);
+          setIsTimerActive(true);
+        },
+        onError: () => {
+          alert("인증 코드 전송에 실패했습니다. 다시 시도해주세요.");
+        },
+      },
+    );
+  };
+
+  // 인증 코드 전송 성공 시 타이머 설정 (유효시간만큼)
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60)
+      .toString()
+      .padStart(2, "0");
+    const s = (seconds % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
+  };
+
+  {
+    /* 인증 코드 관련 */
+  }
+
+  // TanstackQuery
+  const { mutate: verifyCode, isPending: isVerifying } = useVerifyEmailCode();
+
+  // 인증 코드 검증 API 요청 핸들러
+  const handleVerifyCode = () => {
+    if (!authCode) return alert("인증번호를 입력해주세요.");
+
+    // API 요청 실행
+    verifyCode(
+      { email, code: authCode, purpose: "SIGNUP" }, // 이메일과 인증번호를 함께 백엔드로 전달
+      {
+        onSuccess: (data) => {
+          alert("이메일 인증이 완료되었습니다.");
+          setIsTimerActive(false); // 성공 시 타이머 정지
+          setIsVerified(true); // 인증 완료 상태로 변경
+          setSignupToken(data.signupToken); // 일회성 토큰 발급
+        },
+        onError: () => {
+          alert("인증번호가 올바르지 않거나 만료되었습니다.");
+        },
+      },
+    );
+  };
+
+  // TanstackQuery
   const { mutate: requestRegisteration, isPending: isRegistering } =
     useRequestRegisteration();
-  // 이벤트 핸들러
+
+  //회원가입 요청 API 핸들러
   const handleRequestRegisteration = () => {
     if (!organizationName.trim()) return alert("이름(단체명)을 입력해주세요.");
     if (!isVerified) return alert("이메일 인증을 진행해주세요.");
@@ -42,6 +130,7 @@ const RegisterPage = () => {
 
     if (isRegistering) return; // 회원가입 중복 요청 방지
 
+    // API 요청 실행
     requestRegisteration(
       {
         email,
@@ -63,71 +152,6 @@ const RegisterPage = () => {
       },
     );
   };
-  // 이메일: string
-  const [email, setEmail] = useState("");
-
-  const { mutate: sendCode, isPending } = useSendEmailCode();
-
-  // 이메일 전송 API 요청 핸들러
-  const handleSendCode = () => {
-    if (!email) return alert("이메일을 입력해주세요.");
-
-    // API 요청 실행
-    sendCode(
-      { email, purpose: "SIGNUP" },
-      {
-        onSuccess: (data) => {
-          // 예: data.expiresInSeconds 사용
-          alert("이메일로 인증 코드가 전송되었습니다.");
-          setTimeLeft(data.expiresInSeconds);
-          setIsTimerActive(true);
-        },
-      },
-    );
-  };
-
-  const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60)
-      .toString()
-      .padStart(2, "0");
-    const s = (seconds % 60).toString().padStart(2, "0");
-    return `${m}:${s}`;
-  };
-  {
-    /* 인증 코드 관련 */
-  }
-
-  // 인증코드: number
-  const [authCode, setAuthCode] = useState("");
-
-  // 인증이 최종적으로 완료되었는지에 대한 여부
-  const [isVerified, setIsVerified] = useState(false);
-
-  const { mutate: verifyCode, isPending: isVerifying } = useVerifyEmailCode();
-
-  // 인증 코드 검증 API 요청 핸들러
-  const handleVerifyCode = () => {
-    if (!authCode) return alert("인증번호를 입력해주세요.");
-
-    verifyCode(
-      { email, code: authCode, purpose: "SIGNUP" }, // 이메일과 인증번호를 함께 백엔드로 전달
-      {
-        onSuccess: (data) => {
-          alert("이메일 인증이 완료되었습니다.");
-          setIsTimerActive(false); // 성공 시 타이머 정지
-          setIsVerified(true); // 인증 완료 상태로 변경
-          setSignupToken(data.signupToken); // 일회성 토큰 발급
-        },
-        onError: () => {
-          alert("인증번호가 올바르지 않거나 만료되었습니다.");
-        },
-      },
-    );
-  };
-
-  // 인증 유효시간: 현재 600초로 설정
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [isTimerActive, setIsTimerActive] = useState(false);
 
   // 타이머 useEffect
   useEffect(() => {
