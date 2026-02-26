@@ -1,9 +1,10 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   sendEmailCode,
   verifyEmailCode,
   requestRegisteration,
   requestLogin,
+  requestLoadHome,
 } from "../../api/auth/auth.api";
 
 //
@@ -74,5 +75,16 @@ export const useLogin = () => {
     onError: (error: any) => {
       console.log("로그인 요청 실패", error);
     },
+  });
+};
+
+//
+// 5. 홈 화면 출력 요청
+//
+export const useLoadHome = () => {
+  return useQuery({
+    queryKey: ["home"],
+    queryFn: requestLoadHome,
+    retry: false,
   });
 };
