@@ -40,8 +40,20 @@ const Home = () => {
     })) ?? [];
 
   // TODO: 로딩/에러 상태 처리 예시
-  if (isLoading) return <div>로딩 중...</div>;
-  if (error) return <div>에러가 발생했습니다.</div>;
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="p-6">로딩 중...</div>
+      </Layout>
+    );
+  }
+  if (error) {
+    return (
+      <Layout>
+        <div className="p-6">에러가 발생했습니다.</div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -57,10 +69,11 @@ const Home = () => {
         </div>
         <div className="flex w-full max-h-[72px] mt-[50.64px]">
           {/* 프로필 사진 */}
-          <div className="w-full h-screen max-w-[72px] max-h-[72px] bg-neutral-gray rounded-full shadow-profile overflow-hidden bg-white flex items-center justify-center">
-            {/* 사용자 프로필 사진 들어가는 자리 */}
+          {UserProfile.profileImageUrl ? (
             <img src={UserProfile.profileImageUrl} alt="프로필 사진" />
-          </div>
+          ) : (
+            <div />
+          )}
           {/* 주소 및 단체 이름 */}
           <div className="pl-[12px] pt-[12.68px] gap-[4px] font-[Pretendard] leading-none flex flex-col">
             <span className="text-neutral-dark text-start text-[12px] font-[400]">
