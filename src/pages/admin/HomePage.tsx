@@ -27,7 +27,7 @@ const Home = () => {
   const UserProfile = {
     organizationName: data?.organizationName, // 관리자 이름 (단체명)
     profileImageUrl: data?.profileImageUrl, // 프로필 사진 URL
-    requestCount: data?.requestCount, // 대여 요청 개수
+    requestCount: data?.requestCount ?? 0, // 대여 요청 개수
   };
 
   const rentRequests: RentRequestCardData[] =
