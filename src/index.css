@@ -27,6 +27,8 @@
 @theme {
   /* 1. 폰트 */
   --font-family: Pretendard;
+  --text-24px: 1.5rem; /* 24px */
+  --text-22px: 1.375rem; /* 22px */
   --text-20px: 1.25rem; /* 20px */
   --text-18px: 1.125rem; /* 18px */
   --text-16px: 1rem; /* 16px */
@@ -78,6 +80,7 @@
   --shadow-outline: 0 0 16px 1px rgba(82, 229, 255, 0.7);
   --shadow-profile: 0 0 4px rgba(0, 0, 0, 0.14);
   --shadow-menu: 0 0 12px -4px rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 0 16px -6px rgba(0, 0, 0, 0.2);
 
   /* 5. 래디우스 */
   --radius-large: 23.164px;
