@@ -14,12 +14,7 @@ interface RentRequestCardData {
 }
 
 const Home = () => {
-  // TODO: 백엔드 API 연동 시 아래 주석을 해제하고 사용하기
-  // import { useRentRequests } from "../../hooks/useRentRequests";
-  // const { data, isLoading, error } = useRentRequests();
-  // const rentRequests = data?.requests ?? [];
-
-  //
+  // 대여 요청
   const { data, isLoading, error } = useLoadHome();
   // 최근 대여 요청 개수
   // 임시: API 연동 전까지 빈 배열과 0 사용
