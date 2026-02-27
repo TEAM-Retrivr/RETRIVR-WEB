@@ -10,7 +10,7 @@ const RentalConfirmCard = ({ rental }: RentalConfirmCardProps) => {
   const { requestedAt, itemName, itemId, itemCount, applicantInfo } = rental;
 
   return (
-    <div className="flex flex-col items-center w-full max-w-[350px] h-screen max-h-[225px] font-[Pretandard] bg-neutral-white shadow-card rounded-[24px]">
+    <div className="flex flex-col items-center w-full max-w-[350px] h-screen max-h-[225px] font-[Pretendard] bg-neutral-white shadow-card rounded-[24px]">
       {/* 정보 영역 */}
       <div className="flex w-full mt-7.5 mb-auto items-start justify-between pl-8 pr-10">
         {/* 대여 물품 정보 영역 */}
@@ -26,9 +26,11 @@ const RentalConfirmCard = ({ rental }: RentalConfirmCardProps) => {
               {itemCount}
             </p>
           </div>
-          <p className="text-neutral-gray-1 opacity-[0.9] text-16px font-[500] leading-none">
-            {itemId}
-          </p>
+          {itemId && (
+            <p className="text-neutral-gray-1 opacity-[0.9] text-16px font-[500] leading-none">
+              {itemId}
+            </p>
+          )}
         </div>
         {/* 대여자 정보 영역 */}
         <div className="flex flex-col text-neutral-gray-3 text-12px font-normal mt-12">
