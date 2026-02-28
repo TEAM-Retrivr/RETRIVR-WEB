@@ -12,6 +12,7 @@ const Header = ({ name, pageName }: headerProps) => {
       <button
         className="absolute bottom-6 cursor-pointer"
         onClick={() => navigate(-1)}
+        type="button"
       >
         <img
           className="object-fit"
