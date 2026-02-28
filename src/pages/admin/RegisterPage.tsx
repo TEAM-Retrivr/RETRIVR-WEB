@@ -6,6 +6,7 @@ import {
   useRequestRegisteration,
 } from "../../hooks/queries/useAuthQueries";
 import { Layout } from "../../components/Layout";
+import Header from "../../components/Header";
 import CommonInput from "../../components/CommonInput";
 import Button from "../../components/Button";
 
@@ -171,9 +172,9 @@ const RegisterPage = () => {
   return (
     <Layout>
       {/* 헤더 영역 - 헤더 컴포넌트 제작 후 대체 예정 */}
-      <div className="w-full h-28 text-center">헤더 영역</div>
+      <Header pageName="회원가입"></Header>
       {/* 회원가입 영역 - 이름, 이메일, 비밀번호, 비밀번호 확인, 관리자 코드 */}
-      <div className="flex flex-col items-center w-full gap-8 px-8">
+      <div className="flex flex-col items-center w-full gap-6 pt-8 px-8">
         {/* 이름(단체명) 영역 */}
         <div className="flex flex-col w-full gap-2">
           <div>
