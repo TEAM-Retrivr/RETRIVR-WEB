@@ -70,7 +70,7 @@ export interface LoginResponse {
 // 5-1. 홈 화면 출력 응답 바디
 export interface LoadHomeResponse {
   organizationName: string; // 관리자 이름 (단체명)
-  profileImageUrl: string; // 프로필 사진 URL
+  profileImageUrl?: string; // 프로필 사진 URL (없는 경우 기본 아이콘 사용됨)
   requestCount: number; // 대여 요청 개수
 
   // 최근 요청 -> RentalRequsetCard에 쓰일 값
