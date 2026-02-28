@@ -1,6 +1,7 @@
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import RentalConfirmCard from "../../components/cards/RentalConfirmCard";
+import type { RentalRequest } from "../../types/rental";
 
 const sampleRental: RentalRequest = {
   requestedAt: "2026-01-21 17:00",
