@@ -7,6 +7,7 @@ import CommonInput from "../components/CommonInput";
 import RentalStatusToggle from "../components/RentalStatusToggle";
 import RentalConfirmCard from "../components/cards/RentalConfirmCard";
 import type { RentalRequest } from "../types/rental";
+import Header from "../components/Header";
 const TestPage = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -72,6 +73,14 @@ const TestPage = () => {
 
   return (
     <div className="p-10 flex flex-col gap-5">
+      <h1 className="text-xl font-bold">헤더 컴포넌트 테스트</h1>
+      <div className="flex flex-col bg-neutral-gray-4 opacity-90 w-[700px] h-[500px] items-center p-10 gap-30">
+        <Header name="" pageName="회원가입"></Header>
+        <Header
+          name="건국대학교 도서관자치위원회"
+          pageName="대여 요청"
+        ></Header>
+      </div>
       <h1 className="text-xl font-bold">대여 확인 컴포넌트 테스트</h1>
       <RentalConfirmCard rental={sampleRental}></RentalConfirmCard>
       <h1 className="text-xl font-bold">버튼 컴포넌트 테스트</h1>
