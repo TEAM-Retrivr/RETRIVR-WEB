@@ -8,19 +8,73 @@ import RentalAvailableItemCard from "../components/client/RentalAvailableItemCar
 import Header from "../components/Header";
 import type { ItemRequest } from "../types/item";
 
-const DUMMY_ITEM_REQUEST: ItemRequest = {
-  item: {
-    itemId: 1,
-    name: "C타입 충전기",
-    availableQuantity: 3,
-    totalQuantity: 5,
-    isActive: true,
-    rentalDuration: 3,
-    description: "어댑터 미포함",
-    guaranteedGoods: "학생증 또는 신분증",
+export const DUMMY_ITEM_REQUESTS: ItemRequest[] = [
+  {
+    item: {
+      itemId: 1,
+      name: "C타입 충전기",
+      availableQuantity: 3,
+      totalQuantity: 5,
+      isActive: true,
+      rentalDuration: 3,
+      description: "어댑터 미포함",
+      guaranteedGoods: "학생증 또는 신분증",
+    },
+    nextCursor: 2,
   },
-  nextCursor: 2,
-};
+  {
+    item: {
+      itemId: 2,
+      name: "멀티탭 (4구)",
+      availableQuantity: 5,
+      totalQuantity: 10,
+      isActive: true,
+      rentalDuration: 2,
+      description: "최대 2200W 사용 가능",
+      guaranteedGoods: "학생증",
+    },
+    nextCursor: 3,
+  },
+  {
+    item: {
+      itemId: 3,
+      name: "보조 배터리",
+      availableQuantity: 1,
+      totalQuantity: 8,
+      isActive: true,
+      rentalDuration: 1,
+      description: "케이블 별도 지참",
+      guaranteedGoods: "학생증 또는 신분증",
+    },
+    nextCursor: 4,
+  },
+  {
+    item: {
+      itemId: 4,
+      name: "우산",
+      availableQuantity: 7,
+      totalQuantity: 20,
+      isActive: true,
+      rentalDuration: 1,
+      description: "반납 시 상태 확인",
+      guaranteedGoods: "학생증",
+    },
+    nextCursor: 5,
+  },
+  {
+    item: {
+      itemId: 5,
+      name: "노트북 거치대",
+      availableQuantity: 2,
+      totalQuantity: 4,
+      isActive: true,
+      rentalDuration: 7,
+      description: "알루미늄 재질",
+      guaranteedGoods: "학생증 또는 신분증",
+    },
+    nextCursor: 6,
+  },
+];
 
 const TestPage = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -76,7 +130,7 @@ const TestPage = () => {
   return (
     <div className="p-10 flex flex-col gap-5">
       <h1 className="text-xl font-bold">대여 가능 물품 컴포넌트 테스트</h1>
-      <RentalAvailableItemCard itemInfo={DUMMY_ITEM_REQUEST} />
+      <RentalAvailableItemCard itemInfo={DUMMY_ITEM_REQUESTS[0]} />
       <h1 className="text-xl font-bold">헤더 컴포넌트 테스트</h1>
       <div className="flex flex-col bg-neutral-gray-4 opacity-90 w-[700px] h-[500px] items-center p-10 gap-30">
         <Header name="" pageName="회원가입"></Header>

@@ -5,6 +5,7 @@ import HomePage from "./pages/admin/HomePage";
 import LandingPage from "./pages/LandingPage";
 import RegisterPage from "./pages/admin/RegisterPage";
 import RentalRequestPage from "./pages/admin/RentalRequestPage";
+import ClientHomePage from "./pages/client/ClientHomePage";
 
 function App() {
   return (
@@ -22,12 +23,16 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
       </Routes>
       <Routes>
-        {/* 홈 페이지 */}
+        {/* 관리자 홈 페이지 */}
         <Route path="/home" element={<HomePage />} />
       </Routes>
       <Routes>
         {/* 대여 요청 확인 페이지 */}
         <Route path="/rental-request" element={<RentalRequestPage />} />
+      </Routes>
+      <Routes>
+        {/* 대여자 홈 페이지 */}
+        <Route path="/client-home" element={<ClientHomePage />} />
       </Routes>
       <Routes>
         {/* 테스트 페이지 */}
