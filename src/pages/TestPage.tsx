@@ -1,13 +1,27 @@
 import { useRef, useState, type TouchEvent } from "react";
-import Button from "../components/Button";
 import { MenuCard } from "../components/cards/home/MenuCard";
 import { RentRequestCard } from "../components/cards/home/RentRequestCard";
 import { HOME_MENUS } from "../types/menu";
 import CommonInput from "../components/CommonInput";
 import RentalStatusToggle from "../components/RentalStatusToggle";
-import RentalConfirmCard from "../components/cards/RentalConfirmCard";
-import type { RentalRequest } from "../types/rental";
+import RentalAvailableItemCard from "../components/client/RentalAvailableItemCard";
 import Header from "../components/Header";
+import type { ItemRequest } from "../types/item";
+
+const DUMMY_ITEM_REQUEST: ItemRequest = {
+  item: {
+    itemId: 1,
+    name: "C타입 충전기",
+    availableQuantity: 3,
+    totalQuantity: 5,
+    isActive: true,
+    rentalDuration: 3,
+    description: "어댑터 미포함",
+    guaranteedGoods: "학생증 또는 신분증",
+  },
+  nextCursor: 2,
+};
+
 const TestPage = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -59,20 +73,10 @@ const TestPage = () => {
     touchCurrentYRef.current = null;
   };
 
-  const sampleRental: RentalRequest = {
-    requestedAt: "2026-01-21 17:00",
-    itemName: "c타입 충전기",
-    itemId: "c타입 충전기 (1)",
-    itemCount: "(2/5)",
-    applicantInfo: {
-      name: "조윤아",
-      major: "동물자원학과",
-      id: "202312690",
-    },
-  };
-
   return (
     <div className="p-10 flex flex-col gap-5">
+      <h1 className="text-xl font-bold">대여 가능 물품 컴포넌트 테스트</h1>
+      <RentalAvailableItemCard itemInfo={DUMMY_ITEM_REQUEST} />
       <h1 className="text-xl font-bold">헤더 컴포넌트 테스트</h1>
       <div className="flex flex-col bg-neutral-gray-4 opacity-90 w-[700px] h-[500px] items-center p-10 gap-30">
         <Header name="" pageName="회원가입"></Header>
@@ -81,36 +85,7 @@ const TestPage = () => {
           pageName="대여 요청"
         ></Header>
       </div>
-      <h1 className="text-xl font-bold">대여 확인 컴포넌트 테스트</h1>
-      <RentalConfirmCard rental={sampleRental}></RentalConfirmCard>
-      <h1 className="text-xl font-bold">버튼 컴포넌트 테스트</h1>
-      {/* 1. 기본 버튼 확인 */}
-      <Button variant="primary" size="sm">
-        확인하기
-      </Button>
-      <Button variant="outline" size="sm">
-        확인하기
-      </Button>
-      {/* 2. 중간 버튼 확인 */}
-      <Button variant="primary" size="md">
-        승인
-      </Button>
-      <Button variant="gray" size="md">
-        거부
-      </Button>
-      <Button variant="outline" size="md">
-        거부
-      </Button>
-      {/* 3. 큰 버튼 확인 */}
-      <Button variant="primary" size="lg">
-        하단 버튼 블루
-      </Button>
-      <Button variant="gray" size="lg">
-        하단 버튼 회색
-      </Button>
-      <Button variant="outline" size="lg">
-        하단 버튼 라인 블루
-      </Button>
+
       <h1 className="text-xl font-bold">홈화면 카드 컴포넌트 테스트</h1>
       <RentRequestCard
         itemName="8핀 충전기"
