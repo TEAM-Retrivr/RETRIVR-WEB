@@ -7,7 +7,6 @@ import RegisterPage from "./pages/admin/RegisterPage";
 import RentalRequestPage from "./pages/admin/RentalRequestPage";
 import ClientHomePage from "./pages/client/ClientHomePage";
 import RentalInformationSubmitPage from "./pages/client/RentalInformationSubmitPage";
-
 function App() {
   return (
     <Router>
@@ -36,7 +35,7 @@ function App() {
         <Route path="/client-home" element={<ClientHomePage />} />
       </Routes>
       <Routes>
-        {/* 대여 정보 입력 페이지  */}
+        {/* 대여자 페이지 */}
         <Route
           path="/client-rental-information-submit"
           element={<RentalInformationSubmitPage />}
