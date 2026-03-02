@@ -6,7 +6,6 @@ import LandingPage from "./pages/LandingPage";
 import RegisterPage from "./pages/admin/RegisterPage";
 import RentalRequestPage from "./pages/admin/RentalRequestPage";
 import ClientHomePage from "./pages/client/ClientHomePage";
-import RentalInformationSubmitPage from "./pages/client/RentalInformationSubmitPage";
 
 function App() {
   return (
@@ -34,13 +33,6 @@ function App() {
       <Routes>
         {/* 대여자 홈 페이지 */}
         <Route path="/client-home" element={<ClientHomePage />} />
-      </Routes>
-      <Routes>
-        {/* 대여 정보 입력 페이지  */}
-        <Route
-          path="/client-rental-information-submit"
-          element={<RentalInformationSubmitPage />}
-        />
       </Routes>
       <Routes>
         {/* 테스트 페이지 */}

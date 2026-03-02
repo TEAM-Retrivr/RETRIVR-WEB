@@ -226,7 +226,7 @@ const RegisterPage = () => {
               placeholder="인증번호 입력"
               type="text"
               inputMode="numeric"
-              pattern="[0-9]{6}" // TODO : 비밀번호 유효성 검사 !! 피그마 코멘트 보고 추가해두기!!
+              pattern="[0-9]{6}"
               maxLength={6}
               value={authCode}
               onChange={(e) => setAuthCode(e.target.value)}
