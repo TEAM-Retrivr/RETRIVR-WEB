@@ -25,6 +25,10 @@ const RentalInformationSubmitPage = () => {
   // 요청 사항 : string
   const [requestment, setRequestment] = useState("");
 
+  // 개인 정보 활용 동의 체크 여부 : boolean
+  const [firstConsentChecked, setFirstConsentChecked] = useState(false);
+  const [secondConsentChecked, setSecondConsentChecked] = useState(false);
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault(); // TODO: 필수값/동의값 검증 후 API 연동
   };
@@ -138,9 +142,15 @@ const RentalInformationSubmitPage = () => {
               개인 정보 동의
             </p>
             <div className="flex flex-col mt-4 gap-3.5">
-              <ConsentSectionCard label={label1}></ConsentSectionCard>
+              <ConsentSectionCard
+                label={label1}
+                checked={firstConsentChecked}
+                onCheckedChange={setFirstConsentChecked}
+              ></ConsentSectionCard>
               <ConsentSectionCard
                 label={label2 + "대여물품" + label3}
+                checked={secondConsentChecked}
+                onCheckedChange={setSecondConsentChecked}
               ></ConsentSectionCard>
             </div>
           </div>
@@ -150,7 +160,12 @@ const RentalInformationSubmitPage = () => {
           <p className="text-primary text-10px font-[400] leading-[130%]">
             관리자 승인 후 대여가 완료됩니다.
           </p>
-          <Button variant="primary" size="lg" type="submit">
+          <Button
+            variant="primary"
+            size="lg"
+            type="submit"
+            disabled={firstConsentChecked || secondConsentChecked}
+          >
             대여 요청하기
           </Button>
         </div>

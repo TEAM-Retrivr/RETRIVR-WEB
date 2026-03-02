@@ -25,7 +25,7 @@ export const ConsentSectionCard = ({
           />
           {/* 커스텀 체크박스 영역 */}
           <div
-            className={`w-4.5 h-4.5 rounded-md flex items-center justify-center transition-colors border-1 peer-focus-visible:ring-2 peer-focus-visible:ring-primary peer-focus-visible:ring-offset-2${checked ? "bg-primary border-primary" : "bg-white border-neutral-gray-4"}`}
+            className={`w-4.5 h-4.5 rounded-md flex items-center justify-center transition-colors border-1 ${checked ? "bg-primary border-primary" : "bg-white border-neutral-gray-4"}`}
           >
             {/* 체크되었을 때 아이콘 표시 */}
             {checked && <img src="/icons/client/checked.svg" alt="체크됨" />}
