@@ -1,77 +1,38 @@
 import { Layout } from "../../components/Layout";
 import RentalAvailableItemCard from "../../components/client/RentalAvailableItemCard";
 import type { ItemRequest } from "../../types/item";
-
-// 더미데이터 -> API 연동 후 삭제 예정
-const DUMMY_ITEM_REQUESTS: ItemRequest[] = [
-  {
-    item: {
-      itemId: 1,
-      name: "C타입 충전기",
-      availableQuantity: 3,
-      totalQuantity: 5,
-      isActive: true,
-      rentalDuration: 3,
-      description: "어댑터 미포함",
-      guaranteedGoods: "학생증 또는 신분증",
-    },
-    nextCursor: 2,
-  },
-  {
-    item: {
-      itemId: 2,
-      name: "멀티탭 (4구)",
-      availableQuantity: 5,
-      totalQuantity: 10,
-      isActive: true,
-      rentalDuration: 2,
-      description: "최대 2200W 사용 가능",
-      guaranteedGoods: "학생증",
-    },
-    nextCursor: 3,
-  },
-  {
-    item: {
-      itemId: 3,
-      name: "보조 배터리",
-      availableQuantity: 1,
-      totalQuantity: 8,
-      isActive: true,
-      rentalDuration: 1,
-      description: "케이블 별도 지참",
-      guaranteedGoods: "학생증 또는 신분증",
-    },
-    nextCursor: 4,
-  },
-  {
-    item: {
-      itemId: 4,
-      name: "우산",
-      availableQuantity: 7,
-      totalQuantity: 20,
-      isActive: true,
-      rentalDuration: 1,
-      description: "반납 시 상태 확인",
-      guaranteedGoods: "학생증",
-    },
-    nextCursor: 5,
-  },
-  {
-    item: {
-      itemId: 5,
-      name: "노트북 거치대",
-      availableQuantity: 2,
-      totalQuantity: 4,
-      isActive: true,
-      rentalDuration: 7,
-      description: "알루미늄 재질",
-      guaranteedGoods: "학생증 또는 신분증",
-    },
-    nextCursor: 6,
-  },
-];
+import { useItemList } from "../../hooks/queries/useClientQueries";
 
 const ClientHome = () => {
+  // TODO: 실제 로그인 정보에서 organizationId 가져오기
+  const ORGANIZATION_ID = 1;
+
+  const { data, isLoading, error } = useItemList({
+    organizationId: ORGANIZATION_ID,
+    size: 10,
+  });
+
+  const itemRequests: ItemRequest[] =
+    data?.items?.map((item) => ({
+      item,
+      nextCursor: data.nextCursor ?? 0,
+    })) ?? [];
+
+  // 로딩 중 or 에러 상태 표시
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="p-6">로딩 중...</div>
+      </Layout>
+    );
+  }
+  if (error) {
+    return (
+      <Layout>
+        <div className="p-6">에러가 발생했습니다.</div>
+      </Layout>
+    );
+  }
   return (
     <Layout>
       {/* 화면 상단 영역 - 대여지 프로필 사진, 대여지명 */}
@@ -104,12 +65,27 @@ const ClientHome = () => {
           대여 가능 물품
         </p>
         <div className="flex flex-col gap-3.5">
-          {DUMMY_ITEM_REQUESTS.map((itemRequest) => (
-            <RentalAvailableItemCard
-              key={itemRequest.item.itemId}
-              itemInfo={itemRequest}
-            />
-          ))}
+          {isLoading && (
+            <span className="text-sm text-neutral-gray-3">불러오는 중...</span>
+          )}
+          {error && (
+            <span className="text-sm text-red-500">
+              대여 가능 물품을 불러오는 중 오류가 발생했습니다.
+            </span>
+          )}
+          {!isLoading && !error && itemRequests.length === 0 && (
+            <span className="text-sm text-neutral-gray-3">
+              대여 가능한 물품이 없습니다.
+            </span>
+          )}
+          {!isLoading &&
+            !error &&
+            itemRequests.map((itemRequest) => (
+              <RentalAvailableItemCard
+                key={itemRequest.item.itemId}
+                itemInfo={itemRequest}
+              />
+            ))}
         </div>
       </div>
     </Layout>
