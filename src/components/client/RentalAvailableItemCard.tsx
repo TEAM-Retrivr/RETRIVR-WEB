@@ -15,7 +15,16 @@ const RentalAvailableItemCard = ({
 
   return (
     <div
-      onClick={() => setIsExpanded(!isExpanded)}
+      onClick={() => setIsExpanded((prev) => !prev)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          setIsExpanded((prev) => !prev);
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-expanded={isExpanded}
       className="w-full max-w-[350px] max-h-[240px] bg-neutral-white rounded-[16px] shadow-item-card overflow-hidden font-[Pretendard] cursor-pointer"
     >
       {/* 상단 영역 - 대여 물품 이름, 수량 표시 */}
@@ -43,12 +52,14 @@ const RentalAvailableItemCard = ({
               </li>
               <li>
                 보증 물품 :{" "}
-                <span className="text-primary">{item.guaranteedGoods}</span>
+                <span className="text-primary">
+                  {item.guaranteedGoods ?? "-"}
+                </span>
               </li>
               <li>물품 설명 : {item.description}</li>
             </ul>
 
-            <div className="flex gap-3">
+            <div className="flex gap-3" onClick={(e) => e.stopPropagation()}>
               <Button variant="outline" size="md">
                 취소
               </Button>
