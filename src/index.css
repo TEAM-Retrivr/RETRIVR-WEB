@@ -87,6 +87,7 @@
   --shadow-menu: 0 0 12px -4px rgba(0, 0, 0, 0.04);
   --shadow-card: 0 0 16px -6px rgba(0, 0, 0, 0.2);
   --shadow-item-card: 0 0 6px 0 rgba(0, 0, 0, 0.14);
+  --shadow-consent-card: 0 0 16px -6px rgba(0, 0, 0, 0.08);
 
   /* 5. 래디우스 */
   --radius-large: 23.164px;

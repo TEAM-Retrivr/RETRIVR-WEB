@@ -2,7 +2,15 @@ import { useState } from "react";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import CommonInput from "../../components/CommonInput";
+import { ConsentSectionCard } from "../../components/cards/client/ConsentSectionCard";
 import Button from "../../components/Button";
+
+const label1 =
+  "대여 물품 연체 시 독촉 문자가 카카오톡으로\n발송됩니다. 이에 동의하시나요?";
+
+const label2 = "대여 시 ";
+const label3 =
+  "을 맡기셔야 합니다.\n물품 반납 시 반환됩니다. 이에 동의하시나요?";
 
 const RentalInformationSubmitPage = () => {
   // 대여자 이름 : string
@@ -124,11 +132,16 @@ const RentalInformationSubmitPage = () => {
           <p className="text-18px text-secondary-2 opacity-[0.9] font-[700]">
             개인 정보 동의
           </p>
-          <div></div>
+          <div className="flex flex-col mt-4 gap-3.5">
+            <ConsentSectionCard label={label1}></ConsentSectionCard>
+            <ConsentSectionCard
+              label={label2 + "대여물품" + label3}
+            ></ConsentSectionCard>
+          </div>
         </div>
       </div>
       {/* 요청하기 영역 */}
-      <div className="flex flex-col w-full items-center mt-18 mb-11 gap-1.5">
+      <div className="flex flex-col w-full items-center mt-13 mb-11 gap-1.5">
         <p className="text-primary text-10px font-[400] leading-[130%]">
           관리자 승인 후 대여가 완료됩니다.
         </p>

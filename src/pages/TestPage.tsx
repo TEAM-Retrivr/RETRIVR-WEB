@@ -4,7 +4,7 @@ import { RentRequestCard } from "../components/cards/home/RentRequestCard";
 import { HOME_MENUS } from "../types/menu";
 import CommonInput from "../components/CommonInput";
 import RentalStatusToggle from "../components/RentalStatusToggle";
-import RentalAvailableItemCard from "../components/client/RentalAvailableItemCard";
+import RentalAvailableItemCard from "../components/cards/client/RentalAvailableItemCard";
 import Header from "../components/Header";
 import type { ItemRequest } from "../types/item";
 

@@ -1,5 +1,5 @@
 import { Layout } from "../../components/Layout";
-import RentalAvailableItemCard from "../../components/client/RentalAvailableItemCard";
+import RentalAvailableItemCard from "../../components/cards/client/RentalAvailableItemCard";
 import type { ItemRequest } from "../../types/item";
 import { useItemList } from "../../hooks/queries/useClientQueries";
 
@@ -33,6 +33,7 @@ const ClientHome = () => {
       </Layout>
     );
   }
+
   return (
     <Layout>
       {/* 화면 상단 영역 - 대여지 프로필 사진, 대여지명 */}
