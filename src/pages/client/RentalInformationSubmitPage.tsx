@@ -37,6 +37,9 @@ const RentalInformationSubmitPage = () => {
           </div>
           <CommonInput
             type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={11}
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
             placeholder="01012345678"
@@ -52,7 +55,7 @@ const RentalInformationSubmitPage = () => {
             type="text"
             value={major}
             onChange={(e) => setMajor(e.target.value)}
-            placeholder="공식 명칭을 사용해주세요. ex) 컴공(X), 컴퓨터공학부O)"
+            placeholder="공식 명칭을 사용해주세요. ex) 컴공(X), 컴퓨터공학부(O)"
             inputSize="large"
           ></CommonInput>
         </div>
