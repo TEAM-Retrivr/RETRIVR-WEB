@@ -164,7 +164,7 @@ const RentalInformationSubmitPage = () => {
             variant="primary"
             size="lg"
             type="submit"
-            disabled={firstConsentChecked || secondConsentChecked}
+            disabled={!firstConsentChecked || !secondConsentChecked}
           >
             대여 요청하기
           </Button>
