@@ -51,7 +51,7 @@
   --color-secondary-1: #2d4e7f;
   --color-secondary-2: #7998c5;
   --color-secondary-3: #b5f4ff;
-
+  --color-secondary-4: #f5f9ff;
   /* Gradient & Background Colors */
   --color-grad-blue: #7fb5f7;
   --color-bg-pale: #d6f4ff;
@@ -87,6 +87,7 @@
   --shadow-menu: 0 0 12px -4px rgba(0, 0, 0, 0.04);
   --shadow-card: 0 0 16px -6px rgba(0, 0, 0, 0.2);
   --shadow-item-card: 0 0 6px 0 rgba(0, 0, 0, 0.14);
+  --shadow-consent-card: 0 0 16px -6px rgba(0, 0, 0, 0.08);
 
   /* 5. 래디우스 */
   --radius-large: 23.164px;

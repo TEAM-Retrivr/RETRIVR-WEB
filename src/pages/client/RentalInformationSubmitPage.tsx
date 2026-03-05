@@ -1,99 +1,175 @@
 import { useState } from "react";
+import type { FormEvent } from "react";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import CommonInput from "../../components/CommonInput";
+import { ConsentSectionCard } from "../../components/cards/client/ConsentSectionCard";
 import Button from "../../components/Button";
+
+const label1 =
+  "대여 물품 연체 시 독촉 문자가 카카오톡으로\n발송됩니다. 이에 동의하시나요?";
+
+const label2 = "대여 시 ";
+const label3 =
+  "을 맡기셔야 합니다.\n물품 반납 시 반환됩니다. 이에 동의하시나요?";
+
 const RentalInformationSubmitPage = () => {
+  // 대여자 이름 : string
   const [name, setName] = useState("");
+  // 대여자 전화번호 : string
   const [phoneNumber, setPhoneNumber] = useState("");
+  // 대여자 학과 (전공) : string
   const [major, setMajor] = useState("");
+  // 대여자 학번 : string
   const [studentId, setStudentId] = useState("");
+  // 요청 사항 : string
   const [requestment, setRequestment] = useState("");
+
+  // 개인 정보 활용 동의 체크 여부 : boolean
+  const [firstConsentChecked, setFirstConsentChecked] = useState(false);
+  const [secondConsentChecked, setSecondConsentChecked] = useState(false);
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault(); // TODO: 필수값/동의값 검증 후 API 연동
+  };
   return (
     <Layout>
-      <Header name="대여지명" pageName="대여 정보 입력"></Header>
-      <div className=""></div>
-      <div className="w-full flex flex-col font-[Pretendard] px-8">
-        <div>
-          <div className="text-neutral-gray-2 text-14px font-[700]">
-            <p className="inline">이름</p>
-            <p className="inline text-primary">*</p>
+      <form onSubmit={handleSubmit}>
+        <Header name="대여지명" pageName="대여 정보 입력"></Header>
+        <div className="w-full max-w-[360px] max-h-[176px] font-[Pretendard] bg-secondary-4 rounded-[16px] mt-6 mx-5">
+          <div className="pt-7.25 pl-8 pb-7.75">
+            <div className="flex flex-col">
+              <p className="text-neutral-gray-1 text-24px font-[700]">
+                c타입 충전기
+              </p>
+              <p className="text-neutral-gray-2 text-16px font-[500] leading-none">
+                c타입 충전기(1)
+              </p>
+            </div>
+            <ul className="text-12px text-neutral-gray-3 font-[400] mt-4.25 leading-[130%]">
+              <li>
+                대여 기간 : <span className="text-primary">3일</span>
+              </li>
+              <li>
+                보증 물품 :{" "}
+                <span className="text-primary">학생증 또는 신분증</span>
+              </li>
+              <li>
+                물품 설명 : <span>어댑터 미포함</span>
+              </li>
+            </ul>
           </div>
-          <CommonInput
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="홍길동"
-            inputSize="large"
-          ></CommonInput>
         </div>
-        <div>
-          <div className="text-neutral-gray-2 text-14px font-[700]">
-            <p className="inline">연락처</p>
-            <p className="inline text-primary">*</p>
-            <p className="text-neutral-gray-3 text-12px font-[400]">
-              숫자로만 적어주세요.
+        <div className="w-full flex flex-col font-[Pretendard] mt-7.5 px-8 gap-7.5">
+          <div>
+            <div className="text-neutral-gray-2 text-14px font-[700] mb-2.5">
+              <p className="inline ">이름</p>
+              <p className="inline text-primary">*</p>
+            </div>
+            <CommonInput
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="홍길동"
+              inputSize="large"
+              className="placeholder:text-14px placeholder:font-[400] placeholder:leading-[120%]"
+            ></CommonInput>
+          </div>
+          <div>
+            <div className=" text-neutral-gray-2 text-14px font-[700] ">
+              <p className="inline">연락처</p>
+              <p className="inline text-primary">*</p>
+              <p className="text-neutral-gray-3 text-12px font-[400] mt-1.5 mb-2.5 leading-none">
+                숫자로만 적어주세요.
+              </p>
+            </div>
+            <CommonInput
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={11}
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              placeholder="01012345678"
+              inputSize="large"
+              className="placeholder:text-14px placeholder:font-[400] placeholder:leading-[120%]"
+            ></CommonInput>
+          </div>
+          <div>
+            <div className="text-neutral-gray-2 text-14px font-[700] mb-2.5">
+              <p className="inline">학과</p>
+              <p className="inline text-primary">*</p>
+            </div>
+            <CommonInput
+              type="text"
+              value={major}
+              onChange={(e) => setMajor(e.target.value)}
+              placeholder="공식 명칭을 사용해주세요. ex) 컴공(X), 컴퓨터공학부(O)"
+              inputSize="large"
+              className="placeholder:text-14px placeholder:font-[400] placeholder:leading-[120%]"
+            ></CommonInput>
+          </div>
+          <div>
+            <div className="text-neutral-gray-2 text-14px font-[700] mb-2.5">
+              <p className="inline">학번</p>
+              <p className="inline text-primary">*</p>
+            </div>
+            <CommonInput
+              type="text"
+              value={studentId}
+              onChange={(e) => setStudentId(e.target.value)}
+              placeholder="202312680"
+              inputSize="large"
+              className="placeholder:text-14px placeholder:font-[400] placeholder:leading-[120%]"
+            ></CommonInput>
+          </div>
+          <div>
+            <p className="text-neutral-gray-2 text-14px font-[700] mb-2.5">
+              요청사항
             </p>
+            <CommonInput
+              type="text"
+              value={requestment}
+              onChange={(e) => setRequestment(e.target.value)}
+              placeholder="요청사항을 입력하세요. ex) 반납기한 연장"
+              inputSize="large"
+              className="placeholder:text-14px placeholder:font-[400] placeholder:leading-[120%]"
+            ></CommonInput>
           </div>
-          <CommonInput
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            maxLength={11}
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-            placeholder="01012345678"
-            inputSize="large"
-          ></CommonInput>
-        </div>
-        <div>
-          <div className="text-neutral-gray-2 text-14px font-[700]">
-            <p className="inline">학과</p>
-            <p className="inline text-primary">*</p>
+          {/* 개인 정보 동의 영역 */}
+          <div>
+            <p className="text-18px text-secondary-2 opacity-[0.9] font-[700]">
+              개인 정보 동의
+            </p>
+            <div className="flex flex-col mt-4 gap-3.5">
+              <ConsentSectionCard
+                label={label1}
+                checked={firstConsentChecked}
+                onCheckedChange={setFirstConsentChecked}
+              ></ConsentSectionCard>
+              <ConsentSectionCard
+                label={label2 + "대여물품" + label3}
+                checked={secondConsentChecked}
+                onCheckedChange={setSecondConsentChecked}
+              ></ConsentSectionCard>
+            </div>
           </div>
-          <CommonInput
-            type="text"
-            value={major}
-            onChange={(e) => setMajor(e.target.value)}
-            placeholder="공식 명칭을 사용해주세요. ex) 컴공(X), 컴퓨터공학부(O)"
-            inputSize="large"
-          ></CommonInput>
         </div>
-        <div>
-          <div className="text-neutral-gray-2 text-14px font-[700]">
-            <p className="inline">학번</p>
-            <p className="inline text-primary">*</p>
-          </div>
-          <CommonInput
-            type="text"
-            value={studentId}
-            onChange={(e) => setStudentId(e.target.value)}
-            placeholder="202312680"
-            inputSize="large"
-          ></CommonInput>
+        {/* 요청하기 영역 */}
+        <div className="flex flex-col w-full items-center mt-13 mb-11 gap-1.5">
+          <p className="text-primary text-10px font-[400] leading-[130%]">
+            관리자 승인 후 대여가 완료됩니다.
+          </p>
+          <Button
+            variant="primary"
+            size="lg"
+            type="submit"
+            disabled={!firstConsentChecked || !secondConsentChecked}
+          >
+            대여 요청하기
+          </Button>
         </div>
-        <div>
-          <p className="text-neutral-gray-2 text-14px font-[700]">요청사항</p>
-          <CommonInput
-            type="text"
-            value={requestment}
-            onChange={(e) => setRequestment(e.target.value)}
-            placeholder="요청사항을 입력하세요. ex) 반납기한 연장"
-            inputSize="large"
-          ></CommonInput>
-        </div>
-        {/* 개인 정보 동의 영역 */}
-        <div>
-          <p>개인 정보 동의</p>
-        </div>
-      </div>
-      {/* 요청하기 영역 */}
-      <div className="flex flex-col w-full items-center">
-        <p></p>
-        <Button variant="primary" size="lg">
-          대여 요청하기
-        </Button>
-      </div>
+      </form>
     </Layout>
   );
 };
