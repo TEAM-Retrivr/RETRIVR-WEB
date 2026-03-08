@@ -5,6 +5,7 @@ import HomePage from "./pages/admin/HomePage";
 import LandingPage from "./pages/LandingPage";
 import RegisterPage from "./pages/admin/RegisterPage";
 import RentalRequestPage from "./pages/admin/RentalRequestPage";
+import ItemManagementPage from "./pages/admin/ItemManagementPage";
 import ClientHomePage from "./pages/client/ClientHomePage";
 import RentalInformationSubmitPage from "./pages/client/RentalInformationSubmitPage";
 function App() {
@@ -27,6 +28,10 @@ function App() {
         <Route path="/home" element={<HomePage />} />
       </Routes>
       <Routes>
+        {/* 대여자 물품 관리 페이지 */}
+        <Route path="/item-manage" element={<ItemManagementPage />} />
+      </Routes>
+      <Routes>
         {/* 대여 요청 확인 페이지 */}
         <Route path="/rental-request" element={<RentalRequestPage />} />
       </Routes>
@@ -35,7 +40,7 @@ function App() {
         <Route path="/client-home" element={<ClientHomePage />} />
       </Routes>
       <Routes>
-        {/* 대여자 페이지 */}
+        {/* 대여자 대여 신청 페이지 */}
         <Route
           path="/client-rental-information-submit"
           element={<RentalInformationSubmitPage />}
