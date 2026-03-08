@@ -1,6 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
-import { requestItemList } from "../../api/client/client.api";
-import type { ItemResponse } from "../../api/client/client.type";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+  requestItemList,
+  sendRentalRequest,
+} from "../../api/client/client.api";
+import type {
+  BorrowerInformationRequest,
+  ItemResponse,
+} from "../../api/client/client.type";
 
 interface UseItemListParams {
   organizationId: number;
@@ -25,5 +31,22 @@ export const useItemList = ({
     staleTime: 1000 * 3,
     // refetchOnWindowFocus: 탭 전환 후 다시 돌아왔을 때 최신 데이터로 동기화
     refetchOnWindowFocus: true,
+  });
+};
+
+// 2. 대여 요청 생성 API (POST)
+export const useSendRentalRequest = () => {
+  return useMutation({
+    mutationFn: ({
+      itemId,
+      ...data
+    }: { itemId: number } & BorrowerInformationRequest) =>
+      sendRentalRequest(itemId, data),
+    onSuccess: () => {
+      console.log("인증 성공");
+    },
+    onError: (error: any) => {
+      console.log("인증 실패", error);
+    },
   });
 };

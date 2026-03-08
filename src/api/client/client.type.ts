@@ -13,3 +13,26 @@ export interface ItemResponse {
   }[];
   nextCursor?: number; // (무한스크롤) 사용자에게 보여줄 페이지 단위. nextCursor가 null이면 다음 페이지가 없음.
 }
+
+// 2. 대여 요청 생성
+// 2-1. 대여 요청 생성 요청 바디
+export interface BorrowerInformationRequest {
+  itemUnitId?: number; // Long, nullable. 개별 코드형 물품일 경우에만 사용
+  name: string; // String, 필수. 대여자 이름
+  phone?: string; // String, nullable. 대여자 전화번호
+  rentalFields: {
+    // JSON Object, 필수. 추가 대여자 정보 (자유 key-value, 입력값 그대로 전달)
+    학과: string;
+    학번: string;
+    보증물품: string;
+    [key: string]: string | undefined; // 요청사항 등 자유 필드
+  };
+}
+
+// 2-2. 대여 요청 생성 응답 바디
+export interface BorrowerInformationResponse {
+  rentalId: number; // 생성된 대여 요청 ID
+  itemId: number; // 대여 요청한 물품 ID
+  itemUnitId: number; // 요청에 연결된 물품 고유번호 ID (선택사항)
+  requestedAt: string; // 대여 요청 생성 시각
+}

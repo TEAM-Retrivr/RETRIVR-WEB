@@ -1,5 +1,9 @@
 import { apiClient } from "../core";
-import type { ItemResponse } from "./client.type";
+import type {
+  BorrowerInformationRequest,
+  BorrowerInformationResponse,
+  ItemResponse,
+} from "./client.type";
 
 // 1. 대여지 소유 물품 목록 조회 (GET)
 // 엔드포인트 : /api/public/v1/organizations/{organizationId}/items
@@ -14,6 +18,19 @@ export const requestItemList = async (
     {
       params,
     },
+  );
+  return response.data;
+};
+
+// 2. 대여 요청 생성 (POST)
+// 엔드포인트 : /api/public/v1/items/{itemId}/rentals
+export const sendRentalRequest = async (
+  itemId: number,
+  data: BorrowerInformationRequest,
+): Promise<BorrowerInformationResponse> => {
+  const response = await apiClient.post<BorrowerInformationResponse>(
+    `/api/public/v1/items/${itemId}/rentals`,
+    data,
   );
   return response.data;
 };

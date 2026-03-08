@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import type { FormEvent } from "react";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import CommonInput from "../../components/CommonInput";
 import { ConsentSectionCard } from "../../components/cards/client/ConsentSectionCard";
 import Button from "../../components/Button";
+import { useSendRentalRequest } from "../../hooks/queries/useClientQueries";
 
 const label1 =
   "대여 물품 연체 시 독촉 문자가 카카오톡으로\n발송됩니다. 이에 동의하시나요?";
@@ -13,7 +15,20 @@ const label2 = "대여 시 ";
 const label3 =
   "을 맡기셔야 합니다.\n물품 반납 시 반환됩니다. 이에 동의하시나요?";
 
+// TODO: 실제로는 ClientHome에서 대여하기 클릭 시 location.state로 itemId 전달
+const DEFAULT_ITEM_ID = 1;
+const DEFAULT_GUARANTEED_GOODS = "학생증 또는 신분증";
+
 const RentalInformationSubmitPage = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const state = location.state as {
+    itemId?: number;
+    itemUnitId?: number;
+  } | null;
+  const itemId = state?.itemId ?? DEFAULT_ITEM_ID;
+  const itemUnitId = state?.itemUnitId; // 개별 코드형 물품일 때만 전달
+
   // 대여자 이름 : string
   const [name, setName] = useState("");
   // 대여자 전화번호 : string
@@ -30,7 +45,54 @@ const RentalInformationSubmitPage = () => {
   const [secondConsentChecked, setSecondConsentChecked] = useState(false);
 
   const handleSubmit = (e: FormEvent) => {
-    e.preventDefault(); // TODO: 필수값/동의값 검증 후 API 연동
+    e.preventDefault();
+    if (
+      !name.trim() ||
+      !phoneNumber.trim() ||
+      !major.trim() ||
+      !studentId.trim()
+    ) {
+      alert("필수 항목(이름, 연락처, 학과, 학번)을 모두 입력해주세요.");
+      return;
+    }
+    handleSendRentalRequest();
+  };
+
+  const { mutate: sendRentalRequest, isPending } = useSendRentalRequest();
+
+  const handleSendRentalRequest = () => {
+    const body: {
+      itemId: number;
+      itemUnitId?: number;
+      name: string;
+      phone?: string;
+      rentalFields: {
+        학과: string;
+        학번: string;
+        보증물품: string;
+        요청사항?: string;
+      };
+    } = {
+      itemId,
+      name,
+      phone: phoneNumber.trim() || undefined,
+      rentalFields: {
+        학과: major.trim(),
+        학번: studentId.trim(),
+        보증물품: DEFAULT_GUARANTEED_GOODS,
+        ...(requestment.trim() && { 요청사항: requestment.trim() }),
+      },
+    };
+    if (itemUnitId != null) body.itemUnitId = itemUnitId;
+    sendRentalRequest(body, {
+      onSuccess: () => {
+        alert("대여 요청이 접수되었습니다.");
+        navigate("/client-home");
+      },
+      onError: () => {
+        alert("대여 요청에 실패했습니다. 다시 시도해주세요.");
+      },
+    });
   };
   return (
     <Layout>
@@ -164,7 +226,9 @@ const RentalInformationSubmitPage = () => {
             variant="primary"
             size="lg"
             type="submit"
-            disabled={!firstConsentChecked || !secondConsentChecked}
+            disabled={
+              !firstConsentChecked || !secondConsentChecked || isPending
+            }
           >
             대여 요청하기
           </Button>
