@@ -2,6 +2,7 @@ import { useRef, useState, type TouchEvent } from "react";
 import { MenuCard } from "../components/cards/home/MenuCard";
 import { RentRequestCard } from "../components/cards/home/RentRequestCard";
 import ReturnConfirmCard from "../components/cards/ReturnConfirmCard";
+import StockCheckCard from "../components/cards/StockCheckCard";
 import { HOME_MENUS } from "../types/menu";
 import CommonInput from "../components/CommonInput";
 import RentalStatusToggle from "../components/RentalStatusToggle";
@@ -132,6 +133,8 @@ const TestPage = () => {
     <div className=" bg-neutral-white p-10 flex flex-col gap-5">
       <h1 className="text-xl font-bold">반납 연체 확인 컴포넌트 테스트</h1>
       <ReturnConfirmCard></ReturnConfirmCard>
+      <StockCheckCard status="available"></StockCheckCard>
+      <StockCheckCard status="inavailable"></StockCheckCard>
       <h1 className="text-xl font-bold">대여 가능 물품 컴포넌트 테스트</h1>
       <RentalAvailableItemCard itemInfo={DUMMY_ITEM_REQUESTS[0]} />
       <h1 className="text-xl font-bold">헤더 컴포넌트 테스트</h1>
