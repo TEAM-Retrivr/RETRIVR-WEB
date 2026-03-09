@@ -134,7 +134,7 @@ const TestPage = () => {
       <h1 className="text-xl font-bold">반납 연체 확인 컴포넌트 테스트</h1>
       <ReturnConfirmCard></ReturnConfirmCard>
       <StockCheckCard status="available"></StockCheckCard>
-      <StockCheckCard status="inavailable"></StockCheckCard>
+      <StockCheckCard status="unavailable"></StockCheckCard>
       <h1 className="text-xl font-bold">대여 가능 물품 컴포넌트 테스트</h1>
       <RentalAvailableItemCard itemInfo={DUMMY_ITEM_REQUESTS[0]} />
       <h1 className="text-xl font-bold">헤더 컴포넌트 테스트</h1>
