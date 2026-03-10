@@ -1,8 +1,10 @@
 interface CardProps {
-  status: "rentalAvailable" | "rentedOut" | "rentalUnavailable";
+  status: "rentalAvailable" | "rentedOut" | "rentalUnavailable"; // 물품 상태
+  itemName: string; // 물품 이름
+  itemCode?: string; // 물품 고유 번호 (없을 수도 있음)
 }
 
-const ItemStatusCard = ({ status }: CardProps) => {
+const ItemStatusCard = ({ status, itemName, itemCode }: CardProps) => {
   // 기본 컴포넌트 스타일
   const baseBoxStyle =
     "flex justify-between items-center w-80 h-17 font-[Pretendard] rounded-[20px] shadow-item-card cursor-pointer box-border px-5 py-4";
@@ -60,9 +62,9 @@ const ItemStatusCard = ({ status }: CardProps) => {
     <div className={`${baseBoxStyle} ${boxStyleByStatus[status]}`}>
       <div>
         <p className={`${baseItemTextStyle} ${itemTextStyleByStatus[status]}`}>
-          c타입 충전기 (1)
+          {itemName}
         </p>
-        <p className="text-10px font-normal">345ss2</p>
+        <p className="text-10px font-normal">{itemCode}</p>
       </div>
       <button
         className={`${baseItemStatusButtonStyle} ${itemStatusButtonStyle[status]} ${cursorByStatus[status]}`}

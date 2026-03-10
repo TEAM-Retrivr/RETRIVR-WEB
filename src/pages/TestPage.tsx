@@ -133,9 +133,21 @@ const TestPage = () => {
   return (
     <div className=" bg-neutral-white p-10 flex flex-col gap-5">
       <ItemManagementCard></ItemManagementCard>
-      <ItemStatusCard status="rentalAvailable"></ItemStatusCard>
-      <ItemStatusCard status="rentedOut"></ItemStatusCard>
-      <ItemStatusCard status="rentalUnavailable"></ItemStatusCard>
+      <ItemStatusCard
+        status="rentalAvailable"
+        itemName="c타입 충전기 (1)"
+        itemCode="345ss2"
+      ></ItemStatusCard>
+      <ItemStatusCard
+        status="rentedOut"
+        itemName="c타입 충전기 (2)"
+        itemCode="345ss2"
+      ></ItemStatusCard>
+      <ItemStatusCard
+        status="rentalUnavailable"
+        itemName="실험복"
+        itemCode=""
+      ></ItemStatusCard>
       <h1 className="text-xl font-bold">반납 연체 확인 컴포넌트 테스트</h1>
       <ReturnConfirmCard></ReturnConfirmCard>
       <StockCheckCard status="available"></StockCheckCard>

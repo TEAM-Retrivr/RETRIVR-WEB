@@ -4,6 +4,8 @@ import ItemStatusCard from "./ItemStatusCard";
 // TODO: 추후 백엔드 데이터로 대체 (items 배열 등)
 const MOCK_ITEM_TITLE = "c타입 충전기";
 const MOCK_TOTAL_COUNT = 5;
+const MOCK_ITEM_NAME = "c타입 충전기 (1)";
+const MOCK_ITEM_CODE = "345ss2";
 const MOCK_DETAIL = {
   target: "건국대학교 재학생 혹은 휴학생",
   rentalPeriod: "3일",
@@ -93,7 +95,7 @@ const ItemManagementCard = () => {
             <div className="mb-4 flex w-full items-end justify-between gap-4">
               <ul className="min-w-0 flex-1 list-disc ml-5 text-12px text-neutral-gray-1 font-normal leading-[140%]">
                 <li>대상 : {MOCK_DETAIL.target}</li>
-                <li>대여 기간 : {MOCK_DETAIL.rentalPeriod}일</li>
+                <li>대여 기간 : {MOCK_DETAIL.rentalPeriod}</li>
                 <li>설명: {MOCK_DETAIL.description}</li>
                 <li>보증 물품 : {MOCK_DETAIL.guarantee}</li>
               </ul>
@@ -108,7 +110,12 @@ const ItemManagementCard = () => {
             {/* 구분선 아래 ItemStatusCard 목록 */}
             <div className="flex flex-col gap-1.5 border-t pt-6 border-neutral-gray-4/50 items-center">
               {MOCK_ITEM_STATUSES.map((status, index) => (
-                <ItemStatusCard key={index} status={status} />
+                <ItemStatusCard
+                  key={index}
+                  status={status}
+                  itemName={MOCK_ITEM_NAME}
+                  itemCode={MOCK_ITEM_CODE}
+                />
               ))}
             </div>
           </div>
