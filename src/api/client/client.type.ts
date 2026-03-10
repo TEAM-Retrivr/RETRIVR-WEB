@@ -20,7 +20,7 @@ export interface BorrowerInformationRequest {
   itemUnitId?: number; // Long, nullable. 개별 코드형 물품일 경우에만 사용
   name: string; // String, 필수. 대여자 이름
   phone?: string; // String, nullable. 대여자 전화번호
-  rentalFields: {
+  renterFields: {
     // JSON Object, 필수. 추가 대여자 정보 (자유 key-value, 입력값 그대로 전달)
     학과: string;
     학번: string;

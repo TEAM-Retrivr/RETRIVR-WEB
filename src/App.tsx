@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import TestPage from "./pages/TestPage";
+import { ModalTestPage } from "./pages/ModalTestPage";
 import LoginPage from "./pages/admin/LoginPage";
 import HomePage from "./pages/admin/HomePage";
 import LandingPage from "./pages/LandingPage";
@@ -54,6 +55,10 @@ function App() {
       <Routes>
         {/* 테스트 페이지 */}
         <Route path="/test" element={<TestPage />} />
+      </Routes>
+      <Routes>
+        {/* 테스트 페이지 */}
+        <Route path="/modal-test" element={<ModalTestPage />} />
       </Routes>
     </Router>
   );

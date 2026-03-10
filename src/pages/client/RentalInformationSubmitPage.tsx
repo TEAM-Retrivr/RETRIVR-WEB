@@ -66,7 +66,7 @@ const RentalInformationSubmitPage = () => {
       itemUnitId?: number;
       name: string;
       phone?: string;
-      rentalFields: {
+      renterFields: {
         학과: string;
         학번: string;
         보증물품: string;
@@ -76,7 +76,7 @@ const RentalInformationSubmitPage = () => {
       itemId,
       name,
       phone: phoneNumber.trim() || undefined,
-      rentalFields: {
+      renterFields: {
         학과: major.trim(),
         학번: studentId.trim(),
         보증물품: DEFAULT_GUARANTEED_GOODS,
