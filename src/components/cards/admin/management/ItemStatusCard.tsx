@@ -49,6 +49,13 @@ const ItemStatusCard = ({ status }: CardProps) => {
     rentalUnavailable: "대여 불가",
   };
 
+  // 상태에 따른 커서 스타일
+  const cursorByStatus: Record<CardProps["status"], string> = {
+    rentalAvailable: "cursor-pointer",
+    rentedOut: "",
+    rentalUnavailable: "cursor-pointer",
+  };
+
   return (
     <div className={`${baseBoxStyle} ${boxStyleByStatus[status]}`}>
       <div>
@@ -58,10 +65,10 @@ const ItemStatusCard = ({ status }: CardProps) => {
         <p className="text-10px font-normal">345ss2</p>
       </div>
       <button
-        className={`${baseItemStatusButtonStyle} ${itemStatusButtonStyle[status]}`}
+        className={`${baseItemStatusButtonStyle} ${itemStatusButtonStyle[status]} ${cursorByStatus[status]}`}
       >
         <p
-          className={`${baseItemStatus} ${itemStatusText[status]}`}
+          className={`${baseItemStatus} ${itemStatusText[status]} `}
         >{`${itemStatus[status]}`}</p>
       </button>
     </div>

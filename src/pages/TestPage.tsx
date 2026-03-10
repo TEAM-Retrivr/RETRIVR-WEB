@@ -10,6 +10,7 @@ import RentalAvailableItemCard from "../components/cards/client/RentalAvailableI
 import Header from "../components/Header";
 import type { ItemRequest } from "../types/item";
 import ItemStatusCard from "../components/cards/admin/management/ItemStatusCard";
+import ItemManagementCard from "../components/cards/admin/management/ItemManagementCard";
 export const DUMMY_ITEM_REQUESTS: ItemRequest[] = [
   {
     item: {
@@ -131,6 +132,7 @@ const TestPage = () => {
 
   return (
     <div className=" bg-neutral-white p-10 flex flex-col gap-5">
+      <ItemManagementCard></ItemManagementCard>
       <ItemStatusCard status="rentalAvailable"></ItemStatusCard>
       <ItemStatusCard status="rentedOut"></ItemStatusCard>
       <ItemStatusCard status="rentalUnavailable"></ItemStatusCard>

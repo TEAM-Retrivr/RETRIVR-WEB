@@ -6,6 +6,10 @@ const config: Config = {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
+      spacing: {
+        "25": "6.25rem", // 100px
+        "87.5": "21.875rem", // 350px
+      },
       screens: {
         xs: `${BREAKPOINTS.DESIGN_MOBILE}px`,
         md: `${BREAKPOINTS.TABLET}px`,
