@@ -1,6 +1,7 @@
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import { useAdminItemList } from "../../hooks/queries/useAdminQueries";
+import BlueButton from "../../components/BlueButton";
 
 const ItemManagementPage = () => {
   const { data, isLoading, error } = useAdminItemList();
@@ -43,6 +44,8 @@ const ItemManagementPage = () => {
             오른쪽 하단 버튼을 눌러 물품을 추가하세요
           </p>
         </div>
+        {/* 물품 추가 버튼 */}
+        <BlueButton option="addItem"></BlueButton>
       </Layout>
     );
   }
@@ -54,6 +57,8 @@ const ItemManagementPage = () => {
       <div className="flex flex-col items-center mx-6.5 my-8.5 gap-4">
         {/* TODO: 백엔드로부터 받아온 데이터 수만큼 ItemManagementCard.tsx map함수 이용해서 렌더링하기 */}
       </div>
+      {/* 물품 추가 버튼 */}
+      <BlueButton option="addItem"></BlueButton>
     </Layout>
   );
 };

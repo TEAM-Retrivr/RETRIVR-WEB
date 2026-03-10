@@ -4,7 +4,7 @@ import { MenuCard } from "../../components/cards/home/MenuCard";
 import { RentRequestCard } from "../../components/cards/admin/rental/RentRequestCard";
 import { HOME_MENUS } from "../../types/menu";
 import { useLoadHome } from "../../hooks/queries/useAuthQueries";
-
+import BlueButton from "../../components/BlueButton";
 interface RentRequestCardData {
   id: string;
   itemName: string;
@@ -121,13 +121,7 @@ const Home = () => {
         <MenuCard menu={HOME_MENUS[1]} />
       </div>
       {/* QR 코드 생성 버튼 */}
-      <button className=" hover-lift absolute bottom-[5.03%] right-[7.96%] w-[19.4%] max-w-[78px] h-[8.924%] max-h-[78px] cursor-pointer">
-        <img
-          src="/icons/home/QR.svg"
-          alt="QR 생성 버튼"
-          className="w-full max-w-[78px] h-screen max-h-[78px] border-none"
-        />
-      </button>
+      <BlueButton option="makeQR"></BlueButton>
     </Layout>
   );
 };
