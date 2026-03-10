@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { ItemRequest } from "../../../types/item";
-import { ProgressCircle } from "./ProgressCircle";
+import { ProgressCircle } from "../../ProgressCircle";
 import Button from "../../Button";
 
 interface RentalAvailableItemCardProps {
