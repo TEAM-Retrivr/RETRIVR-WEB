@@ -50,7 +50,10 @@ const ItemManagementPage = () => {
   // 등록된 물품이 있을 때: 물품 목록 렌더링
   return (
     <Layout>
-      <div> 로딩 중...</div>
+      <Header name=" 건국대학교 도서관자치위원회" pageName="물품 관리"></Header>
+      <div className="flex flex-col items-center mx-6.5 my-8.5 gap-4">
+        {/* TODO: 백엔드로부터 받아온 데이터 수만큼 ItemManagementCard.tsx map함수 이용해서 렌더링하기 */}
+      </div>
     </Layout>
   );
 };

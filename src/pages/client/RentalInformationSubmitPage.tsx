@@ -216,6 +216,29 @@ const RentalInformationSubmitPage = () => {
               ></ConsentSectionCard>
             </div>
           </div>
+          <CommonInput
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={11}
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+            placeholder="01012345678"
+            inputSize="large"
+          ></CommonInput>
+        </div>
+        <div>
+          <div className="text-neutral-gray-2 text-14px font-[700]">
+            <p className="inline">학과</p>
+            <p className="inline text-primary">*</p>
+          </div>
+          <CommonInput
+            type="text"
+            value={major}
+            onChange={(e) => setMajor(e.target.value)}
+            placeholder="공식 명칭을 사용해주세요. ex) 컴공(X), 컴퓨터공학부(O)"
+            inputSize="large"
+          ></CommonInput>
         </div>
         {/* 요청하기 영역 */}
         <div className="flex flex-col w-full items-center mt-13 mb-11 gap-1.5">
