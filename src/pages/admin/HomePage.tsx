@@ -1,7 +1,7 @@
 import { Layout } from "../../components/Layout";
 import { UserIcon } from "../../components/UserIcon";
 import { MenuCard } from "../../components/cards/home/MenuCard";
-import { RentRequestCard } from "../../components/cards/home/RentRequestCard";
+import { RentRequestCard } from "../../components/cards/admin/rental/RentRequestCard";
 import { HOME_MENUS } from "../../types/menu";
 import { useLoadHome } from "../../hooks/queries/useAuthQueries";
 

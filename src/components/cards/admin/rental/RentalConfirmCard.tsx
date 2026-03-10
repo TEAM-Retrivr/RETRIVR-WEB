@@ -1,5 +1,5 @@
-import Button from "../Button";
-import type { RentalRequest } from "../../types/rental";
+import Button from "../../../Button";
+import type { RentalRequest } from "../../../../types/rental";
 // 대여 확인 카드에 들어갈 값
 
 interface RentalConfirmCardProps {

@@ -1,15 +1,16 @@
 import { useRef, useState, type TouchEvent } from "react";
 import { MenuCard } from "../components/cards/home/MenuCard";
-import { RentRequestCard } from "../components/cards/home/RentRequestCard";
-import ReturnConfirmCard from "../components/cards/ReturnConfirmCard";
-import StockCheckCard from "../components/cards/StockCheckCard";
+
+import ReturnConfirmCard from "../components/cards/admin/return/ReturnConfirmCard";
+import StockCheckCard from "../components/cards/admin/management/StockCheckCard";
 import { HOME_MENUS } from "../types/menu";
 import CommonInput from "../components/CommonInput";
 import RentalStatusToggle from "../components/RentalStatusToggle";
 import RentalAvailableItemCard from "../components/cards/client/RentalAvailableItemCard";
 import Header from "../components/Header";
 import type { ItemRequest } from "../types/item";
-
+import ItemStatusCard from "../components/cards/admin/management/ItemStatusCard";
+import ItemManagementCard from "../components/cards/admin/management/ItemManagementCard";
 export const DUMMY_ITEM_REQUESTS: ItemRequest[] = [
   {
     item: {
@@ -131,6 +132,22 @@ const TestPage = () => {
 
   return (
     <div className=" bg-neutral-white p-10 flex flex-col gap-5">
+      <ItemManagementCard></ItemManagementCard>
+      <ItemStatusCard
+        status="rentalAvailable"
+        itemName="c타입 충전기 (1)"
+        itemCode="345ss2"
+      ></ItemStatusCard>
+      <ItemStatusCard
+        status="rentedOut"
+        itemName="c타입 충전기 (2)"
+        itemCode="345ss2"
+      ></ItemStatusCard>
+      <ItemStatusCard
+        status="rentalUnavailable"
+        itemName="실험복"
+        itemCode=""
+      ></ItemStatusCard>
       <h1 className="text-xl font-bold">반납 연체 확인 컴포넌트 테스트</h1>
       <ReturnConfirmCard></ReturnConfirmCard>
       <StockCheckCard status="available"></StockCheckCard>
@@ -145,14 +162,7 @@ const TestPage = () => {
           pageName="대여 요청"
         ></Header>
       </div>
-
       <h1 className="text-xl font-bold">홈화면 카드 컴포넌트 테스트</h1>
-      <RentRequestCard
-        itemName="8핀 충전기"
-        count="(2/5)"
-        applicant="조윤아 | 동물자원학과"
-        time="2026-01-21 17:00"
-      />
       <MenuCard menu={HOME_MENUS[0]} />
       <h1 className="text-xl font-bold">입력창 컴포넌트 테스트</h1>
       {/* 1. 일반 텍스트 입력 */}
@@ -171,7 +181,6 @@ const TestPage = () => {
       <CommonInput placeholder="example@gmail.com" type="email" />
       <h1 className="text-xl font-bold">토글 컴포넌트 테스트</h1>
       <RentalStatusToggle />
-
       <h1 className="text-xl font-bold">캐러셀 카드 테스트</h1>
       <div className="flex justify-center">
         {/* 프레임 영역 (기기 틀 느낌) */}
@@ -195,14 +204,7 @@ const TestPage = () => {
                   className="flex justify-center mb-4"
                   style={{ height: CARD_BLOCK_HEIGHT }}
                 >
-                  <div className="flex items-center justify-center w-full">
-                    <RentRequestCard
-                      itemName={req.itemName}
-                      count={req.count}
-                      applicant={req.applicant}
-                      time={req.time}
-                    />
-                  </div>
+                  <div className="flex items-center justify-center w-full"></div>
                 </div>
               ))}
             </div>

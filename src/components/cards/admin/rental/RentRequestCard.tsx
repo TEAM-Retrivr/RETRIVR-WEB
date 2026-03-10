@@ -1,4 +1,4 @@
-import Button from "../../Button";
+import Button from "../../../Button";
 
 interface RentRequestCardProps {
   itemName: string; // '대여 요청한 기자재명'
