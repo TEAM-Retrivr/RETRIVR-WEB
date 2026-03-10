@@ -1,5 +1,5 @@
 import React from "react";
-import { ProgressCircle } from "../ProgressCircle";
+import { ProgressCircle } from "../../../ProgressCircle";
 
 interface CardProps {
   status: "available" | "unavailable";

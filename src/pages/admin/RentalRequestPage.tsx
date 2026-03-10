@@ -1,6 +1,6 @@
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
-import RentalConfirmCard from "../../components/cards/RentalConfirmCard";
+import RentalConfirmCard from "../../components/cards/admin/rental/RentalConfirmCard";
 import type { RentalRequest } from "../../types/rental";
 
 const sampleRental: RentalRequest = {
