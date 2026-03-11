@@ -61,7 +61,7 @@ const ClientHome = () => {
         </div>
       </div>
       {/* 화면 하단 영역 - 대여 가능 물품 리스트 */}
-      <div className="flex flex-col font-[Pretendard] pt-10 px-6.5 gap-5">
+      <div className="flex flex-col font-[Pretendard] px-6.5 py-10 gap-5">
         <p className="text-18px text-secondary-2 opacity-[0.9] font-[700]">
           대여 가능 물품
         </p>

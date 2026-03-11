@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { ItemRequest } from "../../../types/item";
 import { ProgressCircle } from "../../ProgressCircle";
 import Button from "../../Button";
@@ -10,8 +11,9 @@ interface RentalAvailableItemCardProps {
 const RentalAvailableItemCard = ({
   itemInfo,
 }: RentalAvailableItemCardProps) => {
-  const { item, nextCursor } = itemInfo;
+  const { item } = itemInfo;
   const [isExpanded, setIsExpanded] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <div
@@ -63,7 +65,22 @@ const RentalAvailableItemCard = ({
               <Button variant="outline" size="md">
                 취소
               </Button>
-              <Button variant="primary" size="md">
+              <Button
+                variant="primary"
+                size="md"
+                onClick={() => {
+                  navigate("/client-rental-information-submit", {
+                    state: {
+                      itemId: item.itemId,
+                      // TODO: 개별 코드형 물품일 때 itemUnitId 전달 필요 시 여기에 추가
+                      name: item.name,
+                      rentalDuration: item.rentalDuration,
+                      guaranteedGoods: item.guaranteedGoods,
+                      description: item.description,
+                    },
+                  });
+                }}
+              >
                 대여하기
               </Button>
             </div>

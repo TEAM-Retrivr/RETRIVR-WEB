@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+@utility no-scrollbar {
+  /* Firefox */
+  scrollbar-width: none;
+  /* IE, Edge */
+  -ms-overflow-style: none;
+
+  /* Chrome, Safari, Opera */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @utility hover-lift {
   transition-property: all;
   transition-duration: 300ms;

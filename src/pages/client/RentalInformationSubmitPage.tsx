@@ -25,9 +25,17 @@ const RentalInformationSubmitPage = () => {
   const state = location.state as {
     itemId?: number;
     itemUnitId?: number;
+    name?: string;
+    rentalDuration?: number;
+    guaranteedGoods?: string;
+    description?: string;
   } | null;
   const itemId = state?.itemId ?? DEFAULT_ITEM_ID;
   const itemUnitId = state?.itemUnitId; // 개별 코드형 물품일 때만 전달
+  const itemName = state?.name ?? "대여 물품";
+  const rentalDuration = state?.rentalDuration ?? 0;
+  const guaranteedGoods = state?.guaranteedGoods ?? "";
+  const description = state?.description ?? "-";
 
   // 대여자 이름 : string
   const [name, setName] = useState("");
@@ -98,22 +106,23 @@ const RentalInformationSubmitPage = () => {
           <div className="pt-7.25 pl-8 pb-7.75">
             <div className="flex flex-col">
               <p className="text-neutral-gray-1 text-24px font-[700]">
-                c타입 충전기
+                {itemName}
               </p>
               <p className="text-neutral-gray-2 text-16px font-[500] leading-none">
-                c타입 충전기(1)
+                {itemName}(1)
               </p>
             </div>
             <ul className="text-12px text-neutral-gray-3 font-[400] mt-4.25 leading-[130%]">
               <li>
-                대여 기간 : <span className="text-primary">3일</span>
+                대여 기간 :{" "}
+                <span className="text-primary">{rentalDuration}일</span>
               </li>
               <li>
                 보증 물품 :{" "}
-                <span className="text-primary">학생증 또는 신분증</span>
+                <span className="text-primary">{guaranteedGoods}</span>
               </li>
               <li>
-                물품 설명 : <span>어댑터 미포함</span>
+                물품 설명 : <span>{description}</span>
               </li>
             </ul>
           </div>
@@ -205,11 +214,13 @@ const RentalInformationSubmitPage = () => {
                 checked={firstConsentChecked}
                 onCheckedChange={setFirstConsentChecked}
               ></ConsentSectionCard>
-              <ConsentSectionCard
-                label={label2 + "대여물품" + label3}
-                checked={secondConsentChecked}
-                onCheckedChange={setSecondConsentChecked}
-              ></ConsentSectionCard>
+              {guaranteedGoods != "" && (
+                <ConsentSectionCard
+                  label={label2 + guaranteedGoods + label3}
+                  checked={secondConsentChecked}
+                  onCheckedChange={setSecondConsentChecked}
+                ></ConsentSectionCard>
+              )}
             </div>
           </div>
         </div>
