@@ -61,19 +61,9 @@ const RentalInformationSubmitPage = () => {
   const { mutate: sendRentalRequest, isPending } = useSendRentalRequest();
 
   const handleSendRentalRequest = () => {
-    const body: {
-      itemId: number;
-      itemUnitId?: number;
-      name: string;
-      phone?: string;
-      renterFields: {
-        학과: string;
-        학번: string;
-        보증물품: string;
-        요청사항?: string;
-      };
-    } = {
-      itemId,
+    // POST /api/public/v1/items/{itemId}/rentals 의 Request Body
+    const body = {
+      itemUnitId,
       name,
       phone: phoneNumber.trim() || undefined,
       renterFields: {
@@ -83,16 +73,22 @@ const RentalInformationSubmitPage = () => {
         ...(requestment.trim() && { 요청사항: requestment.trim() }),
       },
     };
-    if (itemUnitId != null) body.itemUnitId = itemUnitId;
-    sendRentalRequest(body, {
-      onSuccess: () => {
-        alert("대여 요청이 접수되었습니다.");
-        navigate("/client-home");
+
+    sendRentalRequest(
+      {
+        itemId,
+        ...body,
       },
-      onError: () => {
-        alert("대여 요청에 실패했습니다. 다시 시도해주세요.");
+      {
+        onSuccess: () => {
+          alert("대여 요청이 접수되었습니다.");
+          navigate("/client-home");
+        },
+        onError: () => {
+          alert("대여 요청에 실패했습니다. 다시 시도해주세요.");
+        },
       },
-    });
+    );
   };
   return (
     <Layout>
@@ -216,29 +212,6 @@ const RentalInformationSubmitPage = () => {
               ></ConsentSectionCard>
             </div>
           </div>
-          <CommonInput
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            maxLength={11}
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-            placeholder="01012345678"
-            inputSize="large"
-          ></CommonInput>
-        </div>
-        <div>
-          <div className="text-neutral-gray-2 text-14px font-[700]">
-            <p className="inline">학과</p>
-            <p className="inline text-primary">*</p>
-          </div>
-          <CommonInput
-            type="text"
-            value={major}
-            onChange={(e) => setMajor(e.target.value)}
-            placeholder="공식 명칭을 사용해주세요. ex) 컴공(X), 컴퓨터공학부(O)"
-            inputSize="large"
-          ></CommonInput>
         </div>
         {/* 요청하기 영역 */}
         <div className="flex flex-col w-full items-center mt-13 mb-11 gap-1.5">

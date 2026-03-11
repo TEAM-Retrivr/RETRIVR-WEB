@@ -35,12 +35,16 @@ export const useItemList = ({
 };
 
 // 2. 대여 요청 생성 API (POST)
+// - 클라이언트(대여자) 단에서 대여 정보 입력 후 호출
+// - Path Parameter: itemId (대여하려는 물품 ID)
+// - Request Body: BorrowerInformationRequest
 export const useSendRentalRequest = () => {
   return useMutation({
     mutationFn: ({
       itemId,
       ...data
     }: { itemId: number } & BorrowerInformationRequest) =>
+      // itemId는 URL Path로, 나머지 필드는 Body로 전달
       sendRentalRequest(itemId, data),
     onSuccess: () => {
       console.log("인증 성공");

@@ -1,10 +1,18 @@
-import React from "react";
 import { ProgressCircle } from "../../../ProgressCircle";
 
 interface CardProps {
-  status: "available" | "unavailable";
+  itemName: string;
+  availableQuantity: number;
+  totalQuantity: number;
+  isRentalAvailable: boolean;
 }
-const StockCheckCard = ({ status }: CardProps) => {
+
+const StockCheckCard = ({
+  itemName,
+  availableQuantity,
+  totalQuantity,
+  isRentalAvailable,
+}: CardProps) => {
   const baseBoxStyle =
     "flex justify-between items-center w-84.5 h-22.5 font-[Pretendard] rounded-[16px] shadow-item-card cursor-pointer box-border pl-7 pr-7.5 py-4";
   const availableBoxStyle = "bg-neutral-white ";
@@ -16,17 +24,20 @@ const StockCheckCard = ({ status }: CardProps) => {
   return (
     <div
       className={`${baseBoxStyle} ${
-        status === "available" ? availableBoxStyle : unavailableBoxStyle
+        isRentalAvailable ? availableBoxStyle : unavailableBoxStyle
       }`}
     >
       <p
         className={`${baseTextStyle} ${
-          status === "available" ? availableTextStyle : unavailableTextStyle
+          isRentalAvailable ? availableTextStyle : unavailableTextStyle
         }`}
       >
-        c타입 충전기
+        {itemName}
       </p>
-      <ProgressCircle available={3} total={5}></ProgressCircle>
+      <ProgressCircle
+        available={availableQuantity}
+        total={totalQuantity}
+      ></ProgressCircle>
     </div>
   );
 };
