@@ -2,9 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import {
   requestAdminItemList,
   requestAdminRentalItemSummaryList,
+  requestAdminOverdueRentalList,
 } from "../../api/admin/admin.api";
 
 // 관리자 물품 목록 조회 (관리자 전용 API 사용)
+// - 물품 관리 페이지에서 사용
+// - 서버 캐시 키: ["adminItems"]
 export const useAdminItemList = () => {
   return useQuery({
     queryKey: ["adminItems"],
@@ -14,10 +17,25 @@ export const useAdminItemList = () => {
 };
 
 // 반납 화면에서의 물품 리스트 조회
+// - 반납 관리 페이지 하단 "물품별 관리" 영역에서 사용
+// - size 기본값 50개
+// - 서버 캐시 키: ["adminRentalItemSummary"]
 export const useAdminRentalItemSummaryList = () => {
   return useQuery({
     queryKey: ["adminRentalItemSummary"],
     queryFn: () => requestAdminRentalItemSummaryList({ size: 50 }),
+    retry: false,
+  });
+};
+
+// 연체된 물품 리스트 조회
+// - 반납 관리 페이지 상단 "반납 연체 확인" 영역에서 사용
+// - size 기본값 20개
+// - 서버 캐시 키: ["adminOverdueRentals"]
+export const useAdminOverdueRentalList = () => {
+  return useQuery({
+    queryKey: ["adminOverdueRentals"],
+    queryFn: () => requestAdminOverdueRentalList({ size: 20 }),
     retry: false,
   });
 };
