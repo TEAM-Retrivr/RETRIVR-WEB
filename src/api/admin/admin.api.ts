@@ -23,7 +23,7 @@ export const requestAdminItemList =
 // - size: 한 번에 가져올 아이템 개수
 // GET /api/admin/v1/items/rental-summary
 export interface AdminRentalItemSummaryListParams {
-  cursor?: number; // 마지막 조회된 rentalId, 다음 페이지 조회 시에 사용
+  cursor?: number; // 마지막 조회된 itemId, 다음 페이지 조회 시에 사용
   size?: number;
 }
 
