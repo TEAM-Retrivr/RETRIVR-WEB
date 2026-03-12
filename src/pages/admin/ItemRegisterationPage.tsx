@@ -3,6 +3,8 @@ import Header from "../../components/Header";
 import Button from "../../components/Button";
 import CommonInput from "../../components/CommonInput";
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useCreateAdminItem } from "../../hooks/queries/useAdminQueries";
 
 type RenterFieldKey = "name" | "studentNumber" | "phone" | "major";
 
@@ -41,6 +43,8 @@ const CustomCheckbox = ({
 };
 
 const ItemRegisterationPage = () => {
+  const navigate = useNavigate();
+  const { mutate: createItem, isPending } = useCreateAdminItem();
   // 물품 기본 정보
   const [itemName, setItemName] = useState("");
   const [description, setDescription] = useState("");
@@ -78,6 +82,59 @@ const ItemRegisterationPage = () => {
     { key: "studentNumber", label: "학번" },
     { key: "phone", label: "연락처" },
   ];
+
+  // 관리자 물품 등록 API 호출
+  const handleCreateItem = () => {
+    if (!isFormValid) return;
+
+    const borrowerRequirements = [
+      ...renterRequiredFields.map((f) => ({
+        fieldKey: f.key,
+        label: f.label,
+        fieldType: "TEXT",
+        required: true,
+      })),
+      ...(optionalMajorEnabled
+        ? [
+            {
+              fieldKey: "major",
+              label: "학과",
+              fieldType: "TEXT",
+              required: false,
+            },
+          ]
+        : []),
+      ...(extraRenterFieldLabel.trim()
+        ? [
+            {
+              fieldKey: extraRenterFieldLabel.trim(),
+              label: extraRenterFieldLabel.trim(),
+              fieldType: "TEXT",
+              required: false,
+            },
+          ]
+        : []),
+    ];
+
+    createItem(
+      {
+        name: itemName.trim(),
+        description: description.trim(),
+        rentalDuration: rentalDurationDays,
+        isActive: true,
+        borrowerRequirements,
+      },
+      {
+        onSuccess: () => {
+          alert("물품이 등록되었습니다.");
+          navigate("/item-manage");
+        },
+        onError: () => {
+          alert("물품 등록에 실패했습니다. 다시 시도해주세요.");
+        },
+      },
+    );
+  };
 
   return (
     <Layout>
@@ -285,9 +342,15 @@ const ItemRegisterationPage = () => {
         </div>
 
         {/* 등록 버튼 */}
+        {/* TODO: 등록 성공 시 확인 모달 or 확인 화면 띄운 후 물품 관리 페이지(item-manage)로 이동 */}
         <div className="flex justify-center pt-2">
-          <Button variant="primary" size="lg" disabled={!isFormValid}>
-            물품 등록하기
+          <Button
+            variant="primary"
+            size="lg"
+            disabled={!isFormValid || isPending}
+            onClick={handleCreateItem}
+          >
+            {isPending ? "등록 중..." : "물품 등록하기"}
           </Button>
         </div>
       </div>
