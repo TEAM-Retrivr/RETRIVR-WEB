@@ -2,8 +2,11 @@ import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import { useAdminItemList } from "../../hooks/queries/useAdminQueries";
 import BlueButton from "../../components/BlueButton";
+import { useNavigate } from "react-router-dom";
 
 const ItemManagementPage = () => {
+  const navigate = useNavigate();
+
   const { data, isLoading, error } = useAdminItemList();
 
   const items = data?.items ?? [];
@@ -45,7 +48,10 @@ const ItemManagementPage = () => {
           </p>
         </div>
         {/* 물품 추가 버튼 */}
-        <BlueButton option="addItem"></BlueButton>
+        <BlueButton
+          option="addItem"
+          onClick={() => navigate("/item-register")}
+        ></BlueButton>
       </Layout>
     );
   }
@@ -58,7 +64,10 @@ const ItemManagementPage = () => {
         {/* TODO: 백엔드로부터 받아온 데이터 수만큼 ItemManagementCard.tsx map함수 이용해서 렌더링하기 */}
       </div>
       {/* 물품 추가 버튼 */}
-      <BlueButton option="addItem"></BlueButton>
+      <BlueButton
+        option="addItem"
+        onClick={() => navigate("/item-register")}
+      ></BlueButton>
     </Layout>
   );
 };
