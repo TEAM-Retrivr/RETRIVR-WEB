@@ -3,6 +3,7 @@ import {
   requestAdminItemList,
   requestAdminRentalItemSummaryList,
   requestAdminOverdueRentalList,
+  requestAdminRentalRequestList,
 } from "../../api/admin/admin.api";
 
 // 관리자 물품 목록 조회 (관리자 전용 API 사용)
@@ -36,6 +37,18 @@ export const useAdminOverdueRentalList = () => {
   return useQuery({
     queryKey: ["adminOverdueRentals"],
     queryFn: () => requestAdminOverdueRentalList({ size: 20 }),
+    retry: false,
+  });
+};
+
+// 대여 요청 목록 조회
+// - 관리자 대여 요청 확인 페이지에서 사용
+// - size 기본값 15개
+// - 서버 캐시 키: ["adminRentalRequests"]
+export const useAdminRentalRequestList = () => {
+  return useQuery({
+    queryKey: ["adminRentalRequests"],
+    queryFn: () => requestAdminRentalRequestList({ size: 15 }),
     retry: false,
   });
 };
