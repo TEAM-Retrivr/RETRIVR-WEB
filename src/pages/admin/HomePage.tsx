@@ -1,5 +1,5 @@
 import { Layout } from "../../components/Layout";
-import { UserIcon } from "../../components/UserIcon";
+import UserIcon from "../../components/UserIcon";
 import { MenuCard } from "../../components/cards/home/MenuCard";
 import { RentRequestCard } from "../../components/cards/admin/rental/RentRequestCard";
 import { HOME_MENUS } from "../../types/menu";
@@ -66,11 +66,7 @@ const Home = () => {
         </div>
         <div className="flex w-full max-h-[72px] mt-[50.64px]">
           {/* 프로필 사진 */}
-          {UserProfile.profileImageUrl ? (
-            <img src={UserProfile.profileImageUrl} alt="프로필 사진" />
-          ) : (
-            <div />
-          )}
+          <UserIcon></UserIcon>
           {/* 주소 및 단체 이름 */}
           <div className="pl-[12px] pt-[12.68px] gap-[4px] font-[Pretendard] leading-none flex flex-col">
             <span className="text-neutral-dark text-start text-[12px] font-[400]">

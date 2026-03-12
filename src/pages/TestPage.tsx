@@ -1,8 +1,5 @@
 import { useRef, useState, type TouchEvent } from "react";
 import { MenuCard } from "../components/cards/home/MenuCard";
-
-import ReturnConfirmCard from "../components/cards/admin/return/ReturnConfirmCard";
-import StockCheckCard from "../components/cards/admin/management/StockCheckCard";
 import { HOME_MENUS } from "../types/menu";
 import CommonInput from "../components/CommonInput";
 import RentalStatusToggle from "../components/RentalStatusToggle";
