@@ -19,7 +19,7 @@ const RentalRequestPage = () => {
   return (
     <Layout>
       <Header name="건국대학교 도서관자치위원회" pageName="대여요청"></Header>
-      <div className="flex flex-col w-full items-center my-8.5 gap-5 overflow-y-scroll overscroll-none scrollbar-hide">
+      <div className="flex flex-col w-full items-center my-8.5 gap-5 overflow-y-auto no-scrollbar">
         <RentalConfirmCard rental={sampleRental}></RentalConfirmCard>
         <RentalConfirmCard rental={sampleRental}></RentalConfirmCard>
         <RentalConfirmCard rental={sampleRental}></RentalConfirmCard>

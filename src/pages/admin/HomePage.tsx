@@ -5,6 +5,7 @@ import { RentRequestCard } from "../../components/cards/admin/rental/RentRequest
 import { HOME_MENUS } from "../../types/menu";
 import { useLoadHome } from "../../hooks/queries/useAuthQueries";
 import BlueButton from "../../components/BlueButton";
+import { useNavigate } from "react-router-dom";
 interface RentRequestCardData {
   id: string;
   itemName: string;
@@ -14,6 +15,7 @@ interface RentRequestCardData {
 }
 
 const Home = () => {
+  const navigate = useNavigate();
   // 대여 요청
   const { data, isLoading, error } = useLoadHome();
   // 최근 대여 요청 개수
@@ -89,7 +91,11 @@ const Home = () => {
             <p className="text-[#444]">건</p>
           </div>
           <button className="transition duration-300 ease-in-out hover:-translate-y-1 hover:scale-101 object-fit cursor-pointer pr-[7.099%]">
-            <img src="/icons/home/right-arrow.svg" alt="더보기 버튼" />
+            <img
+              src="/icons/home/right-arrow.svg"
+              alt="더보기 버튼"
+              onClick={() => navigate("/rental-request")}
+            />
           </button>
         </div>
         <div>
