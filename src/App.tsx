@@ -10,6 +10,7 @@ import ItemManagementPage from "./pages/admin/ItemManagementPage";
 import ReturnManagementPage from "./pages/admin/ReturnManagementPage";
 import ClientHomePage from "./pages/client/ClientHomePage";
 import RentalInformationSubmitPage from "./pages/client/RentalInformationSubmitPage";
+import RenterSearchPage from "./pages/client/RenterSearchPage";
 function App() {
   return (
     <Router>
@@ -40,6 +41,10 @@ function App() {
       <Routes>
         {/* 대여 요청 확인 페이지 */}
         <Route path="/rental-request" element={<RentalRequestPage />} />
+      </Routes>
+      <Routes>
+        {/* 대여자 대여지 검색 페이지 */}
+        <Route path="/client-search" element={<RenterSearchPage />} />
       </Routes>
       <Routes>
         {/* 대여자 홈 페이지 */}

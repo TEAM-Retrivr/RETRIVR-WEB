@@ -26,7 +26,11 @@ const LandingPage = () => {
       {/* 버튼 영역 - 대여하기, 관리자로 로그인 */}
       <div className="flex flex-col justify-center items-center w-full mt-auto mb-[12%] gap-2">
         {/* TODO: 라우팅 경로 짜기 */}
-        <Button variant="primary" size="lg" onClick={() => navigate("")}>
+        <Button
+          variant="primary"
+          size="lg"
+          onClick={() => navigate("/client-search")}
+        >
           대여하기
         </Button>
         {/* 관리자 로그인 버튼 : /login 으로 이동 */}

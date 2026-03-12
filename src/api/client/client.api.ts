@@ -3,6 +3,7 @@ import type {
   BorrowerInformationRequest,
   BorrowerInformationResponse,
   ItemResponse,
+  OrganizationSearchResponse,
 } from "./client.type";
 
 // 1. 대여지 소유 물품 목록 조회 (GET)
@@ -31,6 +32,26 @@ export const sendRentalRequest = async (
   const response = await apiClient.post<BorrowerInformationResponse>(
     `/api/public/v1/items/${itemId}/rentals`,
     data,
+  );
+  return response.data;
+};
+
+// 3. 대여지 검색 (GET)
+// 엔드포인트 : /api/public/v1/organizations/search
+// Query Parameter :
+// - keyword: string (required)  검색 키워드
+// - cursor?: string              인코딩된 복합 커서 (다음 페이지 조회용)
+// - size?: number                페이지 크기 (기본값 15)
+export const searchOrganizations = async (params: {
+  keyword: string;
+  cursor?: string | null;
+  size?: number;
+}): Promise<OrganizationSearchResponse> => {
+  const response = await apiClient.get<OrganizationSearchResponse>(
+    "/api/public/v1/organizations/search",
+    {
+      params,
+    },
   );
   return response.data;
 };

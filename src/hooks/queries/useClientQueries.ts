@@ -2,10 +2,12 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   requestItemList,
   sendRentalRequest,
+  searchOrganizations,
 } from "../../api/client/client.api";
 import type {
   BorrowerInformationRequest,
   ItemResponse,
+  OrganizationSearchResponse,
 } from "../../api/client/client.type";
 
 interface UseItemListParams {
@@ -52,5 +54,24 @@ export const useSendRentalRequest = () => {
     onError: (error: any) => {
       console.log("인증 실패", error);
     },
+  });
+};
+
+// 3. 대여지 검색 API (GET)
+// - 클라이언트(대여자) 홈 진입 전에 대여지를 선택하는 검색 페이지에서 사용
+// - keyword가 비어 있으면 요청을 보내지 않는다(enabled 조건)
+// - cursor 파라미터는 이후 무한 스크롤/페이지네이션 구현 시 확장 가능
+export const useOrganizationSearch = (keyword: string) => {
+  const trimmed = keyword.trim();
+
+  return useQuery<OrganizationSearchResponse>({
+    queryKey: ["clientOrganizationsSearch", trimmed],
+    queryFn: () =>
+      searchOrganizations({
+        keyword: trimmed,
+        size: 15,
+      }),
+    enabled: trimmed.length > 0, // 검색어가 있을 때만 호출
+    retry: false,
   });
 };
