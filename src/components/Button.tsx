@@ -29,8 +29,10 @@ const Button = ({
   type,
   ...props
 }: ButtonProps) => {
+  const { disabled } = props;
+
   const baseStyles =
-    "flex items-center justify-center font-[Pretendard] font-bold cursor-pointer";
+    "flex items-center justify-center font-[Pretendard] font-bold";
 
   const variantStyles: Record<"primary" | "gray" | "outline", string> = {
     primary: "bg-primary text-neutral-white hover:bg-secondary-2",
@@ -46,12 +48,19 @@ const Button = ({
     lg: "w-full max-w-[335px] min-h-[45px] rounded-large text-18px",
   };
 
+  const disabledStyles =
+    "bg-neutral-gray-4 text-neutral-white cursor-not-allowed";
+  const enabledCursor = "cursor-pointer";
+
   return (
     <button
-      onClick={onClick} // 전달받은 클릭 핸들러를 연결 -> 각 페이지별로 필요한 이벤트 리스너 이름 넣으면 됨
+      // disabled 상태일 때는 클릭 이벤트를 막기 위해 onClick 제거
+      onClick={disabled ? undefined : onClick}
       type={type ?? "button"} // 버튼의 타입
       {...props} // 나머지 속성(type, disabled 등)을 한꺼번에 전달
-      className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className ?? ""}`}
+      className={`${baseStyles} ${
+        disabled ? disabledStyles : `${variantStyles[variant]} ${enabledCursor}`
+      } ${sizeStyles[size]} ${className ?? ""}`}
     >
       {children}
     </button>

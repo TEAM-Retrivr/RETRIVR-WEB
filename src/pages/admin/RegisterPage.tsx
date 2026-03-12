@@ -35,6 +35,9 @@ const RegisterPage = () => {
   // 이메일: string
   const [email, setEmail] = useState("");
 
+  // 인증번호 전송 버튼이 한 번이라도 눌렸는지 여부
+  const [hasRequestedCode, setHasRequestedCode] = useState(false);
+
   // 인증 유효시간: number (현재 600초로 설정)
   const [timeLeft, setTimeLeft] = useState(0);
 
@@ -66,6 +69,7 @@ const RegisterPage = () => {
           alert("이메일로 인증 코드가 전송되었습니다.");
           setTimeLeft(data.expiresInSeconds);
           setIsTimerActive(true);
+          setHasRequestedCode(true); // 최초/재전송 여부 표시
         },
         onError: () => {
           alert("인증 코드 전송에 실패했습니다. 다시 시도해주세요.");
@@ -215,9 +219,15 @@ const RegisterPage = () => {
               variant="primary"
               size="sm"
               onClick={handleSendCode}
-              disabled={isPending || isVerified} // 인증 완료 시 버튼 비활성화
+              disabled={
+                email.trim() === "" || isPending || isVerified || isTimerActive
+              } // 이메일 미입력 또는 인증 완료 시 버튼 비활성화
             >
-              {isPending ? "전송 중 ..." : "인증번호 전송"}
+              {isPending
+                ? "전송 중 ..."
+                : hasRequestedCode
+                  ? "재전송"
+                  : "인증번호 전송"}
             </Button>
           </div>
           {/* 인증 번호 확인 영역 */}
