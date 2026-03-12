@@ -36,3 +36,25 @@ export interface BorrowerInformationResponse {
   itemUnitId: number; // 요청에 연결된 물품 고유번호 ID (선택사항)
   requestedAt: string; // 대여 요청 생성 시각
 }
+
+// 3. 대여지 검색
+// 3-1. 대여지 검색 응답 바디
+// GET /api/public/v1/organizations/search
+export interface OrganizationSearchItem {
+  organizationId: number; // 대여지(단체) ID
+  name: string; // 대여지 이름
+  imageURL: string; // 대여지 프로필 이미지 URL
+}
+
+export interface OrganizationSearchResponse {
+  organizations: OrganizationSearchItem[]; // 검색 결과 목록
+  nextCursor?: string; // 다음 페이지 조회용 커서 (없으면 더 이상 페이지 없음)
+}
+
+// 3-2. 대여지 검색 에러 응답 바디 (공통 형태)
+export interface OrganizationSearchErrorResponse {
+  status: string; // 예: "400_BAD_REQUEST"
+  code: number; // 예: 3000
+  message: string; // 예: "단체 찾기 요청 키워드가 없습니다."
+  detail?: string;
+}
