@@ -221,7 +221,7 @@ const RegisterPage = () => {
               onClick={handleSendCode}
               disabled={
                 email.trim() === "" || isPending || isVerified || isTimerActive
-              } // 이메일 미입력 또는 인증 완료 시 버튼 비활성화
+              } // 이메일 미입력 or 인증 완료 or 인증 코드 유효시간 남았을 때 버튼 비활성화
             >
               {isPending
                 ? "전송 중 ..."
