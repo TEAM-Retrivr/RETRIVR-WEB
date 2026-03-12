@@ -61,3 +61,26 @@ export interface AdminOverdueRentalListResponse {
   canSendOverdueSms: boolean;
   nextCursor?: number;
 }
+
+// 대여 요청 목록 조회 응답
+// GET /api/admin/v1/rentals/requests
+// 관리자 대여 요청 확인 페이지에서 사용
+export interface AdminRentalRequestItem {
+  rentalId: number;
+  itemId: number;
+  itemName: string;
+  itemUnitId: number;
+  itemUnitCode: string;
+  totalQuantity: number;
+  availableQuantity: number;
+  borrowerName: string;
+  borrowerMajor: string;
+  borrowerStudentNumber: string;
+  guaranteedGoods: string;
+  requestedAt: string;
+}
+
+export interface AdminRentalRequestListResponse {
+  requests: AdminRentalRequestItem[];
+  nextCursor?: number;
+}

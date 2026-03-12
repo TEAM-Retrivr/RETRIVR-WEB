@@ -2,6 +2,7 @@ import type {
   AdminItemListResponse,
   AdminRentalItemSummaryResponse,
   AdminOverdueRentalListResponse,
+  AdminRentalRequestListResponse,
 } from "./admin.type";
 import { apiClient } from "../core";
 
@@ -52,6 +53,26 @@ export const requestAdminOverdueRentalList = async (
 ): Promise<AdminOverdueRentalListResponse> => {
   const response = await apiClient.get<AdminOverdueRentalListResponse>(
     "/api/admin/v1/rentals/overdue",
+    { params },
+  );
+  return response.data;
+};
+
+// 대여 요청 목록 조회
+// - 관리자 대여 요청 확인 페이지에서 사용
+// - cursor: 마지막으로 조회된 rentalId (다음 페이지 조회 시 사용)
+// - size: 한 번에 가져올 대여 요청 수
+// GET /api/admin/v1/rentals/requests
+export interface AdminRentalRequestListParams {
+  cursor?: number;
+  size?: number;
+}
+
+export const requestAdminRentalRequestList = async (
+  params?: AdminRentalRequestListParams,
+): Promise<AdminRentalRequestListResponse> => {
+  const response = await apiClient.get<AdminRentalRequestListResponse>(
+    "/api/admin/v1/rentals/requests",
     { params },
   );
   return response.data;
