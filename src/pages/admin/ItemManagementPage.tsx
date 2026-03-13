@@ -3,6 +3,7 @@ import Header from "../../components/Header";
 import { useAdminItemList } from "../../hooks/queries/useAdminQueries";
 import BlueButton from "../../components/BlueButton";
 import { useNavigate } from "react-router-dom";
+import ItemManagementCard from "../../components/cards/admin/management/ItemManagementCard";
 
 const ItemManagementPage = () => {
   const navigate = useNavigate();
@@ -61,7 +62,17 @@ const ItemManagementPage = () => {
     <Layout>
       <Header name=" 건국대학교 도서관자치위원회" pageName="물품 관리"></Header>
       <div className="flex flex-col items-center mx-6.5 my-8.5 gap-4">
-        {/* TODO: 백엔드로부터 받아온 데이터 수만큼 ItemManagementCard.tsx map함수 이용해서 렌더링하기 */}
+        {items.map((item) => (
+          <ItemManagementCard
+            key={item.itemId}
+            name={item.name}
+            totalQuantity={item.totalQuantity}
+            isActive={item.isActive}
+            rentalDuration={item.rentalDuration}
+            description={item.description}
+            guaranteedGoods={item.guaranteedGoods}
+          />
+        ))}
       </div>
       {/* 물품 추가 버튼 */}
       <BlueButton

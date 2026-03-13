@@ -1,32 +1,32 @@
 import { useState } from "react";
 import ItemStatusCard from "./ItemStatusCard";
 
-// TODO: 추후 백엔드 데이터로 대체 (items 배열 등)
-const MOCK_ITEM_TITLE = "c타입 충전기";
-const MOCK_TOTAL_COUNT = 5;
-const MOCK_ITEM_NAME = "c타입 충전기 (1)";
-const MOCK_ITEM_CODE = "345ss2";
-const MOCK_DETAIL = {
-  target: "건국대학교 재학생 혹은 휴학생",
-  rentalPeriod: "3일",
-  description: "어댑터 미포함",
-  guarantee: "학생증 혹은 신분증",
+type ItemManagementCardProps = {
+  name: string;
+  totalQuantity: number;
+  isActive: boolean;
+  rentalDuration?: number;
+  description?: string;
+  guaranteedGoods?: string;
 };
 
-// 하드코딩: 추후 API 응답의 item 목록으로 대체
+// TODO: ItemStatusCard 목록은 향후 개별 물품 단위 데이터로 교체 예정
+const MOCK_ITEM_NAME = "c타입 충전기 (1)";
+const MOCK_ITEM_CODE = "345ss2";
 const MOCK_ITEM_STATUSES: Array<
   "rentalAvailable" | "rentedOut" | "rentalUnavailable"
-> = [
-  "rentedOut",
-  "rentalAvailable",
-  "rentalAvailable",
-  "rentalUnavailable",
-  "rentalAvailable",
-];
+> = ["rentedOut", "rentalAvailable", "rentalUnavailable"];
 
-const ItemManagementCard = () => {
+const ItemManagementCard = ({
+  name,
+  totalQuantity,
+  isActive,
+  rentalDuration,
+  description,
+  guaranteedGoods,
+}: ItemManagementCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isToggledOn, setIsToggledOn] = useState(true);
+  const [isToggledOn, setIsToggledOn] = useState(isActive);
 
   return (
     <div className="w-87.5 min-h-25 overflow-hidden rounded-[16px] bg-neutral-white font-[Pretendard] shadow-item-card">
@@ -36,10 +36,10 @@ const ItemManagementCard = () => {
           <div>
             {" "}
             <h3 className="truncate text-24px font-bold text-neutral-gray-1">
-              {MOCK_ITEM_TITLE}
+              {name}
             </h3>
             <p className="text-12px text-[#000000] opacity-[0.4] font-normal leading-[140%]">
-              총 개수: {MOCK_TOTAL_COUNT}개
+              총 개수: {totalQuantity}개
             </p>
           </div>
           <button
@@ -94,10 +94,12 @@ const ItemManagementCard = () => {
             {/* 상세 정보 */}
             <div className="mb-4 flex w-full items-end justify-between gap-4">
               <ul className="min-w-0 flex-1 list-disc ml-5 text-12px text-neutral-gray-1 font-normal leading-[140%]">
-                <li>대상 : {MOCK_DETAIL.target}</li>
-                <li>대여 기간 : {MOCK_DETAIL.rentalPeriod}</li>
-                <li>설명: {MOCK_DETAIL.description}</li>
-                <li>보증 물품 : {MOCK_DETAIL.guarantee}</li>
+                <li>대상 : 건국대학교 재학생 혹은 휴학생</li>
+                {rentalDuration !== undefined && (
+                  <li>대여 기간 : {rentalDuration}일</li>
+                )}
+                {description && <li>설명 : {description}</li>}
+                {guaranteedGoods && <li>보증 물품 : {guaranteedGoods}</li>}
               </ul>
               <button
                 type="button"

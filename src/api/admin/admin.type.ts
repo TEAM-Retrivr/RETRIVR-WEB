@@ -96,9 +96,10 @@ export interface AdminBorrowerRequirementRequest {
 
 export interface AdminCreateItemRequest {
   name: string; // 물품 이름
-  description: string; // 물품 설명
+  description?: string; // 물품 설명 (선택)
   rentalDuration: number; // 대여 기간(일)
   isActive: boolean; // 대여 가능 여부
+  itemManagementType: string; // 물품 고유번호 존재 여부
   borrowerRequirements: AdminBorrowerRequirementRequest[]; // 대여자 입력 요구 정보 목록
 }
 
