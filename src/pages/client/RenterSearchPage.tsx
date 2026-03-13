@@ -78,7 +78,7 @@ const RenterSearchPage = () => {
                     <button
                       key={org.organizationId}
                       type="button"
-                      className="flex items-center gap-3 px-3 py-2 rounded-[12px] bg-neutral-white shadow-item-card hover-lift"
+                      className="flex items-center gap-2.5 bg-none cursor-pointer"
                       onClick={() => {
                         navigate(
                           `/client-home?organizationId=${org.organizationId}`,
@@ -98,7 +98,7 @@ const RenterSearchPage = () => {
                           className="w-9 h-9 rounded-full object-cover"
                         />
                       )}
-                      <span className="text-14px text-neutral-gray-1 font-[600]">
+                      <span className="text-14px text-neutral-gray-1 font-[600] hover:text-secondary-2">
                         {org.name}
                       </span>
                     </button>
