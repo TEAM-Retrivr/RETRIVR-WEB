@@ -12,7 +12,11 @@ const RentalRequestPage = () => {
 
   return (
     <Layout>
-      <Header name="건국대학교 도서관자치위원회" pageName="대여요청"></Header>
+      <Header
+        name="건국대학교 도서관자치위원회"
+        pageName="대여요청"
+        backTo="/home"
+      ></Header>
       <div className="flex flex-col w-full items-center my-8.5 gap-5 overflow-y-auto no-scrollbar">
         {isLoading && (
           <p className="text-neutral-gray-3 text-14px">로딩 중...</p>

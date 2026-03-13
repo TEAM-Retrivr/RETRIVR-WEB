@@ -38,6 +38,7 @@ const ItemManagementPage = () => {
         <Header
           name=" 건국대학교 도서관자치위원회"
           pageName="물품 관리"
+          backTo="/home"
         ></Header>
         <div className="flex flex-col w-full mt-48 items-center font-[Pretendard] font-normal">
           <img className="w-42" src="/icons/symbol.svg" alt="심볼 로고" />
@@ -60,7 +61,11 @@ const ItemManagementPage = () => {
   // 등록된 물품이 있을 때: 물품 목록 렌더링
   return (
     <Layout>
-      <Header name=" 건국대학교 도서관자치위원회" pageName="물품 관리"></Header>
+      <Header
+        name=" 건국대학교 도서관자치위원회"
+        pageName="물품 관리"
+        backTo="/home"
+      ></Header>
       <div className="flex flex-col items-center mx-6.5 my-8.5 gap-4">
         {items.map((item) => (
           <ItemManagementCard

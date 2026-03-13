@@ -130,7 +130,6 @@ const TestPage = () => {
 
   return (
     <div className=" bg-neutral-white p-10 flex flex-col gap-5">
-      <ItemManagementCard></ItemManagementCard>
       <ItemStatusCard
         status="rentalAvailable"
         itemName="c타입 충전기 (1)"
@@ -149,13 +148,7 @@ const TestPage = () => {
       <h1 className="text-xl font-bold">대여 가능 물품 컴포넌트 테스트</h1>
       <RentalAvailableItemCard itemInfo={DUMMY_ITEM_REQUESTS[0]} />
       <h1 className="text-xl font-bold">헤더 컴포넌트 테스트</h1>
-      <div className="flex flex-col bg-neutral-gray-4 opacity-90 w-[700px] h-[500px] items-center p-10 gap-30">
-        <Header name="" pageName="회원가입"></Header>
-        <Header
-          name="건국대학교 도서관자치위원회"
-          pageName="대여 요청"
-        ></Header>
-      </div>
+      <div className="flex flex-col bg-neutral-gray-4 opacity-90 w-[700px] h-[500px] items-center p-10 gap-30"></div>
       <h1 className="text-xl font-bold">홈화면 카드 컴포넌트 테스트</h1>
       <MenuCard menu={HOME_MENUS[0]} />
       <h1 className="text-xl font-bold">입력창 컴포넌트 테스트</h1>

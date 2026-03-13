@@ -8,6 +8,12 @@ import { useCreateAdminItem } from "../../hooks/queries/useAdminQueries";
 import CustomCheckBox from "../../components/CustomCheckbox";
 type RenterFieldKey = "name" | "studentNumber" | "phone" | "major";
 
+type ExtraRenterField = {
+  id: number;
+  enabled: boolean;
+  label: string;
+};
+
 const ItemRegisterationPage = () => {
   const navigate = useNavigate();
   const { mutate: createItem, isPending } = useCreateAdminItem();
@@ -19,8 +25,9 @@ const ItemRegisterationPage = () => {
 
   // 대여자 입력 요구 정보 (필수 3개는 고정)
   const [optionalMajorEnabled, setOptionalMajorEnabled] = useState(true);
-  const [extraRenterFieldEnabled, setExtraRenterFieldEnabled] = useState(false);
-  const [extraRenterFieldLabel, setExtraRenterFieldLabel] = useState("");
+  const [extraRenterFields, setExtraRenterFields] = useState<
+    ExtraRenterField[]
+  >([{ id: 1, enabled: false, label: "" }]);
 
   // 추가 선택사항
   const [sendOverdueMessageEnabled, setSendOverdueMessageEnabled] =
@@ -30,7 +37,6 @@ const ItemRegisterationPage = () => {
 
   const isFormValid = useMemo(() => {
     if (!itemName.trim()) return false;
-    if (!description.trim()) return false;
     if (totalQuantity <= 0) return false;
     if (rentalDurationDays <= 0) return false;
     if (hasGuaranteedGoods && !guaranteedGoodsLabel.trim()) return false;
@@ -40,6 +46,7 @@ const ItemRegisterationPage = () => {
     description,
     totalQuantity,
     rentalDurationDays,
+    sendOverdueMessageEnabled,
     hasGuaranteedGoods,
     guaranteedGoodsLabel,
   ]);
@@ -47,7 +54,7 @@ const ItemRegisterationPage = () => {
   const renterRequiredFields: { key: RenterFieldKey; label: string }[] = [
     { key: "name", label: "이름" },
     { key: "studentNumber", label: "학번" },
-    { key: "phone", label: "연락처" },
+    { key: "phone", label: "전화번호" },
   ];
 
   // 관리자 물품 등록 API 호출
@@ -64,23 +71,21 @@ const ItemRegisterationPage = () => {
       ...(optionalMajorEnabled
         ? [
             {
-              fieldKey: "major",
+              fieldKey: "custom_1",
               label: "학과",
               fieldType: "TEXT",
               required: false,
             },
           ]
         : []),
-      ...(extraRenterFieldEnabled && extraRenterFieldLabel.trim()
-        ? [
-            {
-              fieldKey: extraRenterFieldLabel.trim(),
-              label: extraRenterFieldLabel.trim(),
-              fieldType: "TEXT",
-              required: false,
-            },
-          ]
-        : []),
+      ...extraRenterFields
+        .filter((field) => field.enabled && field.label.trim())
+        .map((field) => ({
+          fieldKey: field.label.trim(),
+          label: field.label.trim(),
+          fieldType: "TEXT",
+          required: false,
+        })),
     ];
 
     createItem(
@@ -89,6 +94,7 @@ const ItemRegisterationPage = () => {
         description: description.trim(),
         rentalDuration: rentalDurationDays,
         isActive: true,
+        itemManagementType: "NON_UNIT", // 추후에 분리시킬 예정 (현재 하드코딩됨)
         borrowerRequirements,
       },
       {
@@ -108,6 +114,7 @@ const ItemRegisterationPage = () => {
       <Header
         name="건국대학교 도서관자치위원회"
         pageName="물품 신규 등록"
+        backTo="/item-manage"
       ></Header>
       <div className="flex flex-col px-8 pt-7.5 pb-10 gap-9 font-[Pretendard]">
         {/* 물품명 */}
@@ -242,26 +249,91 @@ const ItemRegisterationPage = () => {
                 <span>학과</span>
               </div>
             </div>
+            {/* 추가 정보 입력 영역 : 체크할 때마다 새로운 체크박스 + 입력창이 아래에 생성 */}
+            <div className="mt-3.5 flex flex-col gap-2.5">
+              {extraRenterFields.map((field, index) => (
+                <div key={field.id} className="flex items-center gap-3">
+                  <CustomCheckBox
+                    checked={field.enabled}
+                    onCheckedChange={(checked) => {
+                      setExtraRenterFields((prev) => {
+                        const idx = prev.findIndex((f) => f.id === field.id);
+                        if (idx === -1) return prev;
 
-            <div className="mt-3.5">
-              <div className="flex items-center gap-3">
-                <CustomCheckBox
-                  checked={extraRenterFieldEnabled}
-                  onCheckedChange={(checked) => {
-                    setExtraRenterFieldEnabled(checked);
-                    if (!checked) {
-                      setExtraRenterFieldLabel("");
-                    }
-                  }}
-                />
-                <input
-                  value={extraRenterFieldLabel}
-                  onChange={(e) => setExtraRenterFieldLabel(e.target.value)}
-                  placeholder="추가 정보 입력"
-                  className="w-59.25 border-b-[0.859px] text-14px font-bold placeholder:text-14px placeholder:text-[#000] placeholder:font-normal placeholder:opacity-[0.39] placeholder:leading-[130%] pb-1.5 focus:outline-none disabled:opacity-40"
-                  disabled={!extraRenterFieldEnabled}
-                />
-              </div>
+                        // 체크 해제: 해당 행만 제거 (다른 행은 그대로 유지)
+                        if (!checked) {
+                          // 마지막 한 줄만 남은 상태라면, 초기 상태(비활성 + 빈 값)로만 리셋
+                          if (prev.length === 1) {
+                            return [{ ...prev[0], enabled: false, label: "" }];
+                          }
+                          // 그 외에는 해당 줄만 제거
+                          return prev.filter((f) => f.id !== field.id);
+                        }
+
+                        // 체크: 현재 필드 활성화 + 마지막 필드였다면 새 빈 행 추가
+                        const next = prev.map((f) =>
+                          f.id === field.id ? { ...f, enabled: true } : f,
+                        );
+
+                        const isLastField = index === prev.length - 1;
+                        if (isLastField) {
+                          const newId =
+                            prev.reduce(
+                              (maxId, f) => Math.max(maxId, f.id),
+                              0,
+                            ) + 1;
+                          next.push({
+                            id: newId,
+                            enabled: false,
+                            label: "",
+                          });
+                        }
+
+                        return next;
+                      });
+                    }}
+                  />
+                  <input
+                    value={field.label}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setExtraRenterFields((prev) =>
+                        prev.map((f) =>
+                          f.id === field.id ? { ...f, label: value } : f,
+                        ),
+                      );
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key !== "Enter") return;
+                      e.preventDefault();
+
+                      const trimmed = field.label.trim();
+                      if (!field.enabled || !trimmed) return;
+
+                      setExtraRenterFields((prev) => {
+                        // field가 이미 삭제된 상태면 무시
+                        if (!prev.some((f) => f.id === field.id)) return prev;
+
+                        const newId =
+                          prev.reduce((maxId, f) => Math.max(maxId, f.id), 0) +
+                          1;
+
+                        return [
+                          ...prev,
+                          {
+                            id: newId,
+                            enabled: false,
+                            label: "",
+                          },
+                        ];
+                      });
+                    }}
+                    placeholder="추가 정보 입력"
+                    className="w-59.25 border-b-[0.859px] text-14px font-bold placeholder:text-14px placeholder:text-[#000] placeholder:font-normal placeholder:opacity-[0.39] placeholder:leading-[130%] pb-1.5 focus:outline-none disabled:opacity-40"
+                    disabled={!field.enabled}
+                  />
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -289,7 +361,7 @@ const ItemRegisterationPage = () => {
           </div>
 
           {/* 담보 물품 존재 */}
-          <div className="h-23.5 rounded-small bg-neutral-white shadow-item-card px-5 py-4.25">
+          <div className="rounded-small bg-neutral-white shadow-item-card px-5 py-4.25">
             <div className="flex items-center justify-start gap-3">
               <CustomCheckBox
                 checked={hasGuaranteedGoods}
@@ -299,16 +371,20 @@ const ItemRegisterationPage = () => {
                 담보 물품 존재
               </span>
             </div>
-            {hasGuaranteedGoods && (
-              <div className="mt-2 ml-1">
-                <input
-                  value={guaranteedGoodsLabel}
-                  onChange={(e) => setGuaranteedGoodsLabel(e.target.value)}
-                  placeholder="추가 정보 입력"
-                  className="w-59.25 border-b-[0.859px] placeholder:text-14px placeholder:text-[#000] placeholder:opacity-[0.39] placeholder:leading-[130%] pb-1.5 focus:outline-none"
-                />
-              </div>
-            )}
+            <div
+              className={`ml-1 overflow-hidden transition-all duration-200 ${
+                hasGuaranteedGoods
+                  ? "mt-2 max-h-20 opacity-100"
+                  : "max-h-0 opacity-0"
+              }`}
+            >
+              <input
+                value={guaranteedGoodsLabel}
+                onChange={(e) => setGuaranteedGoodsLabel(e.target.value)}
+                placeholder="추가 정보 입력"
+                className="w-59.25 border-b-[0.859px] placeholder:text-14px placeholder:text-[#000] placeholder:opacity-[0.39] placeholder:leading-[130%] pb-1.5 focus:outline-none"
+              />
+            </div>
           </div>
         </div>
 

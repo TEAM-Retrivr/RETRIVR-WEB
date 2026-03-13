@@ -26,7 +26,11 @@ const ReturnManagementPage = () => {
 
   return (
     <Layout>
-      <Header name="건국대학교 도서관자치위원회" pageName="반납 관리"></Header>
+      <Header
+        name="건국대학교 도서관자치위원회"
+        pageName="반납 관리"
+        backTo="/home"
+      ></Header>
       <div className="flex flex-col font-[Pretendard] mt-6.5 mx-8 items-center gap-7.5">
         {/* 검색 영역 - 대여자 정보로 찾기 */}
         <div className="  w-84.5 h-11 flex items-center justify-between rounded-small border border-primary">

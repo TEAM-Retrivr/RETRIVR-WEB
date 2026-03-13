@@ -26,6 +26,7 @@ const RenterSearchPage = () => {
       <Header
         pageIconSrc="/icons/retrivr_text_primary.svg"
         pageIconAlt="리트리버"
+        backTo="/"
       ></Header>
       {/* 검색 영역 - 검색 바 + 검색 결과 목록 */}
       <div className="flex flex-col pt-6.5 px-8 gap-3">

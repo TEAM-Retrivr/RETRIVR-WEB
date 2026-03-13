@@ -101,7 +101,11 @@ const RentalInformationSubmitPage = () => {
   return (
     <Layout>
       <form onSubmit={handleSubmit}>
-        <Header name="대여지명" pageName="대여 정보 입력"></Header>
+        <Header
+          name="대여지명"
+          pageName="대여 정보 입력"
+          backTo="/client-home"
+        ></Header>
         <div className="w-full max-w-[360px] max-h-[176px] font-[Pretendard] bg-secondary-4 rounded-[16px] mt-6 mx-5">
           <div className="pt-7.25 pl-8 pb-7.75">
             <div className="flex flex-col">

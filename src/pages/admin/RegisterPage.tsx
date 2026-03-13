@@ -176,7 +176,7 @@ const RegisterPage = () => {
   return (
     <Layout>
       {/* 헤더 영역 - 헤더 컴포넌트 제작 후 대체 예정 */}
-      <Header pageName="회원가입"></Header>
+      <Header pageName="회원가입" backTo="/login"></Header>
       {/* 회원가입 영역 - 이름, 이메일, 비밀번호, 비밀번호 확인, 관리자 코드 */}
       <div className="flex flex-col items-center w-full gap-6 pt-8 px-8">
         {/* 이름(단체명) 영역 */}

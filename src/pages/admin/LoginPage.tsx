@@ -47,7 +47,7 @@ const LoginPage = () => {
       {/* 뒤로가기 버튼 : 랜딩페이지로 이동 */}
       <button
         className="absolute top-[7%] left-[7%] object-fit"
-        onClick={() => navigate(-1)}
+        onClick={() => navigate("/")}
       >
         <img src="/icons/home/left-arrow.svg" alt="뒤로가기 버튼" />
       </button>
