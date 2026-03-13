@@ -6,7 +6,7 @@ import UserIcon from "../../components/UserIcon";
 
 const ClientHome = () => {
   // TODO: 실제 로그인 정보에서 organizationId 가져오기
-  const ORGANIZATION_ID = 1;
+  const ORGANIZATION_ID = 3;
 
   const { data, isLoading, error } = useItemList({
     organizationId: ORGANIZATION_ID,

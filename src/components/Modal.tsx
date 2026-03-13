@@ -20,9 +20,9 @@ export const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
       />
 
       {/* 모달 박스 */}
-      <div className="relative z-[1000] w-84.5 bg-white rounded-[28px] shadow-2xl animate-in zoom-in-95 duration-200">
+      <div className="relative z-[1000] w-84.5 bg-white rounded-[28px] pt-8 pb-6 px-4 shadow-2xl animate-in zoom-in-95 duration-200">
         {/* 헤더: 제목과 닫기 버튼 */}
-        <div className="items-center mt-9 font-[Pretendard]">
+        <div className="items-center font-[Pretendard]">
           <p className="text-24px font-bold text-secondary-1 text-center">
             {title}
           </p>
