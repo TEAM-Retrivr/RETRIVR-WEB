@@ -91,13 +91,6 @@ const RenterSearchPage = () => {
                         );
                       }}
                     >
-                      {org.imageURL && (
-                        <img
-                          src={org.imageURL}
-                          alt={org.name}
-                          className="w-9 h-9 rounded-full object-cover"
-                        />
-                      )}
                       <span className="text-14px text-neutral-gray-1 font-[600] hover:text-secondary-2">
                         {org.name}
                       </span>
