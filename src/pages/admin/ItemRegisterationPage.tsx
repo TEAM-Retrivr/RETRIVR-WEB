@@ -5,55 +5,8 @@ import CommonInput from "../../components/CommonInput";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCreateAdminItem } from "../../hooks/queries/useAdminQueries";
-
+import CustomCheckBox from "../../components/CustomCheckbox";
 type RenterFieldKey = "name" | "studentNumber" | "phone" | "major";
-
-const CustomCheckbox = ({
-  checked,
-  onCheckedChange,
-  disabled,
-}: {
-  checked: boolean;
-  onCheckedChange?: (checked: boolean) => void;
-  disabled?: boolean;
-}) => {
-  const handleToggle = () => {
-    if (disabled) return;
-    if (onCheckedChange) {
-      onCheckedChange(!checked);
-    }
-  };
-
-  return (
-    <div
-      className="px-1 inline-flex items-center"
-      role="checkbox"
-      aria-checked={checked}
-      aria-disabled={disabled}
-      onClick={handleToggle}
-    >
-      {/* 실제 체크박스는 숨김 */}
-      <input
-        type="checkbox"
-        className="peer sr-only"
-        checked={checked}
-        disabled={disabled}
-        readOnly
-      />
-      {/* 커스텀 체크박스 영역 */}
-      <div
-        className={`w-4.75 h-4.75 flex items-center justify-center transition-colors rounded-[4px] border-1 ${
-          checked
-            ? "bg-primary border-primary"
-            : "bg-white border-neutral-gray-4"
-        } ${disabled ? "opacity-60" : ""}`}
-      >
-        {/* 체크되었을 때 아이콘 표시 */}
-        {checked && <img src="/icons/client/checked.svg" alt="체크됨" />}
-      </div>
-    </div>
-  );
-};
 
 const ItemRegisterationPage = () => {
   const navigate = useNavigate();
@@ -273,7 +226,7 @@ const ItemRegisterationPage = () => {
             <div className="flex flex-col justify-center gap-3.5 text-14px text-neutral-[#444] font-bold">
               {renterRequiredFields.map((f) => (
                 <label key={f.key} className="flex items-center gap-3">
-                  <CustomCheckbox checked onCheckedChange={() => {}} disabled />
+                  <CustomCheckBox checked onCheckedChange={() => {}} disabled />
                   <span>
                     {f.label}
                     <span className="text-primary"> *</span>
@@ -282,7 +235,7 @@ const ItemRegisterationPage = () => {
               ))}
 
               <div className="flex items-center gap-3">
-                <CustomCheckbox
+                <CustomCheckBox
                   checked={optionalMajorEnabled}
                   onCheckedChange={setOptionalMajorEnabled}
                 />
@@ -292,7 +245,7 @@ const ItemRegisterationPage = () => {
 
             <div className="mt-3.5">
               <div className="flex items-center gap-3">
-                <CustomCheckbox
+                <CustomCheckBox
                   checked={extraRenterFieldEnabled}
                   onCheckedChange={(checked) => {
                     setExtraRenterFieldEnabled(checked);
@@ -326,7 +279,7 @@ const ItemRegisterationPage = () => {
 
           {/* 독촉 문자 발송 */}
           <div className="h-13 flex items-center justify-start rounded-small bg-neutral-white shadow-item-card px-5 py-3.5 mb-2.5 gap-3">
-            <CustomCheckbox
+            <CustomCheckBox
               checked={sendOverdueMessageEnabled}
               onCheckedChange={setSendOverdueMessageEnabled}
             />
@@ -338,7 +291,7 @@ const ItemRegisterationPage = () => {
           {/* 담보 물품 존재 */}
           <div className="h-23.5 rounded-small bg-neutral-white shadow-item-card px-5 py-4.25">
             <div className="flex items-center justify-start gap-3">
-              <CustomCheckbox
+              <CustomCheckBox
                 checked={hasGuaranteedGoods}
                 onCheckedChange={setHasGuaranteedGoods}
               />

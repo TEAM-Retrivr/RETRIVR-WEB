@@ -12,7 +12,7 @@ export const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center p-4">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
       {/* 배경 */}
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
@@ -29,7 +29,7 @@ export const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
         </div>
         <button
           onClick={onClose}
-          className="absolute top-6 right-5 text-neutral-gray hover:text-neutral-dark transition-colors"
+          className="absolute top-6 right-5 text-neutral-gray transition-colors cursor-pointer"
         >
           <img src="/icons/X.svg" alt="닫기" />
         </button>

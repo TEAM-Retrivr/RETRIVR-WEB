@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ShortApprovalModal } from "../components/modals/admin/approvalModal/ShortApprovalModal";
+import { ShortRentalApprovalModal } from "../components/modals/admin/rentalApprovalModal/ShortRentalApprovalModal";
 
 export const ModalTestPage = () => {
   // 1. 모달의 상태 관리 (초기값은 닫힘: false)
@@ -25,7 +25,7 @@ export const ModalTestPage = () => {
       </button>
 
       {/* 3. 모달 컴포넌트 배치 */}
-      <ShortApprovalModal
+      <ShortRentalApprovalModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         itemData={testItem}
