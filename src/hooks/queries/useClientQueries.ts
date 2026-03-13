@@ -14,12 +14,14 @@ interface UseItemListParams {
   organizationId: number;
   cursor?: number;
   size?: number;
+  enabled?: boolean;
 }
 
 export const useItemList = ({
   organizationId,
   cursor,
   size,
+  enabled = true,
 }: UseItemListParams) => {
   return useQuery<ItemResponse>({
     // queryKey: 쿼리를 고유 식별하는 Cache Key로 사용
@@ -28,6 +30,7 @@ export const useItemList = ({
     queryKey: ["clientItems", organizationId, cursor, size],
     queryFn: () => requestItemList(organizationId, { cursor, size }),
     retry: false,
+    enabled,
     // 재고 수량이 자주 변할 수 있으므로 너무 오래 캐싱하지 않아야 한다.
     // StaleTime: 3초 이내에는 동일 파라미터로 재요청해도 캐시 사용!
     staleTime: 1000 * 3,

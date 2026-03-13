@@ -2,12 +2,15 @@ import { useState } from "react";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import { useOrganizationSearch } from "../../hooks/queries/useClientQueries";
+import { useNavigate } from "react-router-dom";
 
 const RenterSearchPage = () => {
   // 입력 중인 검색어
   const [inputValue, setInputValue] = useState("");
   // 실제 검색에 사용하는 키워드(버튼 클릭 또는 엔터 시 확정)
   const [keyword, setKeyword] = useState("");
+
+  const navigate = useNavigate();
 
   const { data, isLoading, error } = useOrganizationSearch(keyword);
   const organizations = data?.organizations ?? [];
@@ -76,6 +79,17 @@ const RenterSearchPage = () => {
                       key={org.organizationId}
                       type="button"
                       className="flex items-center gap-3 px-3 py-2 rounded-[12px] bg-neutral-white shadow-item-card hover-lift"
+                      onClick={() => {
+                        navigate(
+                          `/client-home?organizationId=${org.organizationId}`,
+                          {
+                            state: {
+                              name: org.name,
+                              imageURL: org.imageURL,
+                            },
+                          },
+                        );
+                      }}
                     >
                       {org.imageURL && (
                         <img
