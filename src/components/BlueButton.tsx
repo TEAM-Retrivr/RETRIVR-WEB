@@ -1,8 +1,12 @@
+import type React from "react";
+
 interface ButtonProps {
   option: "makeQR" | "addItem";
+  // 각 페이지에서 동작을 주입할 수 있는 클릭 핸들러
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
 }
 
-const BlueButton = ({ option }: ButtonProps) => {
+const BlueButton = ({ option, onClick }: ButtonProps) => {
   const buttonImage: Record<ButtonProps["option"], string> = {
     makeQR: "/icons/home/QR.svg",
     addItem: "/icons/plus-icon.svg",
@@ -13,10 +17,14 @@ const BlueButton = ({ option }: ButtonProps) => {
   };
 
   return (
-    <button className="absolute bottom-[5.03%] right-[7.96%] w-[19.4%] max-w-[78px] h-[8.924%] max-h-[78px] cursor-pointer">
+    <button
+      type="button"
+      onClick={onClick}
+      className="absolute bottom-11 right-8 w-19.5 h-19.5 cursor-pointer"
+    >
       <img
-        src={`${buttonImage[option]}`}
-        alt={`${altText}`}
+        src={buttonImage[option]}
+        alt={altText[option]}
         className="w-full max-w-[78px] h-screen max-h-[78px] border-none"
       />
     </button>

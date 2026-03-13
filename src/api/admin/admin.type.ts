@@ -84,3 +84,29 @@ export interface AdminRentalRequestListResponse {
   requests: AdminRentalRequestItem[];
   nextCursor?: number;
 }
+
+// 관리자 물품 등록 요청 바디
+// POST /api/admin/v1/items
+export interface AdminBorrowerRequirementRequest {
+  fieldKey: string; //
+  label: string; // 화면에 노출할 필드 이름 (학번 등)
+  fieldType: string; // 예: "TEXT"
+  required: boolean; // 필수 여부
+}
+
+export interface AdminCreateItemRequest {
+  name: string; // 물품 이름
+  description: string; // 물품 설명
+  rentalDuration: number; // 대여 기간(일)
+  isActive: boolean; // 대여 가능 여부
+  borrowerRequirements: AdminBorrowerRequirementRequest[]; // 대여자 입력 요구 정보 목록
+}
+
+// 관리자 물품 등록 응답 바디
+export interface AdminBorrowerRequirementResponse extends AdminBorrowerRequirementRequest {}
+
+export interface AdminCreateItemResponse {
+  itemId: number; // 생성된 물품 ID
+  name: string; // 물품 이름
+  borrowerRequirements: AdminBorrowerRequirementResponse[]; // 저장된 대여자 요구 정보 목록
+}

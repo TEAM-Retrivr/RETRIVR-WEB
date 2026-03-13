@@ -3,6 +3,8 @@ import type {
   AdminRentalItemSummaryResponse,
   AdminOverdueRentalListResponse,
   AdminRentalRequestListResponse,
+  AdminCreateItemRequest,
+  AdminCreateItemResponse,
 } from "./admin.type";
 import { apiClient } from "../core";
 
@@ -74,6 +76,21 @@ export const requestAdminRentalRequestList = async (
   const response = await apiClient.get<AdminRentalRequestListResponse>(
     "/api/admin/v1/rentals/requests",
     { params },
+  );
+  return response.data;
+};
+
+// 관리자 물품 등록 (POST)
+// - 물품과 대여자 요구 정보(JSONB)를 함께 저장
+// - 요청 바디: AdminCreateItemRequest
+// - 응답 바디: AdminCreateItemResponse
+// POST /api/admin/v1/items
+export const createAdminItem = async (
+  body: AdminCreateItemRequest,
+): Promise<AdminCreateItemResponse> => {
+  const response = await apiClient.post<AdminCreateItemResponse>(
+    "/api/admin/v1/items",
+    body,
   );
   return response.data;
 };

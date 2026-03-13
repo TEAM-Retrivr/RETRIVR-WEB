@@ -46,6 +46,7 @@
   --text-16px: 1rem; /* 16px */
   --text-14px: 0.875rem; /* 14px */
   --text-12px: 0.75rem; /* 12px */
+  --text-11px: 0.6875rem; /* 11px */
   --text-10px: 0.625rem; /* 10px */
 
   /* 2. 컬러 팔레트 */
@@ -101,6 +102,7 @@
   --shadow-card: 0 0 16px -6px rgba(0, 0, 0, 0.2);
   --shadow-item-card: 0 0 6px 0 rgba(0, 0, 0, 0.14);
   --shadow-consent-card: 0 0 16px -6px rgba(0, 0, 0, 0.08);
+  --shadow-count-box: 0 0 18.7px -6px rgba(0, 0, 0, 0.17);
 
   /* 5. 래디우스 */
   --radius-large: 23.164px;

@@ -1,10 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   requestAdminItemList,
   requestAdminRentalItemSummaryList,
   requestAdminOverdueRentalList,
   requestAdminRentalRequestList,
+  createAdminItem,
 } from "../../api/admin/admin.api";
+import type { AdminCreateItemRequest } from "../../api/admin/admin.type";
 
 // 관리자 물품 목록 조회 (관리자 전용 API 사용)
 // - 물품 관리 페이지에서 사용
@@ -50,5 +52,14 @@ export const useAdminRentalRequestList = () => {
     queryKey: ["adminRentalRequests"],
     queryFn: () => requestAdminRentalRequestList({ size: 15 }),
     retry: false,
+  });
+};
+
+// 관리자 물품 등록 (POST)
+// - 새 물품과 대여자 요구 정보를 함께 저장
+// - 요청 바디 타입: AdminCreateItemRequest
+export const useCreateAdminItem = () => {
+  return useMutation({
+    mutationFn: (body: AdminCreateItemRequest) => createAdminItem(body),
   });
 };
