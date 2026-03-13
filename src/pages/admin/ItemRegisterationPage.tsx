@@ -17,15 +17,28 @@ const CustomCheckbox = ({
   onCheckedChange?: (checked: boolean) => void;
   disabled?: boolean;
 }) => {
+  const handleToggle = () => {
+    if (disabled) return;
+    if (onCheckedChange) {
+      onCheckedChange(!checked);
+    }
+  };
+
   return (
-    <div className="px-1">
+    <div
+      className="px-1 inline-flex items-center"
+      role="checkbox"
+      aria-checked={checked}
+      aria-disabled={disabled}
+      onClick={handleToggle}
+    >
       {/* 실제 체크박스는 숨김 */}
       <input
         type="checkbox"
         className="peer sr-only"
         checked={checked}
         disabled={disabled}
-        onChange={(e) => onCheckedChange?.(e.target.checked)}
+        readOnly
       />
       {/* 커스텀 체크박스 영역 */}
       <div
@@ -53,6 +66,7 @@ const ItemRegisterationPage = () => {
 
   // 대여자 입력 요구 정보 (필수 3개는 고정)
   const [optionalMajorEnabled, setOptionalMajorEnabled] = useState(true);
+  const [extraRenterFieldEnabled, setExtraRenterFieldEnabled] = useState(false);
   const [extraRenterFieldLabel, setExtraRenterFieldLabel] = useState("");
 
   // 추가 선택사항
@@ -104,7 +118,7 @@ const ItemRegisterationPage = () => {
             },
           ]
         : []),
-      ...(extraRenterFieldLabel.trim()
+      ...(extraRenterFieldEnabled && extraRenterFieldLabel.trim()
         ? [
             {
               fieldKey: extraRenterFieldLabel.trim(),
@@ -255,13 +269,10 @@ const ItemRegisterationPage = () => {
             </p>
           </div>
 
-          <div className="rounded-[16px] bg-neutral-gray-6 px-5 py-4">
-            <div className="flex flex-col gap-3 text-14px text-neutral-gray-2 font-[600]">
+          <div className="rounded-[16px] bg-neutral-white shadow-item-card  px-5 py-4">
+            <div className="flex flex-col justify-center gap-3.5 text-14px text-neutral-[#444] font-bold">
               {renterRequiredFields.map((f) => (
-                <label
-                  key={f.key}
-                  className="flex items-center gap-3 opacity-70"
-                >
+                <label key={f.key} className="flex items-center gap-3">
                   <CustomCheckbox checked onCheckedChange={() => {}} disabled />
                   <span>
                     {f.label}
@@ -270,24 +281,32 @@ const ItemRegisterationPage = () => {
                 </label>
               ))}
 
-              <label className="flex items-center gap-3">
+              <div className="flex items-center gap-3">
                 <CustomCheckbox
                   checked={optionalMajorEnabled}
                   onCheckedChange={setOptionalMajorEnabled}
                 />
                 <span>학과</span>
-              </label>
+              </div>
             </div>
 
-            <div className="mt-4">
+            <div className="mt-3.5">
               <div className="flex items-center gap-3">
-                <CustomCheckbox checked={!!extraRenterFieldLabel} disabled />
-                <CommonInput
+                <CustomCheckbox
+                  checked={extraRenterFieldEnabled}
+                  onCheckedChange={(checked) => {
+                    setExtraRenterFieldEnabled(checked);
+                    if (!checked) {
+                      setExtraRenterFieldLabel("");
+                    }
+                  }}
+                />
+                <input
                   value={extraRenterFieldLabel}
                   onChange={(e) => setExtraRenterFieldLabel(e.target.value)}
                   placeholder="추가 정보 입력"
-                  inputSize="medium"
-                  className="!max-w-full"
+                  className="w-59.25 border-b-[0.859px] text-14px font-bold placeholder:text-14px placeholder:text-[#000] placeholder:font-normal placeholder:opacity-[0.39] placeholder:leading-[130%] pb-1.5 focus:outline-none disabled:opacity-40"
+                  disabled={!extraRenterFieldEnabled}
                 />
               </div>
             </div>
@@ -306,7 +325,7 @@ const ItemRegisterationPage = () => {
           </div>
 
           {/* 독촉 문자 발송 */}
-          <label className="h-13 flex items-center justify-start rounded-small bg-neutral-white shadow-item-card px-5 py-3.5 mb-2.5 gap-3">
+          <div className="h-13 flex items-center justify-start rounded-small bg-neutral-white shadow-item-card px-5 py-3.5 mb-2.5 gap-3">
             <CustomCheckbox
               checked={sendOverdueMessageEnabled}
               onCheckedChange={setSendOverdueMessageEnabled}
@@ -314,11 +333,11 @@ const ItemRegisterationPage = () => {
             <span className="text-14px text-neutral-gray-2 font-[600]">
               독촉 문자 발송하기
             </span>
-          </label>
+          </div>
 
           {/* 담보 물품 존재 */}
           <div className="h-23.5 rounded-small bg-neutral-white shadow-item-card px-5 py-4.25">
-            <label className="flex items-center justify-start gap-3">
+            <div className="flex items-center justify-start gap-3">
               <CustomCheckbox
                 checked={hasGuaranteedGoods}
                 onCheckedChange={setHasGuaranteedGoods}
@@ -326,15 +345,14 @@ const ItemRegisterationPage = () => {
               <span className="text-14px text-neutral-gray-2 font-[600]">
                 담보 물품 존재
               </span>
-            </label>
+            </div>
             {hasGuaranteedGoods && (
-              <div className="mt-3">
-                <CommonInput
+              <div className="mt-2 ml-1">
+                <input
                   value={guaranteedGoodsLabel}
                   onChange={(e) => setGuaranteedGoodsLabel(e.target.value)}
                   placeholder="추가 정보 입력"
-                  inputSize="medium"
-                  className=""
+                  className="w-59.25 border-b-[0.859px] placeholder:text-14px placeholder:text-[#000] placeholder:opacity-[0.39] placeholder:leading-[130%] pb-1.5 focus:outline-none"
                 />
               </div>
             )}
