@@ -51,11 +51,12 @@ const RenterSearchPage = () => {
           <p className="text-16px text-secondary-2 opacity-[0.9] font-[600]">
             {keyword ? "검색 결과" : "입력 예시"}
           </p>
-          <div className="flex flex-col px-0.25 pt-4.5 gap-1">
+          <div className="flex flex-col px-0.25 pt-4.5">
             {!keyword && (
-              <p className="text-14px text-neutral-gray-3 font-[600] leading-[20px] ">
-                공식 명칭 예시: 건국대학교 도서관자치위원회
-              </p>
+              <div className="flex flex-col text-14px font-[600] leading-[20px] gap-1">
+                <p className="text-neutral-gray-3">공식 명칭 </p>
+                <p className="text-[#444]">건국대학교 도서관자치위원회</p>
+              </div>
             )}
 
             {keyword && (
