@@ -17,7 +17,7 @@ const RentalRequestPage = () => {
         pageName="대여요청"
         backTo="/home"
       ></Header>
-      <div className="flex flex-col w-full items-center my-8.5 gap-5 overflow-y-auto no-scrollbar">
+      <div className="flex flex-col w-full h-screen items-center my-6.5 gap-5 overflow-y-auto no-scrollbar">
         {isLoading && (
           <p className="text-neutral-gray-3 text-14px">로딩 중...</p>
         )}

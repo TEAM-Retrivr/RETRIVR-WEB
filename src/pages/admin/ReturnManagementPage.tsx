@@ -100,7 +100,7 @@ const ReturnManagementPage = () => {
           <p className="text-neutral-gray-3 text-12px mt-1.5 font-normal leading-[130%]">
             물품별 잔여 수량을 확인하고 반납 관리를 해보세요.
           </p>
-          <div className="flex flex-col mt-4 max-h-80 overflow-y-auto gap-3 no-scrollbar">
+          <div className="w-full flex flex-col mt-4 overflow-y-auto gap-3 no-scrollbar">
             {isRentalItemsLoading && (
               <p className="text-neutral-gray-3 text-14px">로딩 중...</p>
             )}

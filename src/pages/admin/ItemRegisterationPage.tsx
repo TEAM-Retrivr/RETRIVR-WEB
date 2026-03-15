@@ -117,8 +117,8 @@ const ItemRegisterationPage = () => {
         backTo="/item-manage"
       ></Header>
       <div className="flex flex-col px-8 pt-7.5 pb-10 gap-9 font-[Pretendard]">
-        {/* 물품명 */}
         <div className="flex flex-col gap-5.5">
+          {/* 물품명 */}
           <div className="flex flex-col w-full gap-2.5">
             <div>
               <p className="inline text-14px font-bold leading-none">물품명</p>
@@ -382,7 +382,7 @@ const ItemRegisterationPage = () => {
                 value={guaranteedGoodsLabel}
                 onChange={(e) => setGuaranteedGoodsLabel(e.target.value)}
                 placeholder="추가 정보 입력"
-                className="w-59.25 border-b-[0.859px] placeholder:text-14px placeholder:text-[#000] placeholder:opacity-[0.39] placeholder:leading-[130%] pb-1.5 focus:outline-none"
+                className="w-59.25 border-b-[0.859px] border-neutral-gray-3 placeholder:text-14px placeholder:text-[#000] placeholder:opacity-[0.39] placeholder:leading-[130%] pb-1 focus:outline-none"
               />
             </div>
           </div>

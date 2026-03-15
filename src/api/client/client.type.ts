@@ -24,7 +24,6 @@ export interface BorrowerInformationRequest {
     // JSON Object, 필수. 추가 대여자 정보 (자유 key-value, 입력값 그대로 전달)
     학과: string;
     학번: string;
-    보증물품: string;
     [key: string]: string | undefined; // 요청사항 등 자유 필드
   };
 }

@@ -34,8 +34,8 @@ const CommonInput = forwardRef<HTMLInputElement, InputProps>(
           type={type} // 입력받은 값의 타입 : text, password, email 등
           required={isRequired} // 해당 입력의 필수 여부 : true, false 중 하나
           className={`
-            w-full bg-[#F8F9F9] text-[#333] font-[Pretendard] outline-hidden transition-all
-            placeholder:text-gray-400 leading-none text-14px
+            w-full bg-[#F8F9F9] text-14px text-neutral-gray-1 font-[Pretendard] outline-hidden transition-all
+            placeholder:text-gray-400 leading-none
             focus:ring-2 focus:ring-blue-100
             
             ${sizeStyles[inputSize]}

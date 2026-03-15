@@ -34,7 +34,7 @@ const RentalInformationSubmitPage = () => {
   const itemUnitId = state?.itemUnitId; // 개별 코드형 물품일 때만 전달
   const itemName = state?.name ?? "대여 물품";
   const rentalDuration = state?.rentalDuration ?? 0;
-  const guaranteedGoods = state?.guaranteedGoods ?? "";
+  const guaranteedGoods = state?.guaranteedGoods ?? "-";
   const description = state?.description ?? "-";
 
   // 대여자 이름 : string
@@ -77,7 +77,6 @@ const RentalInformationSubmitPage = () => {
       renterFields: {
         학과: major.trim(),
         학번: studentId.trim(),
-        보증물품: DEFAULT_GUARANTEED_GOODS,
         ...(requestment.trim() && { 요청사항: requestment.trim() }),
       },
     };
@@ -106,7 +105,7 @@ const RentalInformationSubmitPage = () => {
           pageName="대여 정보 입력"
           backTo="/client-home"
         ></Header>
-        <div className="w-full max-w-[360px] max-h-[176px] font-[Pretendard] bg-secondary-4 rounded-[16px] mt-6 mx-5">
+        <div className="w-84.5 h-44 font-[Pretendard] bg-secondary-4 rounded-[16px] mt-6 mx-7.75">
           <div className="pt-7.25 pl-8 pb-7.75">
             <div className="flex flex-col">
               <p className="text-neutral-gray-1 text-24px font-[700]">
@@ -163,7 +162,7 @@ const RentalInformationSubmitPage = () => {
               onChange={(e) => setPhoneNumber(e.target.value)}
               placeholder="01012345678"
               inputSize="large"
-              className="placeholder:text-14px placeholder:font-[400] placeholder:leading-[120%]"
+              className="text-14px text-neutral-gray-1 placeholder:text-14px placeholder:font-[400] placeholder:leading-[120%]"
             ></CommonInput>
           </div>
           <div>
@@ -218,7 +217,7 @@ const RentalInformationSubmitPage = () => {
                 checked={firstConsentChecked}
                 onCheckedChange={setFirstConsentChecked}
               ></ConsentSectionCard>
-              {guaranteedGoods != "" && (
+              {guaranteedGoods != "" && guaranteedGoods != "-" && (
                 <ConsentSectionCard
                   label={label2 + guaranteedGoods + label3}
                   checked={secondConsentChecked}
@@ -238,7 +237,9 @@ const RentalInformationSubmitPage = () => {
             size="lg"
             type="submit"
             disabled={
-              !firstConsentChecked || !secondConsentChecked || isPending
+              !firstConsentChecked ||
+              (guaranteedGoods != "" && !secondConsentChecked) ||
+              isPending
             }
           >
             대여 요청하기

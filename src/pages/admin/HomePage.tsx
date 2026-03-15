@@ -88,7 +88,8 @@ const Home = () => {
           </div>
           <button className="transition duration-300 ease-in-out hover:-translate-y-1 hover:scale-101 object-fit cursor-pointer pr-[7.099%]">
             <img
-              src="/icons/home/right-arrow.svg"
+              className="rotate-[180deg]"
+              src="/icons/home/left-arrow.svg"
               alt="더보기 버튼"
               onClick={() => navigate("/rental-request")}
             />
@@ -101,7 +102,7 @@ const Home = () => {
             </div>
           ) : (
             /* 대여 요청 있는 경우 - 수직으로 가장 오래된 요청부터 하단으로 나열 */
-            <div className="flex flex-col gap-3 justify-center mt-[9.034%]">
+            <div className="flex flex-col gap-3 items-center  mt-[9.034%]">
               {rentRequests.map((items) => (
                 <RentRequestCard
                   key={items.id}

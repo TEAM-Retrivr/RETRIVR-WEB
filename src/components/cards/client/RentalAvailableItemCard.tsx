@@ -46,8 +46,8 @@ const RentalAvailableItemCard = ({
         className={`grid transition-[grid-template-rows] duration-500 ease-in-out ${isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
       >
         <div className="overflow-hidden">
-          <div className="px-6 pb-6 ">
-            <ul className="text-12px text-neutral-gray-3 mb-6">
+          <div className="px-6 pb-6">
+            <ul className="text-12px text-neutral-gray-3 px-1.5 mb-6">
               <li>
                 대여 기간 :{" "}
                 <span className="text-primary">{item.rentalDuration}일</span>

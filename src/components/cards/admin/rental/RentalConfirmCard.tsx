@@ -62,7 +62,7 @@ const RentalConfirmCard = ({ rental }: RentalConfirmCardProps) => {
 
             {/* 버튼 영역 */}
             <button
-              className="mt-5 h-12 w-full rounded-small bg-primary text-center text-18px font-bold text-neutral-white hover:bg-secondary-2"
+              className="mt-auto mb-0 h-12 w-full rounded-small bg-primary text-center text-18px font-bold text-neutral-white hover:bg-secondary-2"
               onClick={handleOpenModal}
             >
               확인하기

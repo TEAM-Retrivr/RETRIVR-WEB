@@ -36,7 +36,7 @@ const RenterSearchPage = () => {
           className="w-84.5 h-11 flex items-center justify-between font-[Pretendard] rounded-small border border-primary"
         >
           <input
-            className="flex-1 border-none outline-none pl-3 py-3 placeholder:text-neutral-gray-3 placeholder:text-14px "
+            className="flex-1 border-none outline-none pl-3 py-3  text-14px text-[#444] placeholder:text-neutral-gray-3 placeholder:text-14px "
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
@@ -47,7 +47,7 @@ const RenterSearchPage = () => {
           </button>
         </form>
         {/* 검색 결과 영역 */}
-        <div className="w-full h-screen bg-neutral-gray-6 font-[Pretendard] rounded-t-[14px] pt-6.5 px-5.5">
+        <div className="w-full bg-neutral-gray-6 min-h-40 font-[Pretendard] rounded-[14px] py-6.5 px-5.5">
           <p className="text-16px text-secondary-2 opacity-[0.9] font-[600]">
             {keyword ? "검색 결과" : "입력 예시"}
           </p>

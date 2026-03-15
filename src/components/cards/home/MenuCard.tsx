@@ -30,19 +30,19 @@ export const MenuCard = ({ menu }: { menu: HomeMenuData }) => {
       onClick={() => navigate(menu.path)}
       // 1. justify-between을 추가해 아이콘과 텍스트를 위아래로 배치
       // 2. 패딩을 퍼센트 대신 고정값(p-5)으로 수정하여 텍스트 공간 확보
-      className="w-full max-w-[161px] h-[127px] hover-lift flex flex-col items-start justify-between bg-neutral-white p-5 cursor-pointer rounded-[24px] border-2 border-menu-border shadow-menu"
+      className="w-full max-w-[161px] h-[127px] flex flex-col items-start justify-between bg-neutral-white p-5 cursor-pointer rounded-[16px] border-2 border-menu-border shadow-menu"
     >
       {/* 아이콘 영역 */}
-      <div className="w-10 h-10 bg-none rounded-xl flex items-center justify-center">
-        <div className="w-10 h-10">{getIcon(menu.id)}</div>
+      <div className="bg-none rounded-xl flex items-center justify-center">
+        <div className="">{getIcon(menu.id)}</div>
       </div>
 
       {/* 텍스트 영역: 텍스트가 절대 꺾이지 않도록 whitespace-nowrap 추가 */}
       <div className="flex flex-col gap-1 w-full">
-        <h3 className="font-bold text-[1.125rem] text-neutral-dark leading-tight whitespace-nowrap">
+        <h3 className="font-bold text-18px text-neutral-gray-2 leading-tight whitespace-nowrap">
           {menu.title}
         </h3>
-        <p className="text-[0.75rem] text-neutral-dark opacity-50 leading-tight whitespace-nowrap">
+        <p className="text-12px text-neutral-dark opacity-50 leading-tight whitespace-nowrap">
           {menu.description}
         </p>
       </div>
