@@ -1,5 +1,3 @@
-import { useState } from "react"; // 체크 아이콘 라이브러리 (없으면 SVG로 대체 가능)
-
 interface ConsentSectionCardProps {
   label: string;
   checked: boolean;

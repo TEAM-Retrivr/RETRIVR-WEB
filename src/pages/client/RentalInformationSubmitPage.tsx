@@ -15,10 +15,6 @@ const label2 = "대여 시 ";
 const label3 =
   "을 맡기셔야 합니다.\n물품 반납 시 반환됩니다. 이에 동의하시나요?";
 
-// TODO: 실제로는 ClientHome에서 대여하기 클릭 시 location.state로 itemId 전달
-const DEFAULT_ITEM_ID = 1;
-const DEFAULT_GUARANTEED_GOODS = "학생증 또는 신분증";
-
 const RentalInformationSubmitPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -30,7 +26,7 @@ const RentalInformationSubmitPage = () => {
     guaranteedGoods?: string;
     description?: string;
   } | null;
-  const itemId = state?.itemId ?? DEFAULT_ITEM_ID;
+  const itemId = state?.itemId ?? 0;
   const itemUnitId = state?.itemUnitId; // 개별 코드형 물품일 때만 전달
   const itemName = state?.name ?? "대여 물품";
   const rentalDuration = state?.rentalDuration ?? 0;

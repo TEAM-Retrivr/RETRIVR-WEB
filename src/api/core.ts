@@ -15,7 +15,8 @@ export const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     const accessToken = localStorage.getItem("accessToken");
-    const refreshToken = localStorage.getItem("refreshToken");
+    // 리프레시 토큰이 지금 당장 쓰이지 않으므로 일단 주석 처리
+    // const refreshToken = localStorage.getItem("refreshToken");
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
