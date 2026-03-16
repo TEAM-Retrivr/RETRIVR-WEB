@@ -7,11 +7,11 @@ import { useNavigate } from "react-router-dom";
 interface ShortRentalApproveModalProps {
   isOpen: boolean;
   onClose: () => void;
-  // itemData: {
-  //   name: string;
-  //   borrower: string;
-  //   duration: string;
-  // };
+  itemData: {
+    name: string;
+    borrower: string;
+    duration: string;
+  };
 }
 
 export const ShortRentalApprovalModal = ({
