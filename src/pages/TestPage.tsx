@@ -4,10 +4,8 @@ import { HOME_MENUS } from "../types/menu";
 import CommonInput from "../components/CommonInput";
 import RentalStatusToggle from "../components/RentalStatusToggle";
 import RentalAvailableItemCard from "../components/cards/client/RentalAvailableItemCard";
-import Header from "../components/Header";
 import type { ItemRequest } from "../types/item";
 import ItemStatusCard from "../components/cards/admin/management/ItemStatusCard";
-import ItemManagementCard from "../components/cards/admin/management/ItemManagementCard";
 import RentalConfirmCard from "../components/cards/admin/rental/RentalConfirmCard";
 export const DUMMY_ITEM_REQUESTS: ItemRequest[] = [
   {
@@ -91,8 +89,6 @@ const TestPage = () => {
     applicant: "조윤아 | 동물자원학과",
     time: `2026-01-21 17:0${index}`,
   }));
-
-  const CARD_BLOCK_HEIGHT = 120; // 카드 한 장 + 간격 높이(px)
 
   const handleTouchStart = (e: TouchEvent<HTMLDivElement>) => {
     const touchY = e.touches[0]?.clientY ?? 0;
@@ -178,24 +174,7 @@ const TestPage = () => {
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
-          >
-            <div
-              className="flex flex-col transition-transform duration-500 ease-out"
-              style={{
-                transform: `translateY(-${currentIndex * CARD_BLOCK_HEIGHT}px)`,
-              }}
-            >
-              {requests.map((req, index) => (
-                <div
-                  key={index}
-                  className="flex justify-center mb-4"
-                  style={{ height: CARD_BLOCK_HEIGHT }}
-                >
-                  <div className="flex items-center justify-center w-full"></div>
-                </div>
-              ))}
-            </div>
-          </div>
+          ></div>
 
           {/* 페이지 인디케이터 (오른쪽 점) */}
           <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2">
