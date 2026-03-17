@@ -68,7 +68,7 @@ const ReturnApprovalModal = ({ isOpen, onClose }: ReturnApprovalModalProps) => {
         </div>
         {/* 버튼 영역 */}
         <div className="flex w-full justify-between ">
-          <Button variant="outline" size="md">
+          <Button variant="outline" size="md" onClick={onClose}>
             취소
           </Button>
           <Button variant="primary" size="md">
