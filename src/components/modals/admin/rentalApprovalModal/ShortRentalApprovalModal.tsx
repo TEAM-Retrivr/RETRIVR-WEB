@@ -27,6 +27,7 @@ export const ShortRentalApprovalModal = ({
 }: ShortRentalApproveModalProps) => {
   const [adminName, setAdminName] = useState("");
   const [isGuaranteedChecked, setIsGuaranteedChecked] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const { mutate: approveRental, isPending: isApproving } =
     useApproveAdminRental();
@@ -45,7 +46,11 @@ export const ShortRentalApprovalModal = ({
     if (!canSubmit) return;
     approveRental(
       { rentalId, adminNameToApprove: adminName.trim() },
-      { onSuccess: afterSuccess },
+      {
+        onSuccess: afterSuccess,
+        onError: () =>
+          setSubmitError("대여 요청 승인에 실패했습니다. 다시 시도해주세요."),
+      },
     );
   };
 
@@ -53,7 +58,11 @@ export const ShortRentalApprovalModal = ({
     if (!canSubmit) return;
     rejectRental(
       { rentalId, adminNameToReject: adminName.trim() },
-      { onSuccess: afterSuccess },
+      {
+        onSuccess: afterSuccess,
+        onError: () =>
+          setSubmitError("대여 요청 거절에 실패했습니다. 다시 시도해주세요."),
+      },
     );
   };
   return (
@@ -94,6 +103,7 @@ export const ShortRentalApprovalModal = ({
         </div>
 
         {/* 3. 하단 버튼 영역 */}
+        {submitError && <p className="text-12px text-red">{submitError}</p>}
         <div className="flex gap-3 mt-3">
           <Button
             variant="outline"
