@@ -5,6 +5,8 @@ import {
   requestAdminOverdueRentalList,
   requestAdminRentalRequestList,
   createAdminItem,
+  approveAdminRental,
+  rejectAdminRental,
 } from "../../api/admin/admin.api";
 import type { AdminCreateItemRequest } from "../../api/admin/admin.type";
 
@@ -61,5 +63,21 @@ export const useAdminRentalRequestList = () => {
 export const useCreateAdminItem = () => {
   return useMutation({
     mutationFn: (body: AdminCreateItemRequest) => createAdminItem(body),
+  });
+};
+
+// 대여 요청 승인
+// - RentalRequestPage > ShortRentalApprovalModal 에서 사용
+export const useApproveAdminRental = () => {
+  return useMutation({
+    mutationFn: approveAdminRental,
+  });
+};
+
+// 대여 요청 거절
+// - RentalRequestPage > ShortRentalApprovalModal 에서 사용
+export const useRejectAdminRental = () => {
+  return useMutation({
+    mutationFn: rejectAdminRental,
   });
 };

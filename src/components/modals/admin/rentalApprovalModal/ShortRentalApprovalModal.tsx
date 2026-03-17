@@ -2,11 +2,16 @@ import { useState } from "react";
 import { Modal } from "../../../Modal";
 import CustomCheckBox from "../../../CustomCheckbox";
 import Button from "../../../Button";
-import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  useApproveAdminRental,
+  useRejectAdminRental,
+} from "../../../../hooks/queries/useAdminQueries";
 
 interface ShortRentalApproveModalProps {
   isOpen: boolean;
   onClose: () => void;
+  rentalId: number;
   itemData: {
     name: string;
     borrower: string;
@@ -17,10 +22,40 @@ interface ShortRentalApproveModalProps {
 export const ShortRentalApprovalModal = ({
   isOpen,
   onClose,
+  rentalId,
   // itemData,
 }: ShortRentalApproveModalProps) => {
   const [adminName, setAdminName] = useState("");
-  const navigate = useNavigate();
+  const [isGuaranteedChecked, setIsGuaranteedChecked] = useState(false);
+  const queryClient = useQueryClient();
+  const { mutate: approveRental, isPending: isApproving } =
+    useApproveAdminRental();
+  const { mutate: rejectRental, isPending: isRejecting } =
+    useRejectAdminRental();
+
+  const isMutating = isApproving || isRejecting;
+  const canSubmit = isGuaranteedChecked && !!adminName.trim() && !isMutating;
+
+  const afterSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ["adminRentalRequests"] });
+    onClose();
+  };
+
+  const handleApprove = () => {
+    if (!canSubmit) return;
+    approveRental(
+      { rentalId, adminNameToApprove: adminName.trim() },
+      { onSuccess: afterSuccess },
+    );
+  };
+
+  const handleReject = () => {
+    if (!canSubmit) return;
+    rejectRental(
+      { rentalId, adminNameToReject: adminName.trim() },
+      { onSuccess: afterSuccess },
+    );
+  };
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="요청을 승인하시겠어요?">
       <div className="flex flex-col pt-7 gap-4 font-[Pretendard]">
@@ -36,8 +71,8 @@ export const ShortRentalApprovalModal = ({
             <p className=""></p>
           </div>
           <CustomCheckBox
-            checked={true}
-            onCheckedChange={() => navigate("/modal-test")}
+            checked={isGuaranteedChecked}
+            onCheckedChange={(checked) => setIsGuaranteedChecked(checked)}
           />
         </div>
 
@@ -60,11 +95,21 @@ export const ShortRentalApprovalModal = ({
 
         {/* 3. 하단 버튼 영역 */}
         <div className="flex gap-3 mt-3">
-          <Button variant="outline" size="md">
+          <Button
+            variant="outline"
+            size="md"
+            onClick={handleReject}
+            disabled={!canSubmit}
+          >
             거부
           </Button>
-          <Button variant="primary" size="md">
-            승인
+          <Button
+            variant="primary"
+            size="md"
+            onClick={handleApprove}
+            disabled={!canSubmit}
+          >
+            {isApproving ? "승인 중..." : "승인"}
           </Button>
         </div>
       </div>

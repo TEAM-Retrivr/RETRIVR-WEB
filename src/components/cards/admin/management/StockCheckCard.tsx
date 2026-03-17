@@ -5,6 +5,7 @@ interface CardProps {
   availableQuantity: number;
   totalQuantity: number;
   isRentalAvailable: boolean;
+  onClick?: () => void;
 }
 
 const StockCheckCard = ({
@@ -12,9 +13,10 @@ const StockCheckCard = ({
   availableQuantity,
   totalQuantity,
   isRentalAvailable,
+  onClick,
 }: CardProps) => {
   const baseBoxStyle =
-    "flex justify-between items-center w-84.5 h-22.5 font-[Pretendard] rounded-[16px] shadow-item-card cursor-pointer box-border pl-7 pr-7.5 py-4";
+    "flex justify-between items-center w-full h-22.5 font-[Pretendard] rounded-[16px] shadow-item-card cursor-pointer box-border px-7 py-4";
   const availableBoxStyle = "bg-neutral-white ";
   const unavailableBoxStyle = "bg-[#F8F9F9]";
 
@@ -26,6 +28,7 @@ const StockCheckCard = ({
       className={`${baseBoxStyle} ${
         isRentalAvailable ? availableBoxStyle : unavailableBoxStyle
       }`}
+      onClick={onClick}
     >
       <p
         className={`${baseTextStyle} ${
