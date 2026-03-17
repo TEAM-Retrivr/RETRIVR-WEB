@@ -82,7 +82,7 @@ export const ShortRentalApprovalModal = ({
           />
         </div>
 
-        {/* 2. 승인 관리자 입력 */}
+        {/* 승인 관리자 입력 */}
         <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <label className="text-14px font-bold text-neutral-gray-1">
@@ -99,7 +99,7 @@ export const ShortRentalApprovalModal = ({
           </div>
         </div>
 
-        {/* 3. 하단 버튼 영역 */}
+        {/* 하단 버튼 영역 */}
         {submitError && <p className="text-12px text-red">{submitError}</p>}
         <div className="flex gap-3 mt-3">
           <Button
