@@ -85,6 +85,24 @@ export interface AdminRentalRequestListResponse {
   nextCursor?: number;
 }
 
+// 대여 요청 승인 응답
+// POST /api/admin/v1/rentals/{rentalId}/approve
+export interface AdminApproveRentalResponse {
+  rentalId: number;
+  rentalDecisionStatus: "APPROVE" | "REJECT" | string;
+  adminNameToDecide: string;
+  decisionDate: string;
+}
+
+// 대여 요청 거절 응답
+// POST /api/admin/v1/rentals/{rentalId}/reject
+export interface AdminRejectRentalResponse {
+  rentalId: number;
+  rentalDecisionStatus: "APPROVE" | "REJECT" | string;
+  adminNameToDecide: string;
+  decisionDate: string;
+}
+
 // 관리자 물품 등록 요청 바디
 // POST /api/admin/v1/items
 export interface AdminBorrowerRequirementRequest {

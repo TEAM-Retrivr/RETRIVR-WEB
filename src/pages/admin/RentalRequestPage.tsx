@@ -35,6 +35,7 @@ const RentalRequestPage = () => {
           !error &&
           requests.map((request) => {
             const rental: RentalRequest = {
+              rentalId: request.rentalId,
               requestedAt: request.requestedAt,
               itemName: request.itemName,
               // 개별 코드형 물품 코드 표시 (예: "C-001")

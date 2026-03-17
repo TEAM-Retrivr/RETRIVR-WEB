@@ -5,6 +5,8 @@ import type {
   AdminRentalRequestListResponse,
   AdminCreateItemRequest,
   AdminCreateItemResponse,
+  AdminApproveRentalResponse,
+  AdminRejectRentalResponse,
 } from "./admin.type";
 import { apiClient } from "../core";
 
@@ -76,6 +78,50 @@ export const requestAdminRentalRequestList = async (
   const response = await apiClient.get<AdminRentalRequestListResponse>(
     "/api/admin/v1/rentals/requests",
     { params },
+  );
+  return response.data;
+};
+
+// 대여 요청 승인
+// POST /api/admin/v1/rentals/{rentalId}/approve
+export interface AdminApproveRentalRequestBody {
+  adminNameToApprove: string;
+}
+
+export const approveAdminRental = async ({
+  rentalId,
+  adminNameToApprove,
+}: {
+  rentalId: number;
+  adminNameToApprove: string;
+}): Promise<AdminApproveRentalResponse> => {
+  const response = await apiClient.post<AdminApproveRentalResponse>(
+    `/api/admin/v1/rentals/${rentalId}/approve`,
+    {
+      adminNameToApprove,
+    },
+  );
+  return response.data;
+};
+
+// 대여 요청 거절
+// POST /api/admin/v1/rentals/{rentalId}/reject
+export interface AdminRejectRentalRequestBody {
+  adminNameToReject: string;
+}
+
+export const rejectAdminRental = async ({
+  rentalId,
+  adminNameToReject,
+}: {
+  rentalId: number;
+  adminNameToReject: string;
+}): Promise<AdminRejectRentalResponse> => {
+  const response = await apiClient.post<AdminRejectRentalResponse>(
+    `/api/admin/v1/rentals/${rentalId}/reject`,
+    {
+      adminNameToReject,
+    },
   );
   return response.data;
 };

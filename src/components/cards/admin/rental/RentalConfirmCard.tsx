@@ -8,7 +8,8 @@ interface RentalConfirmCardProps {
 }
 
 const RentalConfirmCard = ({ rental }: RentalConfirmCardProps) => {
-  const { requestedAt, itemName, itemId, itemCount, applicantInfo } = rental;
+  const { rentalId, requestedAt, itemName, itemId, itemCount, applicantInfo } =
+    rental;
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleOpenModal = () => {
@@ -74,6 +75,7 @@ const RentalConfirmCard = ({ rental }: RentalConfirmCardProps) => {
       <ShortRentalApprovalModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
+        rentalId={rentalId}
         itemData={{
           name: itemName,
           borrower: applicantInfo.name,

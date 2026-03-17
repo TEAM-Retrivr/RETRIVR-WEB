@@ -7,6 +7,7 @@ export interface ApplicantInfo {
 
 // 대여 전체 정보
 export interface RentalRequest {
+  rentalId: number; // 대여 요청 ID
   requestedAt: string; // 대여 요청 시각
   itemName: string; // 대여 물품 이름
   itemId?: string; // 물품 고유 번호

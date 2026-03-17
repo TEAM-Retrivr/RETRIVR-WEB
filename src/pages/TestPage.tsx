@@ -6,7 +6,6 @@ import RentalStatusToggle from "../components/RentalStatusToggle";
 import RentalAvailableItemCard from "../components/cards/client/RentalAvailableItemCard";
 import type { ItemRequest } from "../types/item";
 import ItemStatusCard from "../components/cards/admin/management/ItemStatusCard";
-import RentalConfirmCard from "../components/cards/admin/rental/RentalConfirmCard";
 export const DUMMY_ITEM_REQUESTS: ItemRequest[] = [
   {
     item: {
@@ -193,22 +192,6 @@ const TestPage = () => {
             ))}
           </div>
         </div>
-      </div>
-      <h1 className="text-xl font-bold">대여 요청 확인 카드 + 모달 테스트</h1>
-      <div className="flex justify-center">
-        <RentalConfirmCard
-          rental={{
-            requestedAt: "2026-01-21 17:05",
-            itemName: "C타입 충전기",
-            itemId: "1",
-            itemCount: "(2/5)",
-            applicantInfo: {
-              name: "홍길동",
-              major: "소프트웨어융합학과",
-              id: "202012345",
-            },
-          }}
-        />
       </div>
     </div>
   );
