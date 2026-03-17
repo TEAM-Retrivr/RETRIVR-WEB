@@ -1,6 +1,7 @@
 import { Layout } from "../../../components/Layout";
 import Header from "../../../components/Header";
 import { useNavigate } from "react-router-dom";
+import ReturnCheckCard from "../../../components/cards/admin/return/ReturnCheckCard";
 const ReturnCheckPage = () => {
   const navigate = useNavigate();
   return (
@@ -15,7 +16,9 @@ const ReturnCheckPage = () => {
         {/* 물품 정보 영역 - 물품 이름, 총 개수, 대여기간, 보증 물품, 현재 대여 중인 개수 */}
         <div></div>
         {/* 반납 확인 컴포넌트 영역 */}
-        <div></div>
+        <div className="flex flex-col items-center overflow-y-auto no-scrollbar">
+          <ReturnCheckCard></ReturnCheckCard>
+        </div>
       </div>
     </Layout>
   );
