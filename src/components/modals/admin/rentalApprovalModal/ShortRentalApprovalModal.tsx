@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Modal } from "../../../Modal";
 import CustomCheckBox from "../../../CustomCheckbox";
 import Button from "../../../Button";
-import { useQueryClient } from "@tanstack/react-query";
 import {
   useApproveAdminRental,
   useRejectAdminRental,
@@ -28,7 +27,6 @@ export const ShortRentalApprovalModal = ({
   const [adminName, setAdminName] = useState("");
   const [isGuaranteedChecked, setIsGuaranteedChecked] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const queryClient = useQueryClient();
   const { mutate: approveRental, isPending: isApproving } =
     useApproveAdminRental();
   const { mutate: rejectRental, isPending: isRejecting } =
@@ -37,17 +35,14 @@ export const ShortRentalApprovalModal = ({
   const isMutating = isApproving || isRejecting;
   const canSubmit = isGuaranteedChecked && !!adminName.trim() && !isMutating;
 
-  const afterSuccess = () => {
-    queryClient.invalidateQueries({ queryKey: ["adminRentalRequests"] });
-    onClose();
-  };
-
   const handleApprove = () => {
     if (!canSubmit) return;
     approveRental(
       { rentalId, adminNameToApprove: adminName.trim() },
       {
-        onSuccess: afterSuccess,
+        onSuccess: () => {
+          (alert("대여 요청 승인이 완료되었습니다."), onClose);
+        },
         onError: () =>
           setSubmitError("대여 요청 승인에 실패했습니다. 다시 시도해주세요."),
       },
@@ -59,7 +54,9 @@ export const ShortRentalApprovalModal = ({
     rejectRental(
       { rentalId, adminNameToReject: adminName.trim() },
       {
-        onSuccess: afterSuccess,
+        onSuccess: () => {
+          (alert("대여 요청 거절이 완료되었습니다."), onClose);
+        },
         onError: () =>
           setSubmitError("대여 요청 거절에 실패했습니다. 다시 시도해주세요."),
       },

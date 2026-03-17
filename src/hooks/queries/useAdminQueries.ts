@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   requestAdminItemList,
   requestAdminRentalItemSummaryList,
@@ -66,18 +66,30 @@ export const useCreateAdminItem = () => {
   });
 };
 
-// 대여 요청 승인
+// 대여 요청 승인 (POST)
 // - RentalRequestPage > ShortRentalApprovalModal 에서 사용
 export const useApproveAdminRental = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: approveAdminRental,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["adminRentalRequests"],
+      });
+    },
   });
 };
 
-// 대여 요청 거절
+// 대여 요청 거절 (POST)
 // - RentalRequestPage > ShortRentalApprovalModal 에서 사용
 export const useRejectAdminRental = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: rejectAdminRental,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["adminRentalRequests"],
+      });
+    },
   });
 };
