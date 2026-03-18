@@ -8,7 +8,7 @@ import BlueButton from "../../components/BlueButton";
 import { useNavigate } from "react-router-dom";
 
 interface RentRequestCardData {
-  id: string;
+  id: number;
   itemName: string;
   count: string;
   applicant: string;
@@ -30,7 +30,7 @@ const Home = () => {
 
   const rentRequests: RentRequestCardData[] =
     data?.recentRequests?.map((req) => ({
-      id: String(req.rentalId),
+      id: req.rentalId,
       itemName: req.itemName,
       count: `(${req.availableQuantity}/${req.totalQuantity})`,
       applicant: `${req.borrowerName} | ${req.borrowerMajor}`,
@@ -115,7 +115,7 @@ const Home = () => {
               {rentRequests.map((items) => (
                 <RentRequestCard
                   key={items.id}
-                  rentalId={Number(items.id)}
+                  rentalId={items.id}
                   itemName={items.itemName}
                   count={items.count}
                   applicant={items.applicant}
