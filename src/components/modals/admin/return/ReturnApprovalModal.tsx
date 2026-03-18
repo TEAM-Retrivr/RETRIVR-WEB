@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Modal } from "../../../Modal";
 import CustomCheckBox from "../../../CustomCheckbox";
 import Button from "../../../Button";
@@ -20,6 +20,13 @@ const ReturnApprovalModal = ({
   const [isGuaranteedReturned, setIsGuaranteedReturned] = useState(false);
   const [isItemConditionChecked, setIsItemConditionChecked] = useState(false);
   const [adminName, setAdminName] = useState("");
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setIsGuaranteedReturned(false);
+    setIsItemConditionChecked(false);
+    setAdminName("");
+  }, [isOpen]);
 
   const canSubmit =
     isGuaranteedReturned &&

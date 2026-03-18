@@ -99,7 +99,7 @@ const Home = () => {
           {rentRequests.length === 0 ? (
             <div className="flex items-center justify-between h-full text-neutral-dark/50 text-sm pt-[40%]">
               <img
-                className="mt-auto mb-o"
+                className="mt-auto mb-0"
                 src="/icons/home/no-rental-icon-1.svg"
                 alt="강아지"
               />

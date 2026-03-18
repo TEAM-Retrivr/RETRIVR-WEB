@@ -41,7 +41,8 @@ export const ShortRentalApprovalModal = ({
       { rentalId, adminNameToApprove: adminName.trim() },
       {
         onSuccess: () => {
-          (alert("대여 요청 승인이 완료되었습니다."), onClose);
+          alert("대여 요청 승인이 완료되었습니다.");
+          onClose();
         },
         onError: () =>
           setSubmitError("대여 요청 승인에 실패했습니다. 다시 시도해주세요."),
@@ -55,7 +56,8 @@ export const ShortRentalApprovalModal = ({
       { rentalId, adminNameToReject: adminName.trim() },
       {
         onSuccess: () => {
-          (alert("대여 요청 거절이 완료되었습니다."), onClose);
+          alert("대여 요청 거절이 완료되었습니다.");
+          onClose();
         },
         onError: () =>
           setSubmitError("대여 요청 거절에 실패했습니다. 다시 시도해주세요."),

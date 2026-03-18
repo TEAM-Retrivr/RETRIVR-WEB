@@ -69,14 +69,14 @@ const ReturnCheckCard = ({ rental }: ReturnCheckCardProps) => {
               {/* 대여 일자, 반납 일자 표시 영역 */}
               <div className="w-30.75 text-12px text-secondary-2">
                 {/* 대여 일자 영역 : rentalDate 필요  */}
-                <div className="flex align-center justify-between">
+                <div className="flex items-center justify-between">
                   <p className="font-bold leading-[130%]">대여 일자</p>
                   <p className="text-right font-normal leading-[140%]">
                     {rental.rentalDate}
                   </p>
                 </div>
                 {/* 반납일자 영역 : expectedReturnDueDate 필요 */}
-                <div className="flex align-center justify-between">
+                <div className="flex items-center justify-between">
                   <p className="font-bold leading-[130%]">반납 일자</p>
                   <p className="text-right font-normal leading-[140%]">
                     {rental.expectedReturnDueDate}
