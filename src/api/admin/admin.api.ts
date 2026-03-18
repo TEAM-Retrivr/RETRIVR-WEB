@@ -7,6 +7,8 @@ import type {
   AdminCreateItemResponse,
   AdminApproveRentalResponse,
   AdminRejectRentalResponse,
+  AdminActiveRentalsByItemResponse,
+  AdminConfirmReturnResponse,
 } from "./admin.type";
 import { apiClient } from "../core";
 
@@ -78,6 +80,53 @@ export const requestAdminRentalRequestList = async (
   const response = await apiClient.get<AdminRentalRequestListResponse>(
     "/api/admin/v1/rentals/requests",
     { params },
+  );
+  return response.data;
+};
+
+// 대여 중인 물품 상세 조회
+// - 물품별 관리(반납 처리) 화면에서 사용
+// - itemId: 조회할 물품 ID (path)
+// - cursor: 마지막 조회된 unitId (다음 페이지 조회 시 사용)
+// - size: 한 번에 가져올 unit 개수 (기본값 서버/화면 정책에 따름)
+// GET /api/admin/v1/items/{itemId}/rentals/active
+export interface AdminActiveRentalsByItemParams {
+  cursor?: number;
+  size?: number;
+}
+
+export const requestAdminActiveRentalsByItem = async ({
+  itemId,
+  params,
+}: {
+  itemId: number;
+  params?: AdminActiveRentalsByItemParams;
+}): Promise<AdminActiveRentalsByItemResponse> => {
+  const response = await apiClient.get<AdminActiveRentalsByItemResponse>(
+    `/api/admin/v1/items/${itemId}/rentals/active`,
+    { params },
+  );
+  return response.data;
+};
+
+// 반납 확인
+// - 물품별 관리(반납 처리) 화면에서 사용
+// - rentalId: 반납 처리할 대여 ID (path)
+// - adminNameToConfirm: 반납 처리 관리자 이름 (body)
+// POST /api/admin/v1/rentals/{rentalId}/return
+export const confirmAdminReturn = async ({
+  rentalId,
+  adminNameToConfirm,
+}: {
+  rentalId: number;
+  adminNameToConfirm: string;
+  // itemId는 서버로 보내지 않고, 성공 후 캐시 무효화에만 사용합니다.
+  // (mutation variables에 함께 포함시켜 훅에서 queryKey를 정확히 invalidate)
+  itemId?: number;
+}): Promise<AdminConfirmReturnResponse> => {
+  const response = await apiClient.post<AdminConfirmReturnResponse>(
+    `/api/admin/v1/rentals/${rentalId}/return`,
+    { adminNameToConfirm },
   );
   return response.data;
 };

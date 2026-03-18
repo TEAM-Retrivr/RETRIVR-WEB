@@ -46,7 +46,7 @@ function App() {
       </Routes>
       <Routes>
         {/* 대여자 물품별 관리 페이지 */}
-        <Route path="/return-check" element={<ReturnCheckPage />} />
+        <Route path="/return-check/:itemId" element={<ReturnCheckPage />} />
       </Routes>
       <Routes>
         {/* 대여 요청 확인 페이지 */}

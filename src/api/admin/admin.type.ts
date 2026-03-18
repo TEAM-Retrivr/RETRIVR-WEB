@@ -129,3 +129,41 @@ export interface AdminCreateItemResponse {
   name: string; // 물품 이름
   borrowerRequirements: AdminBorrowerRequirementResponse[]; // 저장된 대여자 요구 정보 목록
 }
+
+// 대여 중인 물품 상세 조회 응답
+// GET /api/admin/v1/items/{itemId}/rentals/active
+// - 물품별 관리(반납 처리) 화면에서 사용
+// - itemUnits: 현재 대여 중인 개별 물품(고유번호 단위) 목록
+export interface AdminActiveRentalItemUnit {
+  isOverdue: boolean; // 연체 여부
+  rentalId?: number; // 대여 ID (반납 확인 API에서 사용) - 백엔드 명세/응답에 없을 수 있어 optional
+  unitId: number; // 물품 고유번호 ID (서버 명세: unitId)
+  unitCode: string; // 물품 고유번호 코드
+  borrowerName: string;
+  borrowerStudentNumber: string;
+  borrowerMajor: string;
+  rentalDate: string; // ISO date string (대여 일자)
+  expectedReturnDueDate: string; // ISO date string (반납 예정 일자)
+}
+
+export interface AdminActiveRentalsByItemResponse {
+  itemId: number;
+  itemName: string;
+  availableQuantity: number;
+  totalQuantity: number;
+  rentalDuration: number;
+  itemUnits: AdminActiveRentalItemUnit[];
+  nextCursor?: number;
+}
+
+// 반납 확인 요청/응답
+// POST /api/admin/v1/rentals/{rentalId}/return
+export interface AdminConfirmReturnRequestBody {
+  adminNameToConfirm: string;
+}
+
+export interface AdminConfirmReturnResponse {
+  rentalId: number;
+  rentalStatus: string;
+  adminNameToConfirm: string;
+}

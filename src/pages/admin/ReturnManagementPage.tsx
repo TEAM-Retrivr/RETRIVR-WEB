@@ -188,7 +188,7 @@ const ReturnManagementPage = () => {
                   availableQuantity={item.availableQuantity}
                   totalQuantity={item.totalQuantity}
                   isRentalAvailable={item.isRentalAvailable}
-                  onClick={() => navigate("")} // TODO: 물품별 관리 페이지로 라우팅
+                  onClick={() => navigate(`/return-check/${item.itemId}`)}
                 />
               ))}
           </div>

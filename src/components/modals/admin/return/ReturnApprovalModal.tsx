@@ -6,11 +6,26 @@ import Button from "../../../Button";
 interface ReturnApprovalModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onConfirm: (adminNameToConfirm: string) => void;
+  isSubmitting?: boolean;
+  submitError?: string | null;
 }
-const ReturnApprovalModal = ({ isOpen, onClose }: ReturnApprovalModalProps) => {
+const ReturnApprovalModal = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  isSubmitting = false,
+  submitError = null,
+}: ReturnApprovalModalProps) => {
   const [isGuaranteedReturned, setIsGuaranteedReturned] = useState(false);
   const [isItemConditionChecked, setIsItemConditionChecked] = useState(false);
   const [adminName, setAdminName] = useState("");
+
+  const canSubmit =
+    isGuaranteedReturned &&
+    isItemConditionChecked &&
+    !!adminName.trim() &&
+    !isSubmitting;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="반납 처리를 하시겠어요?">
@@ -67,12 +82,26 @@ const ReturnApprovalModal = ({ isOpen, onClose }: ReturnApprovalModalProps) => {
           </div>
         </div>
         {/* 버튼 영역 */}
+        {submitError && <p className="text-12px text-red">{submitError}</p>}
         <div className="flex w-full justify-between ">
-          <Button variant="outline" size="md" onClick={onClose}>
+          <Button
+            variant="outline"
+            size="md"
+            onClick={onClose}
+            disabled={isSubmitting}
+          >
             취소
           </Button>
-          <Button variant="primary" size="md">
-            반납
+          <Button
+            variant="primary"
+            size="md"
+            disabled={!canSubmit}
+            onClick={() => {
+              if (!canSubmit) return;
+              onConfirm(adminName.trim());
+            }}
+          >
+            {isSubmitting ? "반납 중..." : "반납"}
           </Button>
         </div>
       </div>
