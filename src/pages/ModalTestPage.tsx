@@ -1,7 +1,9 @@
 import { useState } from "react";
 // import { ShortRentalApprovalModal } from "../components/modals/admin/rentalApprovalModal/ShortRentalApprovalModal";
 
-import ReturnApprovalModal from "../components/modals/admin/return/ReturnApprovalModal";
+import LongRentalApprovalModal from "../components/modals/admin/rentalApprovalModal/LongRentalApprovalModal";
+
+// import ReturnApprovalModal from "../components/modals/admin/return/ReturnApprovalModal";
 
 export const ModalTestPage = () => {
   // 1. 모달의 상태 관리 (초기값은 닫힘: false)
@@ -25,16 +27,15 @@ export const ModalTestPage = () => {
       >
         승인 모달 열기
       </button>
-      <ReturnApprovalModal
+      {/* <ReturnApprovalModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      /> */}
+      {/* 3. 모달 컴포넌트 배치 */}
+      <LongRentalApprovalModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
-      {/* 3. 모달 컴포넌트 배치 */}
-      {/* <ShortRentalApprovalModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        itemData={testItem}
-      /> */}
     </div>
   );
 };
