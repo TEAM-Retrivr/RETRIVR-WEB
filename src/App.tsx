@@ -9,6 +9,7 @@ import RentalRequestPage from "./pages/admin/RentalRequestPage";
 import ItemManagementPage from "./pages/admin/ItemManagementPage";
 import ItemRegisterationPage from "./pages/admin/ItemRegisterationPage";
 import ReturnManagementPage from "./pages/admin/ReturnManagementPage";
+import ReturnCheckPage from "./pages/admin/return/ReturnCheckPage";
 import ClientHomePage from "./pages/client/ClientHomePage";
 import RentalInformationSubmitPage from "./pages/client/RentalInformationSubmitPage";
 import RenterSearchPage from "./pages/client/RenterSearchPage";
@@ -42,6 +43,10 @@ function App() {
       <Routes>
         {/* 대여자 반납 관리 페이지 */}
         <Route path="/return-manage" element={<ReturnManagementPage />} />
+      </Routes>
+      <Routes>
+        {/* 대여자 물품별 관리 페이지 */}
+        <Route path="/return-check/:itemId" element={<ReturnCheckPage />} />
       </Routes>
       <Routes>
         {/* 대여 요청 확인 페이지 */}

@@ -7,9 +7,9 @@ export default defineConfig(({ mode }) => {
 
   // 개발 환경에서는 CORS 회피를 위해 프록시가 백엔드로 전달
   // (브라우저는 항상 /api 상대경로로만 요청)
-  // 기본은 http로 통신 (테스트/로컬 환경 기준)
+  // 기본은 https로 통신 (백엔드가 https 제공하는 경우)
   // 필요 시 .env.production 등의 VITE_API_BASE_URL로 덮어쓰기 가능
-  const proxyTarget = env.VITE_API_BASE_URL || "http://retrivr-server.kr";
+  const proxyTarget = env.VITE_API_BASE_URL || "https://retrivr-server.kr";
 
   return {
     plugins: [react()],

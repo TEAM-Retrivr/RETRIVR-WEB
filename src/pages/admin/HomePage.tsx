@@ -6,8 +6,9 @@ import { HOME_MENUS } from "../../types/menu";
 import { useLoadHome } from "../../hooks/queries/useAuthQueries";
 import BlueButton from "../../components/BlueButton";
 import { useNavigate } from "react-router-dom";
+
 interface RentRequestCardData {
-  id: string;
+  id: number;
   itemName: string;
   count: string;
   applicant: string;
@@ -29,14 +30,13 @@ const Home = () => {
 
   const rentRequests: RentRequestCardData[] =
     data?.recentRequests?.map((req) => ({
-      id: String(req.rentalId),
+      id: req.rentalId,
       itemName: req.itemName,
       count: `(${req.availableQuantity}/${req.totalQuantity})`,
       applicant: `${req.borrowerName} | ${req.borrowerMajor}`,
       time: req.requestedAt,
     })) ?? [];
 
-  // TODO: 로딩/에러 상태 처리 예시
   if (isLoading) {
     return (
       <Layout>
@@ -97,8 +97,17 @@ const Home = () => {
         </div>
         <div>
           {rentRequests.length === 0 ? (
-            <div className="flex items-center justify-center h-full text-neutral-dark/50 text-sm pt-[40%]">
-              대여 요청이 없습니다
+            <div className="flex items-center justify-between h-full text-neutral-dark/50 text-sm pt-[40%]">
+              <img
+                className="mt-auto mb-0"
+                src="/icons/home/no-rental-icon-1.svg"
+                alt="강아지"
+              />
+              <img
+                className="mt-0"
+                src="/icons/home/no-rental-icon-2.svg"
+                alt="..."
+              />
             </div>
           ) : (
             /* 대여 요청 있는 경우 - 수직으로 가장 오래된 요청부터 하단으로 나열 */
@@ -106,6 +115,7 @@ const Home = () => {
               {rentRequests.map((items) => (
                 <RentRequestCard
                   key={items.id}
+                  rentalId={items.id}
                   itemName={items.itemName}
                   count={items.count}
                   applicant={items.applicant}

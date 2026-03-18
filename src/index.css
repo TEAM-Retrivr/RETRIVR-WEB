@@ -39,6 +39,7 @@
 @theme {
   /* 1. 폰트 */
   --font-family: Pretendard;
+  --text-28px: 1.75rem; /* 28px */
   --text-24px: 1.5rem; /* 24px */
   --text-22px: 1.375rem; /* 22px */
   --text-20px: 1.25rem; /* 20px */
@@ -66,6 +67,7 @@
   --color-secondary-2: #7998c5;
   --color-secondary-3: #b5f4ff;
   --color-secondary-4: #f5f9ff;
+  --color-secondary-5: #bbd6ff;
   /* Gradient & Background Colors */
   --color-grad-blue: #7fb5f7;
   --color-bg-pale: #d6f4ff;
