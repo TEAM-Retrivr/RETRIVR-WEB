@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Modal } from "../../../Modal";
 import CustomCheckBox from "../../../CustomCheckbox";
 import Button from "../../../Button";
@@ -10,14 +10,68 @@ import {
 interface LongRentalApproveModalProps {
   isOpen: boolean;
   onClose: () => void;
+  rentalId: number;
+  itemName: string;
+  count: string;
+  applicant: string;
+  time: string;
 }
 
 const LongRentalApprovalModal = ({
   isOpen,
   onClose,
+  rentalId,
+  itemName,
+  count,
+  applicant,
+  time,
 }: LongRentalApproveModalProps) => {
   const [isGuaranteedChecked, setIsGuaranteedChecked] = useState(false);
   const [adminName, setAdminName] = useState("");
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const { mutate: approveRental, isPending: isApproving } =
+    useApproveAdminRental();
+  const { mutate: rejectRental, isPending: isRejecting } =
+    useRejectAdminRental();
+
+  const isMutating = isApproving || isRejecting;
+  const canSubmit = useMemo(
+    () => isGuaranteedChecked && !!adminName.trim() && !isMutating,
+    [adminName, isGuaranteedChecked, isMutating],
+  );
+
+  const handleApprove = () => {
+    if (!canSubmit) return;
+    setSubmitError(null);
+    approveRental(
+      { rentalId, adminNameToApprove: adminName.trim() },
+      {
+        onSuccess: () => {
+          alert("대여 요청 승인이 완료되었습니다.");
+          onClose();
+        },
+        onError: () =>
+          setSubmitError("대여 요청 승인에 실패했습니다. 다시 시도해주세요."),
+      },
+    );
+  };
+
+  const handleReject = () => {
+    if (!canSubmit) return;
+    setSubmitError(null);
+    rejectRental(
+      { rentalId, adminNameToReject: adminName.trim() },
+      {
+        onSuccess: () => {
+          alert("대여 요청 거절이 완료되었습니다.");
+          onClose();
+        },
+        onError: () =>
+          setSubmitError("대여 요청 거절에 실패했습니다. 다시 시도해주세요."),
+      },
+    );
+  };
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="요청을 승인하시겠어요?">
       {/* 전체 영역 */}
@@ -29,22 +83,24 @@ const LongRentalApprovalModal = ({
             {/* 대여 물품 정보 */}
             <div className="flex flex-col w-full border-b-1 border-neutral-gray-5 px-4.5 gap-2.5">
               <p className="text-10px text-primary font-normal leading-[130%]">
-                요청 시각 2026-02-17 16:20:03
+                요청 시각 {time}
               </p>
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col">
                   <div className="flex gap-1">
                     <p className="text-20px text-neutral-gray-1 font-[600] leading-[140%]">
-                      c타입 충전기
+                      {itemName}
                     </p>
                     <p className="text-12px text-neutral-gray-3 font-normal leading-[140%] mt-auto mb-1">
-                      (3/5)
+                      {count}
                     </p>
                   </div>
                   <p className="text-14px text-neutral-gray-1 font-[600] leading-[20px]">
-                    c타입 충전기(1)
+                    {itemName}
                   </p>
                 </div>
+                {/* 대여 기간 및 보증물품 영역 */}
+                {/*TODO : 대여기간과 보증물품을 현재 API로부터는 받을 수 없는 상태이므로 해당 Props도 응답 바디에 넣어달라고 백엔드에 요청 */}
                 <div className="flex flex-col px-1.75 pb-4.25">
                   <p className="text-14px text-neutral-gray-1 opacity-[0.9] leading-[140%]">
                     • 대여 기간: 3일
@@ -57,9 +113,7 @@ const LongRentalApprovalModal = ({
             </div>
             {/* 대여자 정보 */}
             <div className="flex flex-col w-full text-12px text-secondary-1 font-normal leading-[140%] px-4.5 pt-3">
-              <p>이름:</p>
-              <p>학과:</p>
-              <p>학번:</p>
+              <p>{applicant}</p>
             </div>
           </div>
           {/* 체크박스 영역 - 보증물품 확인 여부 체크 */}
@@ -97,13 +151,26 @@ const LongRentalApprovalModal = ({
           </div>
         </div>
         {/* 버튼 영역 - 거부, 승인 버튼 */}
-        <div className="flex justify-between w-full">
-          <Button variant="outline" size="md">
-            거부
-          </Button>
-          <Button variant="primary" size="md">
-            승인
-          </Button>
+        <div className="flex flex-col gap-3">
+          {submitError && <p className="text-12px text-red">{submitError}</p>}
+          <div className="flex justify-between w-full">
+            <Button
+              variant="outline"
+              size="md"
+              onClick={handleReject}
+              disabled={!canSubmit}
+            >
+              거부
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={handleApprove}
+              disabled={!canSubmit}
+            >
+              {isApproving ? "승인 중..." : "승인"}
+            </Button>
+          </div>
         </div>
       </div>
     </Modal>
