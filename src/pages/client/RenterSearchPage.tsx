@@ -79,7 +79,7 @@ const RenterSearchPage = () => {
           className="w-84.5 h-11 flex items-center justify-between font-[Pretendard] rounded-small border border-primary"
         >
           <input
-            className="flex-1 border-none outline-none pl-3 py-3  text-14px text-[#444] placeholder:text-neutral-gray-3 placeholder:text-14px "
+            className="flex-1 border-none outline-none pl-3 py-3  text-14px text-[#444] font-[600] placeholder:text-neutral-gray-3 placeholder:text-14px "
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
