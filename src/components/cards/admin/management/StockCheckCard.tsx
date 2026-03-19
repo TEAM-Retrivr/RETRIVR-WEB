@@ -40,6 +40,7 @@ const StockCheckCard = ({
       <ProgressCircle
         available={availableQuantity}
         total={totalQuantity}
+        isActive={isRentalAvailable}
       ></ProgressCircle>
     </div>
   );

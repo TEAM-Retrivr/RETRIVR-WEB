@@ -106,6 +106,12 @@
   --shadow-consent-card: 0 0 16px -6px rgba(0, 0, 0, 0.08);
   --shadow-count-box: 0 0 18.7px -6px rgba(0, 0, 0, 0.17);
   --shadow-16-gray: 0 0 18.922px -3.942px rgba(0, 0, 0, 0.1);
+  --drop-shadow-progress-circle-on: drop-shadow(
+    0 0 8.778px rgba(181, 244, 255, 0.5)
+  );
+  --drop-shadow-progress-circle-off: drop-shadow(
+    0 0 8.778px var(--Neutral-5, #e6eaed)
+  );
 
   /* 5. 래디우스 */
   --radius-large: 23.164px;
