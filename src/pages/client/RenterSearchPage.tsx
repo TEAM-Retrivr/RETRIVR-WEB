@@ -4,6 +4,49 @@ import Header from "../../components/Header";
 import { useOrganizationSearch } from "../../hooks/queries/useClientQueries";
 import { useNavigate } from "react-router-dom";
 
+const escapeRegExp = (value: string) =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+// 사용자 입력값(query)와 동일한 글자를 더 진한 색으로 칠하기
+const HighlightedText = ({ text, query }: { text: string; query: string }) => {
+  const q = query.trim();
+  if (!q) {
+    return (
+      <span className="text-neutral-gray-1 group-hover:text-secondary-2">
+        {text}
+      </span>
+    );
+  }
+
+  const re = new RegExp(`(${escapeRegExp(q)})`, "g");
+  const parts = text.split(re);
+  const hasMatch = parts.length > 1;
+
+  if (!hasMatch) {
+    return <span className="text-neutral-gray-3">{text}</span>;
+  }
+
+  return (
+    <>
+      {parts.map((part, idx) => {
+        const isMatch = idx % 2 === 1;
+        return (
+          <span
+            key={`${idx}-${part}`}
+            className={
+              isMatch
+                ? "text-neutral-gray-1 group-hover:text-secondary-2"
+                : "text-neutral-gray-3 group-hover:text-secondary-2"
+            }
+          >
+            {part}
+          </span>
+        );
+      })}
+    </>
+  );
+};
+
 const RenterSearchPage = () => {
   // 입력 중인 검색어
   const [inputValue, setInputValue] = useState("");
@@ -80,7 +123,7 @@ const RenterSearchPage = () => {
                     <button
                       key={org.organizationId}
                       type="button"
-                      className="flex items-center gap-2.5 bg-none cursor-pointer"
+                      className="group flex items-center gap-2.5 bg-none cursor-pointer"
                       onClick={() => {
                         navigate(
                           `/client-home?organizationId=${org.organizationId}`,
@@ -93,8 +136,8 @@ const RenterSearchPage = () => {
                         );
                       }}
                     >
-                      <span className="text-14px text-neutral-gray-1 font-[600] hover:text-secondary-2">
-                        {org.name}
+                      <span className="text-14px font-[600]">
+                        <HighlightedText text={org.name} query={keyword} />
                       </span>
                     </button>
                   ))}
