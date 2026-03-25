@@ -23,6 +23,7 @@ const Home = () => {
   // 임시: API 연동 전까지 빈 배열과 0 사용
 
   const UserProfile = {
+    organizationId: data?.organizationId, // 관리자 ID
     organizationName: data?.organizationName, // 관리자 이름 (단체명)
     profileImageUrl: data?.profileImageUrl, // 프로필 사진 URL
     requestCount: data?.requestCount ?? 0, // 대여 요청 개수
@@ -79,9 +80,9 @@ const Home = () => {
         </div>
       </div>
       {/* 대여 요청 섹션 */}
-      <div className="mt-[7.464%] mx-[6.468%] bg-rental-gradient w-[87.06%] max-w-[350px] h-[320px] rounded-[33px] p-5 overflow-y-auto">
+      <div className="mt-[7.464%] mx-[6.468%] bg-rental-gradient w-[87.06%] max-w-[350px] h-[320px] rounded-[33px] pt-5 px-5 overflow-y-auto">
         <div className="flex justify-between pt-[4.195%]">
-          <div className="w-full flex text-[1.75rem] font-bold pl-[3.228%] leading-none">
+          <div className="w-full flex text-28px font-bold pl-7.5 leading-none">
             <p className="text-[#444] pr-[2%]">대여 요청</p>
             <p className="text-[#68A5FF]">{UserProfile.requestCount}</p>
             <p className="text-[#444]">건</p>
@@ -97,16 +98,11 @@ const Home = () => {
         </div>
         <div>
           {rentRequests.length === 0 ? (
-            <div className="flex items-center justify-between h-full text-neutral-dark/50 text-sm pt-[40%]">
+            <div className="relative flex items-center justify-between w-full h-full text-neutral-dark/50 text-sm">
               <img
-                className="mt-auto mb-0"
-                src="/icons/home/no-rental-icon-1.svg"
-                alt="강아지"
-              />
-              <img
-                className="mt-0"
-                src="/icons/home/no-rental-icon-2.svg"
-                alt="..."
+                className="w-full object-fit mt-auto mb-0"
+                src="/icons/home/no-rental-icon.svg"
+                alt=""
               />
             </div>
           ) : (

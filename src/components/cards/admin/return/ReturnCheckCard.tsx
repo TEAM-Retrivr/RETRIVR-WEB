@@ -15,7 +15,7 @@ export interface ReturnCheckCardRentalInfo {
   // 대여자 정보
   borrowerName: string;
   borrowerMajor: string;
-  borrowerStudentNumber: string;
+  borrowerStudentNumber?: string;
   // 대여/반납 일자
   rentalDate: string;
   expectedReturnDueDate: string;
@@ -64,7 +64,9 @@ const ReturnCheckCard = ({ rental }: ReturnCheckCardProps) => {
               <div className="text-12px text-neutral-gray-1 font-normal leading-[140%]">
                 <p>이름: {rental.borrowerName}</p>
                 <p>학과: {rental.borrowerMajor}</p>
-                <p>학번: {rental.borrowerStudentNumber}</p>
+                {rental.borrowerMajor && (
+                  <p>학번: {rental.borrowerStudentNumber}</p>
+                )}
               </div>
               {/* 대여 일자, 반납 일자 표시 영역 */}
               <div className="w-30.75 text-12px text-secondary-2">

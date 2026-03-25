@@ -5,8 +5,8 @@ export const apiClient = axios.create({
   // 배포 이후에 확인 필요
   baseURL:
     import.meta.env.MODE === "development"
-      ? ""
-      : import.meta.env.VITE_API_BASE_URL,
+      ? import.meta.env.VITE_API_BASE_URL
+      : "",
   headers: {
     "Content-Type": "application/json",
   },
