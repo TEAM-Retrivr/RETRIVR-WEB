@@ -38,7 +38,7 @@ const Button = ({
     primary: "bg-primary text-neutral-white hover:bg-secondary-2",
     gray: "bg-neutral-gray-4 text-neutral-white hover:bg-neutral-gray-3",
     outline:
-      "border border-primary text-primary bg-neutral-white hover:bg-bg-pale ",
+      "border border-primary text-primary bg-neutral-white hover:bg-bg-pale shadow-secondary-3",
   };
 
   const sizeStyles: Record<"xs" | "sm" | "md" | "lg", string> = {

@@ -46,7 +46,7 @@ const LoginPage = () => {
     <Layout>
       {/* 뒤로가기 버튼 : 랜딩페이지로 이동 */}
       <button
-        className="absolute top-[7%] left-[7%] object-fit"
+        className="absolute top-17.5 left-8.5 object-fit"
         onClick={() => navigate("/")}
       >
         <img src="/icons/home/left-arrow.svg" alt="뒤로가기 버튼" />
@@ -54,7 +54,7 @@ const LoginPage = () => {
       {/* 화면 영역 - 로고, 입력창, 버튼 영역 */}
       <div className="flex flex-col w-full h-screen max-h-[874px] items-center px-[7.962%]">
         {/* 로고 영역 - 리트리버 로고 */}
-        <div className="w-full max-w-[278.242px] mt-[59.765%]">
+        <div className="w-full max-w-[278px] mt-50">
           <img
             className="object-fit"
             src="/icons/login-logo.svg"
@@ -63,7 +63,7 @@ const LoginPage = () => {
         </div>
         {/* 로그인 영역 - 입력창, 로그인 버튼 */}
         <form
-          className="flex flex-col w-full  mt-[23.888%] gap-3"
+          className="flex flex-col w-full mt-13.5 gap-3"
           onSubmit={(e) => {
             e.preventDefault();
             handleRequestLogin();

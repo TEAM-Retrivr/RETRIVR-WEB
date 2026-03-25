@@ -97,6 +97,7 @@
     #7fb5f7
   );
   /* 4. 그림자 */
+  --shadow-secondary-3: 0 4px 10px 0 rgba(181, 244, 255, 0.5);
   --shadow-primary: 0 0 16px 1px rgba(181, 244, 255, 0.5);
   --shadow-outline: 0 0 16px 1px rgba(82, 229, 255, 0.7);
   --shadow-profile: 0 0 4px rgba(0, 0, 0, 0.14);
