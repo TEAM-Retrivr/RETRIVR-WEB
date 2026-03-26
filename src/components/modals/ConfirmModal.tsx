@@ -31,7 +31,7 @@ export const ConfirmModal = ({
       showTitle={false}
       showCloseButton={false}
     >
-      <div className="flex flex-col px-2">
+      <div className="flex flex-col px-2 animate-in zoom-in-95 duration-200">
         <div className="flex flex-col items-center gap-5.5 pt-3 pb-9 font-[Pretendard]">
           {/* 체크 아이콘 영역 */}
           <div className="flex justify-center">

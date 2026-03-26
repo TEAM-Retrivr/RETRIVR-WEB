@@ -31,7 +31,12 @@ export const ErrorModal = ({
       showTitle={false}
       showCloseButton={false}
     >
-      <div className="flex flex-col items-center gap-10.5 pt-8.5 font-[Pretendard]">
+      <div className="flex flex-col items-center gap-6 pt-8.5 font-[Pretendard] animate-in zoom-in-95 duration-200">
+        {/* ✕ 에러 아이콘 */}
+        <div className="flex justify-center w-[66px] h-[66px] rounded-[18px] bg-neutral-gray-4">
+          <img src="/icons/X.svg" alt="에러" className="m-auto w-6 h-6" />
+        </div>
+
         {/* 메시지 영역 */}
         <p className="text-20px font-[600] leading-[140%] text-neutral-gray-1 text-center whitespace-pre-line">
           {message}
