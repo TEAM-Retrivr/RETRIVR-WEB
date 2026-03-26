@@ -338,7 +338,7 @@ const RegisterPage = () => {
           isOpen={true}
           onClose={() => setModalType(null)}
           message1="회원가입에 실패했습니다."
-          message2="다시 시도헤주세요."
+          message2="다시 시도해주세요."
           confirmText="확인"
         />
       )}

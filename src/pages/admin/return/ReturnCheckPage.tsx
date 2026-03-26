@@ -16,14 +16,28 @@ const ReturnCheckPage = () => {
   const rentals: ReturnCheckCardRentalInfo[] = useMemo(() => {
     if (!data) return [];
     return (
-      data.itemUnits?.map((unit) => ({
+      data.borrowedItems?.map((unit) => ({
         rentalId: unit.rentalId,
-        itemId: data.itemId,
         isOverdue: unit.isOverdue,
+        itemId: data.itemId,
         itemName: data.itemName,
+        unitId: unit.unitId,
+        borrowedItemName: unit.borrowedItemName,
         borrowerName: unit.borrowerName,
-        borrowerMajor: unit.borrowerMajor,
-        borrowerStudentNumber: unit.borrowerStudentNumber,
+        borrowerPhone: unit.borrowerPhone,
+        borrowerFields: unit.borrowerFields
+          ? {
+              additionalProp1:
+                unit.borrowerFields.additonalProps1 ??
+                (unit.borrowerFields as any).additionalProp1,
+              additionalProp2:
+                unit.borrowerFields.additonalProps2 ??
+                (unit.borrowerFields as any).additionalProp2,
+              additionalProp3:
+                unit.borrowerFields.additonalProps3 ??
+                (unit.borrowerFields as any).additionalProp3,
+            }
+          : undefined,
         rentalDate: unit.rentalDate,
         expectedReturnDueDate: unit.expectedReturnDueDate,
       })) ?? []
@@ -40,7 +54,7 @@ const ReturnCheckPage = () => {
       {/* 전체 영역 */}
       <div className="w-full h-screen items-center bg-secondary-4">
         {/* 물품 정보 영역 - 물품 이름, 총 개수, 대여기간, 보증 물품, 현재 대여 중인 개수 */}
-        <div className="w-full h-12.25 px-7 pt-7 pb-10 font-[Pretendard]">
+        <div className="w-full h-auto px-7 pt-7 pb-10 font-[Pretendard]">
           {isLoading && (
             <p className="text-14px text-neutral-gray-3">로딩 중...</p>
           )}
@@ -62,13 +76,18 @@ const ReturnCheckPage = () => {
               <div className="text-10px text-neutral-gray-3 font-normal leading-[130%] mt-auto mb-1.5">
                 <p>• 총 개수: {data.totalQuantity}개</p>
                 <p>• 대여 기간: {data.rentalDuration}일</p>
-                <p>• 보증물품 나중에 추가하기</p>
+                <p>
+                  • 보증물품:{" "}
+                  {data.guaranteedGoods === null
+                    ? "없음"
+                    : data.guaranteedGoods}
+                </p>
               </div>
             </div>
           )}
         </div>
         {/* 반납 확인 컴포넌트 영역 */}
-        <div className="flex flex-col items-center overflow-y-auto no-scrollbar">
+        <div className=" flex flex-col items-center overflow-y-auto no-scrollbar">
           {!isLoading && !error && rentals.length === 0 && (
             <p className="text-14px text-neutral-gray-3 pt-40">
               현재 대여 중인 물품이 없습니다.

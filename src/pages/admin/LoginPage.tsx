@@ -132,7 +132,7 @@ const LoginPage = () => {
           isOpen={true}
           onClose={() => setModalType(null)}
           message1="로그인 정보가 없습니다."
-          message2="다시 확인헤주세요."
+          message2="다시 확인해주세요."
           confirmText="확인하기"
         />
       )}
