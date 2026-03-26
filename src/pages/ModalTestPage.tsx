@@ -110,7 +110,7 @@ export const ModalTestPage = () => {
           isOpen={isOpen}
           onClose={() => setIsOpen(false)}
           title={preset.title}
-          message={preset.message}
+          message1={preset.message}
           confirmText="확인하기"
         />
       )}

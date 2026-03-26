@@ -5,7 +5,8 @@ interface ErrorModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
-  message: ReactNode;
+  message1: ReactNode;
+  message2?: ReactNode;
   confirmText?: string;
   onConfirm?: () => void;
 }
@@ -14,7 +15,8 @@ export const ErrorModal = ({
   isOpen,
   onClose,
   title = "오류",
-  message,
+  message1,
+  message2,
   confirmText = "확인",
   onConfirm,
 }: ErrorModalProps) => {
@@ -31,16 +33,16 @@ export const ErrorModal = ({
       showTitle={false}
       showCloseButton={false}
     >
-      <div className="flex flex-col items-center gap-6 pt-8.5 font-[Pretendard] animate-in zoom-in-95 duration-200">
-        {/* ✕ 에러 아이콘 */}
-        <div className="flex justify-center w-[66px] h-[66px] rounded-[18px] bg-neutral-gray-4">
-          <img src="/icons/X.svg" alt="에러" className="m-auto w-6 h-6" />
-        </div>
-
+      <div className="flex flex-col items-center gap-10.5 pt-8.5 font-[Pretendard] animate-in zoom-in-95 duration-200">
         {/* 메시지 영역 */}
-        <p className="text-20px font-[600] leading-[140%] text-neutral-gray-1 text-center whitespace-pre-line">
-          {message}
-        </p>
+        <div>
+          <p className="text-20px font-[600] leading-[140%] text-neutral-gray-1 text-center whitespace-pre-line">
+            {message1}
+          </p>
+          <p className="text-20px font-[600] leading-[140%] text-neutral-gray-1 text-center whitespace-pre-line">
+            {message2}
+          </p>
+        </div>
         {/* 버튼 영역 */}
         <button
           type="button"

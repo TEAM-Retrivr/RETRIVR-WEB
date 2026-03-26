@@ -6,6 +6,8 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCreateAdminItem } from "../../hooks/queries/useAdminQueries";
 import CustomCheckBox from "../../components/CustomCheckbox";
+import ConfirmModal from "../../components/modals/ConfirmModal";
+import ErrorModal from "../../components/modals/ErrorModal";
 type RenterFieldKey = "name" | "studentNumber" | "phone" | "major";
 
 type ExtraRenterField = {
@@ -17,6 +19,10 @@ type ExtraRenterField = {
 const ItemRegisterationPage = () => {
   const navigate = useNavigate();
   const { mutate: createItem, isPending } = useCreateAdminItem();
+
+  // 등록 결과 모달
+  const [modalType, setModalType] = useState<"confirm" | "error" | null>(null);
+
   // 물품 기본 정보
   const [itemName, setItemName] = useState("");
   const [description, setDescription] = useState("");
@@ -99,11 +105,10 @@ const ItemRegisterationPage = () => {
       },
       {
         onSuccess: () => {
-          alert("물품이 등록되었습니다.");
-          navigate("/item-manage");
+          setModalType("confirm");
         },
         onError: () => {
-          alert("물품 등록에 실패했습니다. 다시 시도해주세요.");
+          setModalType("error");
         },
       },
     );
@@ -400,6 +405,26 @@ const ItemRegisterationPage = () => {
             {isPending ? "등록 중..." : "물품 등록하기"}
           </Button>
         </div>
+
+        {modalType === "confirm" && (
+          <ConfirmModal
+            isOpen={true}
+            onClose={() => setModalType(null)}
+            message="물품이 등록되었습니다."
+            confirmText="확인하기"
+            onConfirm={() => navigate("/item-manage")}
+          />
+        )}
+
+        {modalType === "error" && (
+          <ErrorModal
+            isOpen={true}
+            onClose={() => setModalType(null)}
+            message1="물품 등록에 실패했습니다."
+            message2="다시 시도해주세요."
+            confirmText="확인"
+          />
+        )}
       </div>
     </Layout>
   );

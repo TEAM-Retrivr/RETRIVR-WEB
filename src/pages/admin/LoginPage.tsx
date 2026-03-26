@@ -4,6 +4,7 @@ import { Layout } from "../../components/Layout";
 import CommonInput from "../../components/CommonInput";
 import Button from "../../components/Button";
 import { useLogin } from "../../hooks/queries/useAuthQueries";
+import ErrorModal from "../../components/modals/ErrorModal";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -17,6 +18,9 @@ const LoginPage = () => {
 
   // 비밀번호: string
   const [password, setPassword] = useState("");
+
+  // 로그인 실패 시 모달 열기
+  const [modalType, setModalType] = useState<"confirm" | "error" | null>(null);
 
   {
     /* 이벤트 핸들러 */
@@ -36,7 +40,7 @@ const LoginPage = () => {
           navigate("/home");
         },
         onError: () => {
-          alert("로그인에 실패했습니다. 다시 시도해주세요.");
+          setModalType("error");
         },
       },
     );
@@ -121,6 +125,17 @@ const LoginPage = () => {
           </Button>
         </div>
       </div>
+
+      {/* 모달 영역 - 로그인 실패 시 */}
+      {modalType === "error" && (
+        <ErrorModal
+          isOpen={true}
+          onClose={() => setModalType(null)}
+          message1="로그인 정보가 없습니다."
+          message2="다시 확인헤주세요."
+          confirmText="확인하기"
+        />
+      )}
     </Layout>
   );
 };

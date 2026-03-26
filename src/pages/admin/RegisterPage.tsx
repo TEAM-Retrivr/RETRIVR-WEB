@@ -322,6 +322,7 @@ const RegisterPage = () => {
         </Button>
       </div>
 
+      {/* 모달 영역 */}
       {modalType === "confirm" && (
         <ConfirmModal
           isOpen={true}
@@ -336,7 +337,8 @@ const RegisterPage = () => {
         <ErrorModal
           isOpen={true}
           onClose={() => setModalType(null)}
-          message="회원가입에 실패했습니다. 회원가입을 다시 진행해주세요."
+          message1="회원가입에 실패했습니다."
+          message2="다시 시도헤주세요."
           confirmText="확인"
         />
       )}
