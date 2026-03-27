@@ -28,13 +28,13 @@ const ReturnCheckPage = () => {
         borrowerFields: unit.borrowerFields
           ? {
               additionalProp1:
-                unit.borrowerFields.additonalProps1 ??
+                unit.borrowerFields.additonalProp1 ??
                 (unit.borrowerFields as any).additionalProp1,
               additionalProp2:
-                unit.borrowerFields.additonalProps2 ??
+                unit.borrowerFields.additonalProp2 ??
                 (unit.borrowerFields as any).additionalProp2,
               additionalProp3:
-                unit.borrowerFields.additonalProps3 ??
+                unit.borrowerFields.additonalProp3 ??
                 (unit.borrowerFields as any).additionalProp3,
             }
           : undefined,
