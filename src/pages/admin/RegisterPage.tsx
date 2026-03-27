@@ -9,6 +9,8 @@ import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import CommonInput from "../../components/CommonInput";
 import Button from "../../components/Button";
+import ConfirmModal from "../../components/modals/ConfirmModal";
+import ErrorModal from "../../components/modals/ErrorModal";
 
 // 관리자 회원가입 페이지
 const RegisterPage = () => {
@@ -49,6 +51,9 @@ const RegisterPage = () => {
 
   // 인증이 최종적으로 완료되었는지에 대한 여부
   const [isVerified, setIsVerified] = useState(false);
+
+  // 회원가입 요청 결과 모달
+  const [modalType, setModalType] = useState<"confirm" | "error" | null>(null);
 
   {
     /* 이벤트 핸들러 */
@@ -146,13 +151,10 @@ const RegisterPage = () => {
       },
       {
         onSuccess: () => {
-          alert(
-            "회원가입에 성공했습니다. 로그인 페이지로 돌아가 로그인을 해주세요.",
-          );
-          navigate("/");
+          setModalType("confirm");
         },
         onError: () => {
-          alert("회원가입에 실패했습니다. 회원가입을 다시 진행해주세요.");
+          setModalType("error");
         },
       },
     );
@@ -319,6 +321,27 @@ const RegisterPage = () => {
           {isRegistering ? "요청 중 ..." : "Retrivr 시작하기"}
         </Button>
       </div>
+
+      {/* 모달 영역 */}
+      {modalType === "confirm" && (
+        <ConfirmModal
+          isOpen={true}
+          onClose={() => setModalType(null)}
+          message="회원가입이 완료되었어요."
+          confirmText="로그인 하기"
+          onConfirm={() => navigate("/login")}
+        />
+      )}
+
+      {modalType === "error" && (
+        <ErrorModal
+          isOpen={true}
+          onClose={() => setModalType(null)}
+          message1="회원가입에 실패했습니다."
+          message2="다시 시도해주세요."
+          confirmText="확인"
+        />
+      )}
     </Layout>
   );
 };

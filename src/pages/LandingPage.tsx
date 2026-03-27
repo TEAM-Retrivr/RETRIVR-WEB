@@ -7,7 +7,7 @@ const LandingPage = () => {
 
   return (
     <Layout>
-      <div className=" mt-[50%] mb-auto flex flex-col justify-center items-center gap-4">
+      <div className=" mt-58 mb-auto flex flex-col justify-center items-center gap-4">
         {/* 아이콘, 로고 영역 */}
         <div className=" w-full max-w-[146px] max-h-[164px]">
           <img src="/icons/symbol.svg" alt="리트리버 캐릭터 로고" />
@@ -24,7 +24,7 @@ const LandingPage = () => {
         </p>
       </div>
       {/* 버튼 영역 - 대여하기, 관리자로 로그인 */}
-      <div className="flex flex-col justify-center items-center w-full mt-auto mb-[12%] gap-2">
+      <div className="flex flex-col justify-center items-center w-full mt-auto mb-12 gap-2">
         {/* TODO: 라우팅 경로 짜기 */}
         <Button
           variant="primary"

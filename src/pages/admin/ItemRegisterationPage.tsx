@@ -6,6 +6,8 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCreateAdminItem } from "../../hooks/queries/useAdminQueries";
 import CustomCheckBox from "../../components/CustomCheckbox";
+import ConfirmModal from "../../components/modals/ConfirmModal";
+import ErrorModal from "../../components/modals/ErrorModal";
 type RenterFieldKey = "name" | "studentNumber" | "phone" | "major";
 
 type ExtraRenterField = {
@@ -17,18 +19,26 @@ type ExtraRenterField = {
 const ItemRegisterationPage = () => {
   const navigate = useNavigate();
   const { mutate: createItem, isPending } = useCreateAdminItem();
+
+  // 등록 결과 모달
+  const [modalType, setModalType] = useState<"confirm" | "error" | null>(null);
+
   // 물품 기본 정보
   const [itemName, setItemName] = useState("");
   const [description, setDescription] = useState("");
   const [totalQuantity, setTotalQuantity] = useState(1);
   const [rentalDurationDays, setRentalDurationDays] = useState(1);
 
-  // 대여자 입력 요구 정보 (필수 3개는 고정)
+  // 대여자 입력 요구 정보 (필수 2개는 고정)
   const [optionalMajorEnabled, setOptionalMajorEnabled] = useState(true);
+  const [optionalStudentNumberEnabled, setOptionalStudentNumberEnabled] =
+    useState(true);
   const [extraRenterFields, setExtraRenterFields] = useState<
     ExtraRenterField[]
   >([{ id: 1, enabled: false, label: "" }]);
 
+  // 세부 물품 이름 지정
+  const [addItemDetailName, setAddItemDetailName] = useState(false);
   // 추가 선택사항
   const [sendOverdueMessageEnabled, setSendOverdueMessageEnabled] =
     useState(false);
@@ -53,7 +63,6 @@ const ItemRegisterationPage = () => {
 
   const renterRequiredFields: { key: RenterFieldKey; label: string }[] = [
     { key: "name", label: "이름" },
-    { key: "studentNumber", label: "학번" },
     { key: "phone", label: "전화번호" },
   ];
 
@@ -63,27 +72,29 @@ const ItemRegisterationPage = () => {
 
     const borrowerRequirements = [
       ...renterRequiredFields.map((f) => ({
-        fieldKey: f.key,
         label: f.label,
-        fieldType: "TEXT",
         required: true,
       })),
+      ...(optionalStudentNumberEnabled
+        ? [
+            {
+              label: "학번",
+              required: true,
+            },
+          ]
+        : []),
       ...(optionalMajorEnabled
         ? [
             {
-              fieldKey: "custom_1",
               label: "학과",
-              fieldType: "TEXT",
-              required: false,
+              required: true,
             },
           ]
         : []),
       ...extraRenterFields
         .filter((field) => field.enabled && field.label.trim())
         .map((field) => ({
-          fieldKey: field.label.trim(),
           label: field.label.trim(),
-          fieldType: "TEXT",
           required: false,
         })),
     ];
@@ -91,19 +102,25 @@ const ItemRegisterationPage = () => {
     createItem(
       {
         name: itemName.trim(),
-        description: description.trim(),
+        description: description.trim() || undefined,
+        totalQuantity,
         rentalDuration: rentalDurationDays,
-        isActive: true,
         itemManagementType: "NON_UNIT", // 추후에 분리시킬 예정 (현재 하드코딩됨)
+        useMessageAlarmService: sendOverdueMessageEnabled,
+        guaranteedGoods: hasGuaranteedGoods ? guaranteedGoodsLabel.trim() : null,
+        unitLabels: addItemDetailName
+          ? Array.from({ length: totalQuantity }, (_, i) =>
+              `${itemName}(${i + 1})`,
+            )
+          : undefined,
         borrowerRequirements,
       },
       {
         onSuccess: () => {
-          alert("물품이 등록되었습니다.");
-          navigate("/item-manage");
+          setModalType("confirm");
         },
         onError: () => {
-          alert("물품 등록에 실패했습니다. 다시 시도해주세요.");
+          setModalType("error");
         },
       },
     );
@@ -217,6 +234,17 @@ const ItemRegisterationPage = () => {
           </div>
         </div>
 
+        {/* 세부 물품 이름 지정 영역 */}
+        <div className="h-13 flex items-center justify-start rounded-small bg-neutral-white shadow-item-card px-5 py-3.5 gap-3">
+          <CustomCheckBox
+            checked={addItemDetailName}
+            onCheckedChange={setAddItemDetailName}
+          />
+          <span className="text-14px text-neutral-gray-2 font-[600]">
+            세부 물품에 이름을 지정하시겠어요?
+          </span>
+        </div>
+
         {/* 대여자 입력 요구 정보 */}
         <div className="flex flex-col gap-3">
           <div className="pl-2.5">
@@ -241,6 +269,13 @@ const ItemRegisterationPage = () => {
                 </label>
               ))}
 
+              <div className="flex items-center gap-3">
+                <CustomCheckBox
+                  checked={optionalStudentNumberEnabled}
+                  onCheckedChange={setOptionalStudentNumberEnabled}
+                />
+                <span>학번</span>
+              </div>
               <div className="flex items-center gap-3">
                 <CustomCheckBox
                   checked={optionalMajorEnabled}
@@ -389,7 +424,7 @@ const ItemRegisterationPage = () => {
         </div>
 
         {/* 등록 버튼 */}
-        {/* TODO: 등록 성공 시 확인 모달 or 확인 화면 띄운 후 물품 관리 페이지(item-manage)로 이동 */}
+        {/* TODO: 등록 성공 시 확인 모달 or 확인 화면 띄우기? */}
         <div className="flex justify-center pt-2">
           <Button
             variant="primary"
@@ -400,6 +435,26 @@ const ItemRegisterationPage = () => {
             {isPending ? "등록 중..." : "물품 등록하기"}
           </Button>
         </div>
+
+        {modalType === "confirm" && (
+          <ConfirmModal
+            isOpen={true}
+            onClose={() => setModalType(null)}
+            message="물품이 등록되었습니다."
+            confirmText="확인하기"
+            onConfirm={() => navigate("/item-manage")}
+          />
+        )}
+
+        {modalType === "error" && (
+          <ErrorModal
+            isOpen={true}
+            onClose={() => setModalType(null)}
+            message1="물품 등록에 실패했습니다."
+            message2="다시 시도해주세요."
+            confirmText="확인"
+          />
+        )}
       </div>
     </Layout>
   );

@@ -80,10 +80,7 @@ const ItemManagementPage = () => {
         ))}
       </div>
       {/* 물품 추가 버튼 */}
-      <BlueButton
-        option="addItem"
-        onClick={() => navigate("/item-register")}
-      ></BlueButton>
+      <BlueButton option="addItem" onClick={() => navigate("/item-register")} />
     </Layout>
   );
 };

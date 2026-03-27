@@ -119,6 +119,10 @@ export const useApproveAdminRental = () => {
       await queryClient.invalidateQueries({
         queryKey: ["adminRentalRequests"],
       });
+      // HomePage에서 보여주는 최근 대여 요청 목록도 즉시 갱신
+      await queryClient.invalidateQueries({
+        queryKey: ["home"],
+      });
     },
   });
 };
@@ -132,6 +136,10 @@ export const useRejectAdminRental = () => {
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: ["adminRentalRequests"],
+      });
+      // HomePage에서 보여주는 최근 대여 요청 목록도 즉시 갱신
+      await queryClient.invalidateQueries({
+        queryKey: ["home"],
       });
     },
   });

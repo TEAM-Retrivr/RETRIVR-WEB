@@ -4,18 +4,26 @@ import ReturnApprovalModal from "../../../modals/admin/return/ReturnApprovalModa
 import { useConfirmAdminReturn } from "../../../../hooks/queries/useAdminQueries";
 
 export interface ReturnCheckCardRentalInfo {
+  itemId: number;
+  itemName: string;
+  guaranteedGoods?: string; // 보증 물품
   // 대여 ID (반납 확인 API에서 사용)
   rentalId?: number;
-  // 물품 ID (성공 시 캐시 무효화용)
-  itemId: number;
   // 연체 여부
   isOverdue: boolean;
-  // 물품 이름
-  itemName: string;
-  // 대여자 정보
-  borrowerName: string;
-  borrowerMajor: string;
-  borrowerStudentNumber: string;
+  // 물품 유닛 번호
+  unitId: number;
+
+  borrowedItemName: string; // 대여 물품 이름
+  borrowerName: string; // 대여자 이름
+  borrowerPhone: string; // 대여자 전화번호
+  // 대여자 추가 입력 사항
+  borrowerFields?: {
+    additionalProp1?: string;
+    additionalProp2?: string;
+    additionalProp3?: string;
+  };
+
   // 대여/반납 일자
   rentalDate: string;
   expectedReturnDueDate: string;
@@ -49,11 +57,11 @@ const ReturnCheckCard = ({ rental }: ReturnCheckCardProps) => {
               )}
               {/* 물품 이름 영역 : itemName 필요 */}
               <p className="text-24px text-neutral-gray-1 font-[700]">
-                {rental.itemName}
+                {rental.borrowedItemName}
               </p>
             </div>
             {/* 수정하기 버튼 */}
-            <button className="w-17 h-6.75 border border-primary text-12px text-primary font-normal bg-neutral-white mt-auto mb-0 hover:bg-bg-pale rounded-[10px] leading-[140%]">
+            <button className="w-17.5 h-7.25 border border-primary text-12px text-primary font-normal bg-neutral-white mt-auto mb-0 hover:bg-bg-pale rounded-[10px] leading-[140%]">
               수정하기
             </button>
           </div>
@@ -63,8 +71,12 @@ const ReturnCheckCard = ({ rental }: ReturnCheckCardProps) => {
               {/* 대여자 정보 영역 - 이름, 학과, 학번  */}
               <div className="text-12px text-neutral-gray-1 font-normal leading-[140%]">
                 <p>이름: {rental.borrowerName}</p>
-                <p>학과: {rental.borrowerMajor}</p>
-                <p>학번: {rental.borrowerStudentNumber}</p>
+                {rental.borrowerFields?.additionalProp1 && (
+                  <p>학과: {rental.borrowerFields?.additionalProp1}</p>
+                )}
+                {rental.borrowerFields?.additionalProp2 && (
+                  <p>학번: {rental.borrowerFields?.additionalProp2}</p>
+                )}
               </div>
               {/* 대여 일자, 반납 일자 표시 영역 */}
               <div className="w-30.75 text-12px text-secondary-2">

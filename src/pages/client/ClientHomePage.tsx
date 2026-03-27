@@ -10,7 +10,9 @@ const ClientHome = () => {
   const location = useLocation();
 
   const organizationIdParam = searchParams.get("organizationId");
-  const organizationId = organizationIdParam ? Number(organizationIdParam) : NaN;
+  const organizationId = organizationIdParam
+    ? Number(organizationIdParam)
+    : NaN;
 
   const state = location.state as
     | {

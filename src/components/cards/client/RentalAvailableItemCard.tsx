@@ -12,38 +12,57 @@ const RentalAvailableItemCard = ({
   itemInfo,
 }: RentalAvailableItemCardProps) => {
   const { item } = itemInfo;
+  const isActive = item.isActive;
   const [isExpanded, setIsExpanded] = useState(false);
   const navigate = useNavigate();
 
   return (
     <div
-      onClick={() => setIsExpanded((prev) => !prev)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          setIsExpanded((prev) => !prev);
-        }
-      }}
+      onClick={isActive ? () => setIsExpanded((prev) => !prev) : undefined}
+      onKeyDown={
+        isActive
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setIsExpanded((prev) => !prev);
+              }
+            }
+          : undefined
+      }
       role="button"
-      tabIndex={0}
+      tabIndex={isActive ? 0 : -1}
       aria-expanded={isExpanded}
-      className="w-full max-w-[350px] max-h-[240px] bg-neutral-white rounded-[16px] shadow-item-card overflow-hidden font-[Pretendard] cursor-pointer"
+      aria-disabled={!isActive}
+      className={`w-full max-w-[350px] max-h-[240px] rounded-[16px] shadow-item-card overflow-hidden font-[Pretendard] ${
+        isActive
+          ? "bg-neutral-white cursor-pointer"
+          : "bg-neutral-gray-5 cursor-not-allowed opacity-70"
+      }`}
     >
       {/* 상단 영역 - 대여 물품 이름, 수량 표시 */}
-      <div className="max-h-[90px] p-7.5 flex justify-between items-center">
-        <p className="text-20px text-neutral-gray-1 font-[600]">{item.name}</p>
+      <div className="h-22.5 px-7 flex justify-between items-center">
+        <p
+          className={`text-20px font-[600] ${
+            isActive ? "text-neutral-gray-1" : "text-neutral-gray-3"
+          }`}
+        >
+          {item.name}
+        </p>
         <div className="progress-circle">
           {" "}
           <ProgressCircle
             available={item.availableQuantity}
             total={item.totalQuantity}
+            isActive={isActive}
           ></ProgressCircle>
         </div>
       </div>
 
       {/* 하단 영역 - 대여 기간, 보증 물품, 물품 설명 + 버튼 */}
       <div
-        className={`grid transition-[grid-template-rows] duration-500 ease-in-out ${isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+        className={`grid transition-[grid-template-rows] duration-500 ease-in-out ${
+          isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+        }`}
       >
         <div className="overflow-hidden">
           <div className="px-6 pb-6">
@@ -55,10 +74,14 @@ const RentalAvailableItemCard = ({
               <li>
                 보증 물품 :{" "}
                 <span className="text-primary">
-                  {item.guaranteedGoods ?? "-"}
+                  {item.guaranteedGoods !== "" && item.guaranteedGoods !== null
+                    ? item.guaranteedGoods
+                    : "-"}
                 </span>
               </li>
-              <li>물품 설명 : {item.description}</li>
+              <li>
+                물품 설명 : {item.description !== "" ? item.description : "-"}
+              </li>
             </ul>
 
             <div className="flex gap-3" onClick={(e) => e.stopPropagation()}>
@@ -68,7 +91,9 @@ const RentalAvailableItemCard = ({
               <Button
                 variant="primary"
                 size="md"
+                disabled={!isActive}
                 onClick={() => {
+                  if (!isActive) return;
                   navigate("/client-rental-information-submit", {
                     state: {
                       itemId: item.itemId,
@@ -81,7 +106,7 @@ const RentalAvailableItemCard = ({
                   });
                 }}
               >
-                대여하기
+                {isActive ? "대여하기" : "대여 불가"}
               </Button>
             </div>
           </div>

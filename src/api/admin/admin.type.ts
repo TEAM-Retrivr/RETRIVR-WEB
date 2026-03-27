@@ -106,18 +106,19 @@ export interface AdminRejectRentalResponse {
 // 관리자 물품 등록 요청 바디
 // POST /api/admin/v1/items
 export interface AdminBorrowerRequirementRequest {
-  fieldKey: string; //
   label: string; // 화면에 노출할 필드 이름 (학번 등)
-  fieldType: string; // 예: "TEXT"
   required: boolean; // 필수 여부
 }
 
 export interface AdminCreateItemRequest {
   name: string; // 물품 이름
   description?: string; // 물품 설명 (선택)
+  totalQuantity: number; // 총 개수
   rentalDuration: number; // 대여 기간(일)
-  isActive: boolean; // 대여 가능 여부
   itemManagementType: string; // 물품 고유번호 존재 여부
+  useMessageAlarmService: boolean; // 연체 알림(카톡) 발송 여부
+  guaranteedGoods?: string | null; // 보증 물품 (없으면 null)
+  unitLabels?: string[]; // 세부 물품 라벨(옵션)
   borrowerRequirements: AdminBorrowerRequirementRequest[]; // 대여자 입력 요구 정보 목록
 }
 
@@ -135,13 +136,18 @@ export interface AdminCreateItemResponse {
 // - 물품별 관리(반납 처리) 화면에서 사용
 // - itemUnits: 현재 대여 중인 개별 물품(고유번호 단위) 목록
 export interface AdminActiveRentalItemUnit {
-  isOverdue: boolean; // 연체 여부
   rentalId?: number; // 대여 ID (반납 확인 API에서 사용) - 백엔드 명세/응답에 없을 수 있어 optional
+  isOverdue: boolean; // 연체 여부
   unitId: number; // 물품 고유번호 ID (서버 명세: unitId)
-  unitCode: string; // 물품 고유번호 코드
-  borrowerName: string;
-  borrowerStudentNumber: string;
-  borrowerMajor: string;
+  borrowedItemName: string; // 대여한 물품 이름
+  borrowerName: string; //대여자 이름 (필수 입력 사항)
+  borrowerPhone: string; // 대여자 연락처 (필수 입력사항)
+  // borrowerFields: 선택적 요구사항
+  borrowerFields?: {
+    additonalProp1?: string;
+    additonalProp2?: string;
+    additonalProp3?: string;
+  };
   rentalDate: string; // ISO date string (대여 일자)
   expectedReturnDueDate: string; // ISO date string (반납 예정 일자)
 }
@@ -149,10 +155,11 @@ export interface AdminActiveRentalItemUnit {
 export interface AdminActiveRentalsByItemResponse {
   itemId: number;
   itemName: string;
+  guaranteedGoods?: string;
   availableQuantity: number;
   totalQuantity: number;
   rentalDuration: number;
-  itemUnits: AdminActiveRentalItemUnit[];
+  borrowedItems: AdminActiveRentalItemUnit[];
   nextCursor?: number;
 }
 
