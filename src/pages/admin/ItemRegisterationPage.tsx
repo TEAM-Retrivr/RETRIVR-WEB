@@ -29,8 +29,10 @@ const ItemRegisterationPage = () => {
   const [totalQuantity, setTotalQuantity] = useState(1);
   const [rentalDurationDays, setRentalDurationDays] = useState(1);
 
-  // 대여자 입력 요구 정보 (필수 3개는 고정)
+  // 대여자 입력 요구 정보 (필수 2개는 고정)
   const [optionalMajorEnabled, setOptionalMajorEnabled] = useState(true);
+  const [optionalStudentNumberEnabled, setOptionalStudentNumberEnabled] =
+    useState(true);
   const [extraRenterFields, setExtraRenterFields] = useState<
     ExtraRenterField[]
   >([{ id: 1, enabled: false, label: "" }]);
@@ -61,7 +63,6 @@ const ItemRegisterationPage = () => {
 
   const renterRequiredFields: { key: RenterFieldKey; label: string }[] = [
     { key: "name", label: "이름" },
-    { key: "studentNumber", label: "학번" },
     { key: "phone", label: "전화번호" },
   ];
 
@@ -71,27 +72,29 @@ const ItemRegisterationPage = () => {
 
     const borrowerRequirements = [
       ...renterRequiredFields.map((f) => ({
-        fieldKey: f.key,
         label: f.label,
-        fieldType: "TEXT",
         required: true,
       })),
+      ...(optionalStudentNumberEnabled
+        ? [
+            {
+              label: "학번",
+              required: true,
+            },
+          ]
+        : []),
       ...(optionalMajorEnabled
         ? [
             {
-              fieldKey: "custom_1",
               label: "학과",
-              fieldType: "TEXT",
-              required: false,
+              required: true,
             },
           ]
         : []),
       ...extraRenterFields
         .filter((field) => field.enabled && field.label.trim())
         .map((field) => ({
-          fieldKey: field.label.trim(),
           label: field.label.trim(),
-          fieldType: "TEXT",
           required: false,
         })),
     ];
@@ -99,10 +102,17 @@ const ItemRegisterationPage = () => {
     createItem(
       {
         name: itemName.trim(),
-        description: description.trim(),
+        description: description.trim() || undefined,
+        totalQuantity,
         rentalDuration: rentalDurationDays,
-        isActive: true,
         itemManagementType: "NON_UNIT", // 추후에 분리시킬 예정 (현재 하드코딩됨)
+        useMessageAlarmService: sendOverdueMessageEnabled,
+        guaranteedGoods: hasGuaranteedGoods ? guaranteedGoodsLabel.trim() : null,
+        unitLabels: addItemDetailName
+          ? Array.from({ length: totalQuantity }, (_, i) =>
+              `${itemName}(${i + 1})`,
+            )
+          : undefined,
         borrowerRequirements,
       },
       {
@@ -259,6 +269,13 @@ const ItemRegisterationPage = () => {
                 </label>
               ))}
 
+              <div className="flex items-center gap-3">
+                <CustomCheckBox
+                  checked={optionalStudentNumberEnabled}
+                  onCheckedChange={setOptionalStudentNumberEnabled}
+                />
+                <span>학번</span>
+              </div>
               <div className="flex items-center gap-3">
                 <CustomCheckBox
                   checked={optionalMajorEnabled}

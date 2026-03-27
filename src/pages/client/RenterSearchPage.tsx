@@ -130,7 +130,6 @@ const RenterSearchPage = () => {
                           {
                             state: {
                               name: org.name,
-                              organizationId: org.organizationId,
                               imageURL: org.imageURL,
                             },
                           },

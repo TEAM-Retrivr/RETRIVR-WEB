@@ -106,18 +106,19 @@ export interface AdminRejectRentalResponse {
 // 관리자 물품 등록 요청 바디
 // POST /api/admin/v1/items
 export interface AdminBorrowerRequirementRequest {
-  fieldKey: string; //
   label: string; // 화면에 노출할 필드 이름 (학번 등)
-  fieldType: string; // 예: "TEXT"
   required: boolean; // 필수 여부
 }
 
 export interface AdminCreateItemRequest {
   name: string; // 물품 이름
   description?: string; // 물품 설명 (선택)
+  totalQuantity: number; // 총 개수
   rentalDuration: number; // 대여 기간(일)
-  isActive: boolean; // 대여 가능 여부
   itemManagementType: string; // 물품 고유번호 존재 여부
+  useMessageAlarmService: boolean; // 연체 알림(카톡) 발송 여부
+  guaranteedGoods?: string | null; // 보증 물품 (없으면 null)
+  unitLabels?: string[]; // 세부 물품 라벨(옵션)
   borrowerRequirements: AdminBorrowerRequirementRequest[]; // 대여자 입력 요구 정보 목록
 }
 
@@ -143,9 +144,9 @@ export interface AdminActiveRentalItemUnit {
   borrowerPhone: string; // 대여자 연락처 (필수 입력사항)
   // borrowerFields: 선택적 요구사항
   borrowerFields?: {
-    additonalProps1?: string;
-    additonalProps2?: string;
-    additonalProps3?: string;
+    additonalProp1?: string;
+    additonalProp2?: string;
+    additonalProp3?: string;
   };
   rentalDate: string; // ISO date string (대여 일자)
   expectedReturnDueDate: string; // ISO date string (반납 예정 일자)
@@ -154,7 +155,7 @@ export interface AdminActiveRentalItemUnit {
 export interface AdminActiveRentalsByItemResponse {
   itemId: number;
   itemName: string;
-  guaranteedGoods: string;
+  guaranteedGoods?: string;
   availableQuantity: number;
   totalQuantity: number;
   rentalDuration: number;
