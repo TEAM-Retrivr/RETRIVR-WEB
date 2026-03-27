@@ -1,18 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Button from "../Button";
-import CommonInput from "../CommonInput";
-import CustomCheckBox from "../CustomCheckbox";
-import Header from "../Header";
-import { Layout } from "../Layout";
-import ConfirmModal from "../modals/ConfirmModal";
-import ErrorModal from "../modals/ErrorModal";
+import Button from "../../components/Button";
+import CommonInput from "../../components/CommonInput";
+import CustomCheckBox from "../../components/CustomCheckbox";
+import Header from "../../components/Header";
+import { Layout } from "../../components/Layout";
+import ConfirmModal from "../../components/modals/ConfirmModal";
+import ErrorModal from "../../components/modals/ErrorModal";
 import {
   useAdminItemDetail,
   useCreateAdminItem,
   useUpdateAdminItem,
 } from "../../hooks/queries/useAdminQueries";
 import type { AdminUpdateItemRequest } from "../../api/admin/admin.type";
+import { useLoadHome } from "../../hooks/queries/useAuthQueries";
 
 type RenterFieldKey = "name" | "studentNumber" | "phone" | "major";
 
@@ -36,11 +37,17 @@ const OPTIONAL_LABELS = {
 
 const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
   const navigate = useNavigate();
-  const { mutate: createItem, isPending: isCreatePending } = useCreateAdminItem();
-  const { mutate: updateItem, isPending: isUpdatePending } = useUpdateAdminItem();
-  const shouldLoadDetail = mode === "edit" && Number.isFinite(itemId) && (itemId ?? 0) > 0;
-  const { data: detailData, isLoading: isDetailLoading, error: detailError } =
-    useAdminItemDetail(shouldLoadDetail ? (itemId as number) : 0);
+  const { mutate: createItem, isPending: isCreatePending } =
+    useCreateAdminItem();
+  const { mutate: updateItem, isPending: isUpdatePending } =
+    useUpdateAdminItem();
+  const shouldLoadDetail =
+    mode === "edit" && Number.isFinite(itemId) && (itemId ?? 0) > 0;
+  const {
+    data: detailData,
+    isLoading: isDetailLoading,
+    error: detailError,
+  } = useAdminItemDetail(shouldLoadDetail ? (itemId as number) : 0);
 
   const isPending = isCreatePending || isUpdatePending;
 
@@ -52,9 +59,9 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
   const [optionalMajorEnabled, setOptionalMajorEnabled] = useState(true);
   const [optionalStudentNumberEnabled, setOptionalStudentNumberEnabled] =
     useState(true);
-  const [extraRenterFields, setExtraRenterFields] = useState<ExtraRenterField[]>([
-    { id: 1, enabled: false, label: "" },
-  ]);
+  const [extraRenterFields, setExtraRenterFields] = useState<
+    ExtraRenterField[]
+  >([{ id: 1, enabled: false, label: "" }]);
   const [addItemDetailName, setAddItemDetailName] = useState(false);
   const [originalUnitLabels, setOriginalUnitLabels] = useState<string[]>([]);
   const [sendOverdueMessageEnabled, setSendOverdueMessageEnabled] =
@@ -151,7 +158,9 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
       ...(optionalStudentNumberEnabled
         ? [{ label: OPTIONAL_LABELS.studentNumber, required: true }]
         : []),
-      ...(optionalMajorEnabled ? [{ label: OPTIONAL_LABELS.major, required: true }] : []),
+      ...(optionalMajorEnabled
+        ? [{ label: OPTIONAL_LABELS.major, required: true }]
+        : []),
       ...extraRenterFields
         .filter((field) => field.enabled && field.label.trim())
         .map((field) => ({
@@ -169,7 +178,10 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
       useMessageAlarmService: sendOverdueMessageEnabled,
       guaranteedGoods: hasGuaranteedGoods ? guaranteedGoodsLabel.trim() : null,
       unitLabels: addItemDetailName
-        ? Array.from({ length: totalQuantity }, (_, i) => `${itemName}(${i + 1})`)
+        ? Array.from(
+            { length: totalQuantity },
+            (_, i) => `${itemName}(${i + 1})`,
+          )
         : undefined,
       borrowerRequirements,
     };
@@ -233,10 +245,13 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
     );
   }
 
+  const { data: homeData } = useLoadHome();
+  const organizationName = homeData?.organizationName;
+
   return (
     <Layout>
       <Header
-        name="건국대학교 도서관자치위원회"
+        name={organizationName}
         pageName={mode === "create" ? "물품 신규 등록" : "물품 정보 수정"}
         backTo="/item-manage"
       />
@@ -313,7 +328,9 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
                 <button
                   type="button"
                   className="bg-none"
-                  onClick={() => setRentalDurationDays((v) => Math.max(1, v - 1))}
+                  onClick={() =>
+                    setRentalDurationDays((v) => Math.max(1, v - 1))
+                  }
                   aria-label="대여 기간 감소"
                 >
                   <img src="/icons/minus-count.svg" alt="-" />
@@ -350,7 +367,8 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
               대여자 입력 요구 정보
             </p>
             <p className="text-11px text-[#000] opacity-[0.39] font-normal mt-1">
-              물품을 대여할 때 대여자가 입력해야 할 정보를 선택 또는 추가해주세요.
+              물품을 대여할 때 대여자가 입력해야 할 정보를 선택 또는
+              추가해주세요.
             </p>
           </div>
 
@@ -405,7 +423,10 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
                         const isLastField = index === prev.length - 1;
                         if (isLastField) {
                           const newId =
-                            prev.reduce((maxId, f) => Math.max(maxId, f.id), 0) + 1;
+                            prev.reduce(
+                              (maxId, f) => Math.max(maxId, f.id),
+                              0,
+                            ) + 1;
                           next.push({
                             id: newId,
                             enabled: false,
@@ -436,7 +457,8 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
                       setExtraRenterFields((prev) => {
                         if (!prev.some((f) => f.id === field.id)) return prev;
                         const newId =
-                          prev.reduce((maxId, f) => Math.max(maxId, f.id), 0) + 1;
+                          prev.reduce((maxId, f) => Math.max(maxId, f.id), 0) +
+                          1;
 
                         return [
                           ...prev,
@@ -490,7 +512,9 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
             </div>
             <div
               className={`ml-1 overflow-hidden transition-all duration-200 ${
-                hasGuaranteedGoods ? "mt-2 max-h-20 opacity-100" : "max-h-0 opacity-0"
+                hasGuaranteedGoods
+                  ? "mt-2 max-h-20 opacity-100"
+                  : "max-h-0 opacity-0"
               }`}
             >
               <input

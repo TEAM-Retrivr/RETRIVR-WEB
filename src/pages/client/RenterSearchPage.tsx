@@ -3,6 +3,7 @@ import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import { useOrganizationSearch } from "../../hooks/queries/useClientQueries";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 
 const escapeRegExp = (value: string) =>
   value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -54,6 +55,7 @@ const RenterSearchPage = () => {
   const [keyword, setKeyword] = useState("");
 
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useOrganizationSearch(keyword);
   const organizations = data?.organizations ?? [];
@@ -125,6 +127,13 @@ const RenterSearchPage = () => {
                       type="button"
                       className="group flex items-center gap-2.5 bg-none cursor-pointer"
                       onClick={() => {
+                        queryClient.setQueryData(
+                          ["selectedOrganization", org.organizationId],
+                          {
+                            name: org.name,
+                            imageURL: org.imageURL,
+                          },
+                        );
                         navigate(
                           `/client-home?organizationId=${org.organizationId}`,
                           {

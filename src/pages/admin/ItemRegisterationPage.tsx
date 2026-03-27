@@ -1,4 +1,4 @@
-import AdminItemFormPage from "../../components/admin/AdminItemFormPage";
+import AdminItemFormPage from "./AdminItemFormPage";
 
 const ItemRegisterationPage = () => {
   return <AdminItemFormPage mode="create" />;

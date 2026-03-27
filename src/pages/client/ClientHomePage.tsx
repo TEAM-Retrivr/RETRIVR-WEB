@@ -4,10 +4,12 @@ import type { ItemRequest } from "../../types/item";
 import { useItemList } from "../../hooks/queries/useClientQueries";
 import UserIcon from "../../components/UserIcon";
 import { useLocation, useSearchParams } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 
 const ClientHome = () => {
   const [searchParams] = useSearchParams();
   const location = useLocation();
+  const queryClient = useQueryClient();
 
   const organizationIdParam = searchParams.get("organizationId");
   const organizationId = organizationIdParam
@@ -20,8 +22,12 @@ const ClientHome = () => {
         imageURL?: string;
       }
     | undefined;
-  const organizationName = state?.name ?? "";
-  const imageURL = state?.imageURL ?? "";
+  const cachedOrganization = queryClient.getQueryData<{
+    name?: string;
+    imageURL?: string;
+  }>(["selectedOrganization", organizationId]);
+  const organizationName = state?.name ?? cachedOrganization?.name ?? "";
+  const imageURL = state?.imageURL ?? cachedOrganization?.imageURL ?? "";
 
   const { data, isLoading, error } = useItemList({
     organizationId,
@@ -111,6 +117,8 @@ const ClientHome = () => {
               <RentalAvailableItemCard
                 key={itemRequest.item.itemId}
                 itemInfo={itemRequest}
+                organizationId={organizationId}
+                organizationName={organizationName}
               />
             ))}
         </div>

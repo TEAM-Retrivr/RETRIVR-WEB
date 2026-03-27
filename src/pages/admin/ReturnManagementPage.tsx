@@ -8,6 +8,7 @@ import {
 } from "../../hooks/queries/useAdminQueries";
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLoadHome } from "../../hooks/queries/useAuthQueries";
 
 const ReturnManagementPage = () => {
   const navigate = useNavigate();
@@ -43,10 +44,13 @@ const ReturnManagementPage = () => {
     setIsSearchOpen(true);
   };
 
+  const { data: homeData } = useLoadHome();
+  const organizationName = homeData?.organizationName;
+
   return (
     <Layout>
       <Header
-        name="건국대학교 도서관자치위원회"
+        name={organizationName}
         pageName="반납 관리"
         backTo="/home"
       ></Header>
@@ -78,7 +82,7 @@ const ReturnManagementPage = () => {
           </button>
         </form>
         {isSearchOpen && (
-          <div className="z-20 w-full bg-neutral-gray-6 min-h-40 font-[Pretendard] rounded-[14px] py-6.5 px-5.5 -mt-4">
+          <div className="z-20 w-full bg-neutral-gray-6 font-[Pretendard] rounded-[14px] py-6.5 px-5.5 -mt-4">
             <p className="text-16px text-secondary-2 opacity-[0.9] font-[600]">
               {keyword ? "검색 결과" : "입력 예시"}
             </p>

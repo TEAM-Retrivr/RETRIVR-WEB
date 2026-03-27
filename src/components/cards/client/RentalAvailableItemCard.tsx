@@ -6,10 +6,14 @@ import Button from "../../Button";
 
 interface RentalAvailableItemCardProps {
   itemInfo: ItemRequest;
+  organizationId: number;
+  organizationName?: string;
 }
 
 const RentalAvailableItemCard = ({
   itemInfo,
+  organizationId,
+  organizationName,
 }: RentalAvailableItemCardProps) => {
   const { item } = itemInfo;
   const isActive = item.isActive;
@@ -97,6 +101,8 @@ const RentalAvailableItemCard = ({
                   navigate("/client-rental-information-submit", {
                     state: {
                       itemId: item.itemId,
+                      organizationId,
+                      organizationName,
                       // TODO: 개별 코드형 물품일 때 itemUnitId 전달 필요 시 여기에 추가
                       name: item.name,
                       rentalDuration: item.rentalDuration,
