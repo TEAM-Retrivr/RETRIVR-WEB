@@ -20,12 +20,12 @@ const BlueButton = ({ option, onClick }: ButtonProps) => {
     <button
       type="button"
       onClick={onClick}
-      className="absolute bottom-11 right-8 w-19.5 h-19.5 cursor-pointer"
+      className="sticky bottom-11 self-end mr-8 w-19.5 h-19.5 cursor-pointer z-50"
     >
       <img
         src={buttonImage[option]}
         alt={altText[option]}
-        className="w-full max-w-[78px] h-screen max-h-[78px] border-none"
+        className="w-full h-full max-w-[78px] max-h-[78px] border-none"
       />
     </button>
   );
