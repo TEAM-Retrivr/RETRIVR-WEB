@@ -38,36 +38,38 @@ const OPTIONAL_LABELS = {
 const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
   const navigate = useNavigate();
   const { mutate: createItem, isPending: isCreatePending } =
-    useCreateAdminItem();
+    useCreateAdminItem(); // 신규 등록 요청 함수 & 등록 진행 상태
   const { mutate: updateItem, isPending: isUpdatePending } =
-    useUpdateAdminItem();
+    useUpdateAdminItem(); // 수정 요청 함수 & 수정 진행 상태
   const shouldLoadDetail =
-    mode === "edit" && Number.isFinite(itemId) && (itemId ?? 0) > 0;
+    mode === "edit" && Number.isFinite(itemId) && (itemId ?? 0) > 0; // 수정 모드에서만 상세 조회 조건 활성화
   const {
-    data: detailData,
-    isLoading: isDetailLoading,
-    error: detailError,
-  } = useAdminItemDetail(shouldLoadDetail ? (itemId as number) : 0);
+    data: detailData, // 수정 폼 초기값으로 사용할 상세 데이터
+    isLoading: isDetailLoading, // 상세 조회 로딩 상태
+    error: detailError, // 상세 조회 에러 상태
+  } = useAdminItemDetail(shouldLoadDetail ? (itemId as number) : 0); // 조건 불충족 시 쿼리 enabled=false로 실제 요청 안 함
 
-  const isPending = isCreatePending || isUpdatePending;
+  const isPending = isCreatePending || isUpdatePending; // 등록/수정 둘 중 하나라도 진행 중이면 true
+  const { data: homeData } = useLoadHome(); // 관리자 홈 정보(단체명 포함)
+  const organizationName = homeData?.organizationName; // 헤더 상단에 표시할 단체명
 
-  const [modalType, setModalType] = useState<"confirm" | "error" | null>(null);
-  const [itemName, setItemName] = useState("");
-  const [description, setDescription] = useState("");
-  const [totalQuantity, setTotalQuantity] = useState(1);
-  const [rentalDurationDays, setRentalDurationDays] = useState(1);
-  const [optionalMajorEnabled, setOptionalMajorEnabled] = useState(true);
+  const [modalType, setModalType] = useState<"confirm" | "error" | null>(null); // 결과 모달 상태(성공/실패/닫힘)
+  const [itemName, setItemName] = useState(""); // 물품명 입력값
+  const [description, setDescription] = useState(""); // 물품 설명 입력값
+  const [totalQuantity, setTotalQuantity] = useState(1); // 총 수량 입력값
+  const [rentalDurationDays, setRentalDurationDays] = useState(1); // 대여 기간(일) 입력값
+  const [optionalMajorEnabled, setOptionalMajorEnabled] = useState(true); // 학과 요구 항목 체크 상태
   const [optionalStudentNumberEnabled, setOptionalStudentNumberEnabled] =
-    useState(true);
+    useState(true); // 학번 요구 항목 체크 상태
   const [extraRenterFields, setExtraRenterFields] = useState<
     ExtraRenterField[]
-  >([{ id: 1, enabled: false, label: "" }]);
-  const [addItemDetailName, setAddItemDetailName] = useState(false);
-  const [originalUnitLabels, setOriginalUnitLabels] = useState<string[]>([]);
+  >([{ id: 1, enabled: false, label: "" }]); // 커스텀 추가 입력 항목 목록(초기 1행)
+  const [addItemDetailName, setAddItemDetailName] = useState(false); // 세부 물품 라벨 사용 여부
+  const [originalUnitLabels, setOriginalUnitLabels] = useState<string[]>([]); // 수정 시 기존 unit 라벨 원본(패치용)
   const [sendOverdueMessageEnabled, setSendOverdueMessageEnabled] =
-    useState(false);
-  const [hasGuaranteedGoods, setHasGuaranteedGoods] = useState(false);
-  const [guaranteedGoodsLabel, setGuaranteedGoodsLabel] = useState("");
+    useState(false); // 연체 알림 발송 옵션 체크 상태
+  const [hasGuaranteedGoods, setHasGuaranteedGoods] = useState(false); // 보증 물품 존재 여부
+  const [guaranteedGoodsLabel, setGuaranteedGoodsLabel] = useState(""); // 보증 물품명 입력값
 
   useEffect(() => {
     if (!detailData || mode !== "edit") return;
@@ -245,9 +247,6 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
     );
   }
 
-  const { data: homeData } = useLoadHome();
-  const organizationName = homeData?.organizationName;
-
   return (
     <Layout>
       <Header
@@ -280,7 +279,7 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
             />
           </div>
 
-          <div className="w-61 flex flex-col gap-4.5">
+          <div className="w-full flex flex-col gap-4.5">
             <div className="flex items-center justify-between">
               <div>
                 <p className="inline text-14px font-bold leading-none">
@@ -373,7 +372,7 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
           </div>
 
           <div className="rounded-[16px] bg-neutral-white shadow-item-card  px-5 py-4">
-            <div className="flex flex-col justify-center gap-3.5 text-14px text-neutral-[#444] font-bold">
+            <div className="flex flex-col justify-center gap-3.5 text-14px text-neutral-gray-1 font-bold">
               {renterRequiredFields.map((f) => (
                 <label key={f.key} className="flex items-center gap-3">
                   <CustomCheckBox checked onCheckedChange={() => {}} disabled />
