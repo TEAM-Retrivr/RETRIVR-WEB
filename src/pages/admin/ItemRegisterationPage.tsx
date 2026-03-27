@@ -35,6 +35,8 @@ const ItemRegisterationPage = () => {
     ExtraRenterField[]
   >([{ id: 1, enabled: false, label: "" }]);
 
+  // 세부 물품 이름 지정
+  const [addItemDetailName, setAddItemDetailName] = useState(false);
   // 추가 선택사항
   const [sendOverdueMessageEnabled, setSendOverdueMessageEnabled] =
     useState(false);
@@ -222,6 +224,17 @@ const ItemRegisterationPage = () => {
           </div>
         </div>
 
+        {/* 세부 물품 이름 지정 영역 */}
+        <div className="h-13 flex items-center justify-start rounded-small bg-neutral-white shadow-item-card px-5 py-3.5 gap-3">
+          <CustomCheckBox
+            checked={addItemDetailName}
+            onCheckedChange={setAddItemDetailName}
+          />
+          <span className="text-14px text-neutral-gray-2 font-[600]">
+            세부 물품에 이름을 지정하시겠어요?
+          </span>
+        </div>
+
         {/* 대여자 입력 요구 정보 */}
         <div className="flex flex-col gap-3">
           <div className="pl-2.5">
@@ -394,7 +407,7 @@ const ItemRegisterationPage = () => {
         </div>
 
         {/* 등록 버튼 */}
-        {/* TODO: 등록 성공 시 확인 모달 or 확인 화면 띄운 후 물품 관리 페이지(item-manage)로 이동 */}
+        {/* TODO: 등록 성공 시 확인 모달 or 확인 화면 띄우기? */}
         <div className="flex justify-center pt-2">
           <Button
             variant="primary"

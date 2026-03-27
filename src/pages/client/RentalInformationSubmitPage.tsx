@@ -48,6 +48,10 @@ const RentalInformationSubmitPage = () => {
   const [firstConsentChecked, setFirstConsentChecked] = useState(false);
   const [secondConsentChecked, setSecondConsentChecked] = useState(false);
 
+  // 보증 물품이 필요할 때만 두 번째 동의를 요구
+  const isGuaranteedGoodsRequired =
+    guaranteedGoods !== "" && guaranteedGoods !== "-";
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (
@@ -234,7 +238,7 @@ const RentalInformationSubmitPage = () => {
             type="submit"
             disabled={
               !firstConsentChecked ||
-              (guaranteedGoods != "" && !secondConsentChecked) ||
+              (isGuaranteedGoodsRequired && !secondConsentChecked) ||
               isPending
             }
           >

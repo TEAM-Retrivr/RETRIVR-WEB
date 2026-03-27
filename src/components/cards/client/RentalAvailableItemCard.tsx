@@ -74,10 +74,14 @@ const RentalAvailableItemCard = ({
               <li>
                 보증 물품 :{" "}
                 <span className="text-primary">
-                  {item.guaranteedGoods ?? "-"}
+                  {item.guaranteedGoods !== "" && item.guaranteedGoods !== null
+                    ? item.guaranteedGoods
+                    : "-"}
                 </span>
               </li>
-              <li>물품 설명 : {item.description}</li>
+              <li>
+                물품 설명 : {item.description !== "" ? item.description : "-"}
+              </li>
             </ul>
 
             <div className="flex gap-3" onClick={(e) => e.stopPropagation()}>
