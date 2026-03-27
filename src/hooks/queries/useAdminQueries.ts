@@ -7,10 +7,15 @@ import {
   requestAdminActiveRentalsByItem,
   confirmAdminReturn,
   createAdminItem,
+  requestAdminItemDetail,
+  updateAdminItem,
   approveAdminRental,
   rejectAdminRental,
 } from "../../api/admin/admin.api";
-import type { AdminCreateItemRequest } from "../../api/admin/admin.type";
+import type {
+  AdminCreateItemRequest,
+  AdminUpdateItemRequest,
+} from "../../api/admin/admin.type";
 
 // 관리자 물품 목록 조회 (관리자 전용 API 사용)
 // - 물품 관리 페이지에서 사용
@@ -106,6 +111,33 @@ export const useConfirmAdminReturn = () => {
 export const useCreateAdminItem = () => {
   return useMutation({
     mutationFn: (body: AdminCreateItemRequest) => createAdminItem(body),
+  });
+};
+
+// 관리자 물품 상세 조회 (GET)
+export const useAdminItemDetail = (itemId: number) => {
+  return useQuery({
+    queryKey: ["adminItemDetail", itemId],
+    queryFn: () => requestAdminItemDetail(itemId),
+    enabled: Number.isFinite(itemId) && itemId > 0,
+    retry: false,
+  });
+};
+
+// 관리자 물품 수정 (PATCH)
+export const useUpdateAdminItem = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ itemId, body }: { itemId: number; body: AdminUpdateItemRequest }) =>
+      updateAdminItem({ itemId, body }),
+    onSuccess: async (_data, variables) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["adminItems"] }),
+        queryClient.invalidateQueries({
+          queryKey: ["adminItemDetail", variables.itemId],
+        }),
+      ]);
+    },
   });
 };
 

@@ -70,6 +70,7 @@ const ItemManagementPage = () => {
         {items.map((item) => (
           <ItemManagementCard
             key={item.itemId}
+            itemId={item.itemId}
             name={item.name}
             totalQuantity={item.totalQuantity}
             isActive={item.isActive}

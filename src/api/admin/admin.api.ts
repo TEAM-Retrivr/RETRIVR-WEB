@@ -9,6 +9,9 @@ import type {
   AdminRejectRentalResponse,
   AdminActiveRentalsByItemResponse,
   AdminConfirmReturnResponse,
+  AdminItemDetailResponse,
+  AdminUpdateItemRequest,
+  AdminUpdateItemResponse,
 } from "./admin.type";
 import { apiClient } from "../core";
 
@@ -185,6 +188,33 @@ export const createAdminItem = async (
 ): Promise<AdminCreateItemResponse> => {
   const response = await apiClient.post<AdminCreateItemResponse>(
     "/api/admin/v1/items",
+    body,
+  );
+  return response.data;
+};
+
+// 관리자 물품 상세 조회
+// GET /api/admin/v1/items/{itemId}
+export const requestAdminItemDetail = async (
+  itemId: number,
+): Promise<AdminItemDetailResponse> => {
+  const response = await apiClient.get<AdminItemDetailResponse>(
+    `/api/admin/v1/items/${itemId}`,
+  );
+  return response.data;
+};
+
+// 관리자 물품 수정
+// PATCH /api/admin/v1/items/{itemId}
+export const updateAdminItem = async ({
+  itemId,
+  body,
+}: {
+  itemId: number;
+  body: AdminUpdateItemRequest;
+}): Promise<AdminUpdateItemResponse> => {
+  const response = await apiClient.patch<AdminUpdateItemResponse>(
+    `/api/admin/v1/items/${itemId}`,
     body,
   );
   return response.data;

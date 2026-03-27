@@ -110,7 +110,7 @@ export interface AdminBorrowerRequirementRequest {
   required: boolean; // 필수 여부
 }
 
-export interface AdminCreateItemRequest {
+export interface AdminItemBaseRequest {
   name: string; // 물품 이름
   description?: string; // 물품 설명 (선택)
   totalQuantity: number; // 총 개수
@@ -118,8 +118,11 @@ export interface AdminCreateItemRequest {
   itemManagementType: string; // 물품 고유번호 존재 여부
   useMessageAlarmService: boolean; // 연체 알림(카톡) 발송 여부
   guaranteedGoods?: string | null; // 보증 물품 (없으면 null)
-  unitLabels?: string[]; // 세부 물품 라벨(옵션)
   borrowerRequirements: AdminBorrowerRequirementRequest[]; // 대여자 입력 요구 정보 목록
+}
+
+export interface AdminCreateItemRequest extends AdminItemBaseRequest {
+  unitLabels?: string[]; // 세부 물품 라벨(옵션)
 }
 
 // 관리자 물품 등록 응답 바디
@@ -129,6 +132,53 @@ export interface AdminCreateItemResponse {
   itemId: number; // 생성된 물품 ID
   name: string; // 물품 이름
   borrowerRequirements: AdminBorrowerRequirementResponse[]; // 저장된 대여자 요구 정보 목록
+}
+
+// 관리자 물품 상세 조회 응답
+// GET /api/admin/v1/items/{itemId}
+export interface AdminItemDetailResponse {
+  itemId: number;
+  name: string;
+  description?: string;
+  totalQuantity: number;
+  rentalDuration: number;
+  itemManagementType: string;
+  useMessageAlarmService: boolean;
+  guaranteedGoods?: string | null;
+  unitLabels?: string[];
+  itemUnits?: {
+    itemUnitId: number;
+    label: string;
+  }[];
+  isActive?: boolean;
+  borrowerRequirements: AdminBorrowerRequirementResponse[];
+}
+
+// 관리자 물품 수정 요청 바디
+// PATCH /api/admin/v1/items/{itemId}
+export interface AdminUpdateItemRequest extends Partial<AdminItemBaseRequest> {
+  unitChanges?: {
+    currentLabel: string;
+    label: string;
+  }[];
+  isActive?: boolean;
+}
+
+// 관리자 물품 수정 응답 바디
+export interface AdminUpdateItemResponse {
+  itemId: number;
+  name: string;
+  description?: string;
+  rentalDuration?: number;
+  totalQuantity?: number;
+  itemManagementType?: string;
+  useMessageAlarmService?: boolean;
+  guaranteedGoods?: string | null;
+  itemUnits?: {
+    itemUnitId: number;
+    label: string;
+  }[];
+  borrowerRequirements: AdminBorrowerRequirementResponse[];
 }
 
 // 대여 중인 물품 상세 조회 응답
