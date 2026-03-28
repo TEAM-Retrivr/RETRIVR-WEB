@@ -170,6 +170,12 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
           required: false,
         })),
     ];
+    const desiredUnitLabels = addItemDetailName
+      ? Array.from(
+          { length: totalQuantity },
+          (_, i) => `${itemName.trim()}(${i + 1})`,
+        )
+      : [];
 
     const body = {
       name: itemName.trim(),
@@ -186,6 +192,13 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
           )
         : undefined,
       borrowerRequirements,
+      isActive: true,
+      unitChanges: addItemDetailName
+        ? desiredUnitLabels.map((label, i) => ({
+            currentLabel: originalUnitLabels[i] ?? "",
+            label,
+          }))
+        : [],
     };
 
     if (mode === "create") {
@@ -199,12 +212,6 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
     // PATCH용 세부 물품 라벨: 신규 등록(POST)과 동일한 규칙으로 "지금 폼에서 기대하는" 라벨 배열을 만듦
     // - 길이는 항상 totalQuantity와 같음 (1번~N번 슬롯)
     // - 이전 구현은 originalUnitLabels만 map해서 원래 라벨이 없으면 []만 전달되고 수량 증가로 새 슬롯이 생겨도 반영되지 않음
-    const desiredUnitLabels = addItemDetailName
-      ? Array.from(
-          { length: totalQuantity },
-          (_, i) => `${itemName.trim()}(${i + 1})`,
-        )
-      : [];
 
     const updateBody: AdminUpdateItemRequest = {
       name: body.name,
@@ -215,6 +222,7 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
       useMessageAlarmService: body.useMessageAlarmService,
       guaranteedGoods: body.guaranteedGoods,
       borrowerRequirements: body.borrowerRequirements,
+      isActive: true,
       // 서버 contract: unitChanges[i] = { 기존 표시명 -> 변경 후 표시명 }
       // - i번째 슬롯에 예전 라벨이 있으면 currentLabel에 넣고, 없으면 "" (신규 슬롯으로 간주; 백엔드가 허용하는 전제)
       // - label은 항상 desiredUnitLabels[i] (현재 물품명·수량 기준으로 계산한 목표 라벨)
