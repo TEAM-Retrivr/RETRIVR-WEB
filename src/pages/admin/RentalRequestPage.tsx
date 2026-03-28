@@ -3,17 +3,20 @@ import Header from "../../components/Header";
 import RentalConfirmCard from "../../components/cards/admin/rental/RentalConfirmCard";
 import type { RentalRequest } from "../../types/rental";
 import { useAdminRentalRequestList } from "../../hooks/queries/useAdminQueries";
-
+import { useLoadHome } from "../../hooks/queries/useAuthQueries";
 const RentalRequestPage = () => {
   // 관리자 대여 요청 목록 조회
   const { data, isLoading, error } = useAdminRentalRequestList();
 
   const requests = data?.requests ?? [];
 
+  const { data: homeData } = useLoadHome();
+  const organizationName = homeData?.organizationName;
+
   return (
     <Layout>
       <Header
-        name="건국대학교 도서관자치위원회"
+        name={organizationName}
         pageName="대여요청"
         backTo="/home"
       ></Header>

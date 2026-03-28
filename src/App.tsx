@@ -8,6 +8,7 @@ import RegisterPage from "./pages/admin/RegisterPage";
 import RentalRequestPage from "./pages/admin/RentalRequestPage";
 import ItemManagementPage from "./pages/admin/ItemManagementPage";
 import ItemRegisterationPage from "./pages/admin/ItemRegisterationPage";
+import ItemEditPage from "./pages/admin/ItemEditPage";
 import ReturnManagementPage from "./pages/admin/ReturnManagementPage";
 import ReturnCheckPage from "./pages/admin/return/ReturnCheckPage";
 import ClientHomePage from "./pages/client/ClientHomePage";
@@ -34,6 +35,9 @@ function App() {
 
         {/* 대여자 물품 신규 등록 페이지 */}
         <Route path="/item-register" element={<ItemRegisterationPage />} />
+
+        {/* 대여자 물품 수정 페이지 */}
+        <Route path="/item-edit/:itemId" element={<ItemEditPage />} />
 
         {/* 대여자 반납 관리 페이지 */}
         <Route path="/return-manage" element={<ReturnManagementPage />} />

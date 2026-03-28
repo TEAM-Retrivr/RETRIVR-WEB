@@ -7,6 +7,7 @@ import CommonInput from "../../components/CommonInput";
 import { ConsentSectionCard } from "../../components/cards/client/ConsentSectionCard";
 import Button from "../../components/Button";
 import { useSendRentalRequest } from "../../hooks/queries/useClientQueries";
+import { useQueryClient } from "@tanstack/react-query";
 
 const label1 =
   "대여 물품 연체 시 독촉 문자가 카카오톡으로\n발송됩니다. 이에 동의하시나요?";
@@ -18,9 +19,12 @@ const label3 =
 const RentalInformationSubmitPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
   const state = location.state as {
     itemId?: number;
     itemUnitId?: number;
+    organizationId?: number;
+    organizationName?: string;
     name?: string;
     rentalDuration?: number;
     guaranteedGoods?: string;
@@ -28,6 +32,16 @@ const RentalInformationSubmitPage = () => {
   } | null;
   const itemId = state?.itemId ?? 0;
   const itemUnitId = state?.itemUnitId; // 개별 코드형 물품일 때만 전달
+  const organizationId = state?.organizationId;
+  const cachedOrganization =
+    Number.isFinite(organizationId) && (organizationId ?? 0) > 0
+      ? queryClient.getQueryData<{ name?: string; imageURL?: string }>([
+          "selectedOrganization",
+          organizationId,
+        ])
+      : undefined;
+  const organizationName =
+    state?.organizationName ?? cachedOrganization?.name ?? "대여지명";
   const itemName = state?.name ?? "대여 물품";
   const rentalDuration = state?.rentalDuration ?? 0;
   const guaranteedGoods = state?.guaranteedGoods ?? "-";
@@ -101,9 +115,13 @@ const RentalInformationSubmitPage = () => {
     <Layout>
       <form onSubmit={handleSubmit}>
         <Header
-          name="대여지명"
+          name={organizationName}
           pageName="대여 정보 입력"
-          backTo="/client-home"
+          backTo={
+            organizationId && organizationId > 0
+              ? `/client-home?organizationId=${organizationId}`
+              : "/client-search"
+          }
         ></Header>
         <div className="w-84.5 h-44 font-[Pretendard] bg-secondary-4 rounded-[16px] mt-6 mx-7.75">
           <div className="pt-7.25 pl-8 pb-7.75">

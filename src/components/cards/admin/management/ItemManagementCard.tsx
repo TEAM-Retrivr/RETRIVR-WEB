@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ItemStatusCard from "./ItemStatusCard";
 
 type ItemManagementCardProps = {
+  itemId: number;
   name: string;
   totalQuantity: number;
   isActive: boolean;
@@ -18,6 +20,7 @@ const MOCK_ITEM_STATUSES: Array<
 > = ["rentedOut", "rentalAvailable", "rentalUnavailable"];
 
 const ItemManagementCard = ({
+  itemId,
   name,
   totalQuantity,
   isActive,
@@ -25,6 +28,7 @@ const ItemManagementCard = ({
   description,
   guaranteedGoods,
 }: ItemManagementCardProps) => {
+  const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isToggledOn, setIsToggledOn] = useState(isActive);
 
@@ -103,6 +107,7 @@ const ItemManagementCard = ({
               </ul>
               <button
                 type="button"
+                onClick={() => navigate(`/item-edit/${itemId}`)}
                 className="w-22.5 h-8.5 shrink-0 rounded-[10px] text-center bg-neutral-white text-14px font-[600] leading-[20px] text-primary border border-primary cursor-pointer hover:bg-bg-pale"
               >
                 수정하기

@@ -3,11 +3,14 @@ import RentalAvailableItemCard from "../../components/cards/client/RentalAvailab
 import type { ItemRequest } from "../../types/item";
 import { useItemList } from "../../hooks/queries/useClientQueries";
 import UserIcon from "../../components/UserIcon";
-import { useLocation, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 
 const ClientHome = () => {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const location = useLocation();
+  const queryClient = useQueryClient();
 
   const organizationIdParam = searchParams.get("organizationId");
   const organizationId = organizationIdParam
@@ -20,8 +23,12 @@ const ClientHome = () => {
         imageURL?: string;
       }
     | undefined;
-  const organizationName = state?.name ?? "";
-  const imageURL = state?.imageURL ?? "";
+  const cachedOrganization = queryClient.getQueryData<{
+    name?: string;
+    imageURL?: string;
+  }>(["selectedOrganization", organizationId]);
+  const organizationName = state?.name ?? cachedOrganization?.name ?? "";
+  const imageURL = state?.imageURL ?? cachedOrganization?.imageURL ?? "";
 
   const { data, isLoading, error } = useItemList({
     organizationId,
@@ -66,10 +73,12 @@ const ClientHome = () => {
         className="w-full max-w-[402px] h-[20%] max-h-[180px] pt-[12.66%]
       px-[7.464%] bg-home-gradient rounded-bl-[45px]"
       >
-        {/* 상단 로고 텍스트 및 사람 아이콘 */}
+        {/* 상단 뒤로가기 버튼 & 로고 텍스트 */}
         <div className="w-full flex justify-between">
+          <button onClick={() => navigate("/client-search")}>
+            <img src="/icons/client/left-arrow-white.svg" alt="뒤로가기" />
+          </button>
           <img src="/icons/home/retrivr_text_outline.svg" alt="로고 텍스트" />
-          <img src="/icons/home/man_icon.svg" alt="사람 아이콘" />
         </div>
         <div className="flex w-full max-h-[72px] mt-[50.64px]">
           {/* 프로필 사진 */}
@@ -111,6 +120,8 @@ const ClientHome = () => {
               <RentalAvailableItemCard
                 key={itemRequest.item.itemId}
                 itemInfo={itemRequest}
+                organizationId={organizationId}
+                organizationName={organizationName}
               />
             ))}
         </div>

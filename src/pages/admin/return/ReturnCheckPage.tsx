@@ -6,10 +6,15 @@ import ReturnCheckCard, {
   type ReturnCheckCardRentalInfo,
 } from "../../../components/cards/admin/return/ReturnCheckCard";
 import { useAdminActiveRentalsByItem } from "../../../hooks/queries/useAdminQueries";
+import { useLoadHome } from "../../../hooks/queries/useAuthQueries";
+
 const ReturnCheckPage = () => {
   const navigate = useNavigate();
   const { itemId: itemIdParam } = useParams();
   const itemId = Number(itemIdParam);
+
+  const { data: homeData } = useLoadHome();
+  const organizationName = homeData?.organizationName;
 
   const { data, isLoading, error } = useAdminActiveRentalsByItem(itemId);
 
@@ -47,7 +52,7 @@ const ReturnCheckPage = () => {
   return (
     <Layout>
       <Header
-        name="건국대학교 도서관자치위원회"
+        name={organizationName}
         pageName="물품별 관리"
         onBackClick={() => navigate("/return-manage")}
       ></Header>

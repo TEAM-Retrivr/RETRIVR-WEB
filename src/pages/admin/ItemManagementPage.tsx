@@ -1,6 +1,7 @@
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import { useAdminItemList } from "../../hooks/queries/useAdminQueries";
+import { useLoadHome } from "../../hooks/queries/useAuthQueries";
 import BlueButton from "../../components/BlueButton";
 import { useNavigate } from "react-router-dom";
 import ItemManagementCard from "../../components/cards/admin/management/ItemManagementCard";
@@ -9,6 +10,8 @@ const ItemManagementPage = () => {
   const navigate = useNavigate();
 
   const { data, isLoading, error } = useAdminItemList();
+  const { data: homeData } = useLoadHome();
+  const organizationName = homeData?.organizationName;
 
   const items = data?.items ?? [];
   const hasItems = items.length > 0;
@@ -36,7 +39,7 @@ const ItemManagementPage = () => {
     return (
       <Layout>
         <Header
-          name=" 건국대학교 도서관자치위원회"
+          name={organizationName}
           pageName="물품 관리"
           backTo="/home"
         ></Header>
@@ -62,7 +65,7 @@ const ItemManagementPage = () => {
   return (
     <Layout>
       <Header
-        name=" 건국대학교 도서관자치위원회"
+        name={organizationName}
         pageName="물품 관리"
         backTo="/home"
       ></Header>
@@ -70,6 +73,7 @@ const ItemManagementPage = () => {
         {items.map((item) => (
           <ItemManagementCard
             key={item.itemId}
+            itemId={item.itemId}
             name={item.name}
             totalQuantity={item.totalQuantity}
             isActive={item.isActive}
