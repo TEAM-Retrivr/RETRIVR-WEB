@@ -14,6 +14,7 @@ import {
 } from "../../api/admin/admin.api";
 import type {
   AdminCreateItemRequest,
+  AdminItemListResponse,
   AdminUpdateItemRequest,
 } from "../../api/admin/admin.type";
 
@@ -21,7 +22,7 @@ import type {
 // - 물품 관리 페이지에서 사용
 // - 서버 캐시 키: ["adminItems"]
 export const useAdminItemList = () => {
-  return useQuery({
+  return useQuery<AdminItemListResponse>({
     queryKey: ["adminItems"],
     queryFn: requestAdminItemList,
     retry: false,
@@ -128,8 +129,13 @@ export const useAdminItemDetail = (itemId: number) => {
 export const useUpdateAdminItem = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ itemId, body }: { itemId: number; body: AdminUpdateItemRequest }) =>
-      updateAdminItem({ itemId, body }),
+    mutationFn: ({
+      itemId,
+      body,
+    }: {
+      itemId: number;
+      body: AdminUpdateItemRequest;
+    }) => updateAdminItem({ itemId, body }),
     onSuccess: async (_data, variables) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["adminItems"] }),

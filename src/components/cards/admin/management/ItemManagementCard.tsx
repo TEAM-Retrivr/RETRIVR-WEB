@@ -1,15 +1,19 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ItemStatusCard from "./ItemStatusCard";
+import type { AdminBorrowerRequirementResponse } from "../../../../api/admin/admin.type";
 
 type ItemManagementCardProps = {
   itemId: number;
   name: string;
   totalQuantity: number;
+  availableQuantity: number;
   isActive: boolean;
   rentalDuration?: number;
   description?: string;
-  guaranteedGoods?: string;
+  useMessageAlarmService?: boolean;
+  guaranteedGoods?: string | null;
+  borrowerRequirements: AdminBorrowerRequirementResponse[];
 };
 
 // TODO: ItemStatusCard 목록은 향후 개별 물품 단위 데이터로 교체 예정
@@ -23,10 +27,13 @@ const ItemManagementCard = ({
   itemId,
   name,
   totalQuantity,
+  availableQuantity,
   isActive,
   rentalDuration,
   description,
+  useMessageAlarmService,
   guaranteedGoods,
+  borrowerRequirements,
 }: ItemManagementCardProps) => {
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -94,24 +101,78 @@ const ItemManagementCard = ({
         className={`grid transition-[grid-template-rows] duration-500 ease-in-out ${isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
       >
         <div className="min-h-0 overflow-hidden">
-          <div className="px-6 pb-6 ">
+          <div className="flex flex-col px-6 pb-6">
             {/* 상세 정보 */}
-            <div className="mb-4 flex w-full items-end justify-between gap-4">
-              <ul className="min-w-0 flex-1 list-disc ml-5 text-12px text-neutral-gray-1 font-normal leading-[140%]">
-                <li>대상 : 건국대학교 재학생 혹은 휴학생</li>
-                {rentalDuration !== undefined && (
-                  <li>대여 기간 : {rentalDuration}일</li>
-                )}
-                {description && <li>설명 : {description}</li>}
-                {guaranteedGoods && <li>보증 물품 : {guaranteedGoods}</li>}
+            <div className="mb-4 flex flex-col w-full gap-4">
+              <ul className="min-w-0 text-12px text-secondary-1 font-normal leading-[140%]">
+                {description && <li>• 설명: {description}</li>}
+
+                <li>
+                  • 독촉 문자 발송 :{" "}
+                  <span className="text-primary">
+                    {useMessageAlarmService ? "O" : "X"}
+                  </span>
+                </li>
+
+                <li>
+                  • 보증 물품:{" "}
+                  <span className="text-primary">
+                    {guaranteedGoods ? guaranteedGoods : "없음"}{" "}
+                  </span>
+                </li>
               </ul>
-              <button
-                type="button"
-                onClick={() => navigate(`/item-edit/${itemId}`)}
-                className="w-22.5 h-8.5 shrink-0 rounded-[10px] text-center bg-neutral-white text-14px font-[600] leading-[20px] text-primary border border-primary cursor-pointer hover:bg-bg-pale"
-              >
-                수정하기
-              </button>
+              <div className="w-76.5 h-13.5 flex justify-between items-center px-4 rounded-[6px] shadow-16-gray">
+                <div className="flex w-33 h-7.5 justify-center items-center bg-secondary-4 rounded-[6px] gap-3">
+                  <p className="text-12px text-secondary-1 font-[500]  leading-[130%]">
+                    대여 가능 기간
+                  </p>
+                  <div className="flex">
+                    <p className="text-14px text-primary font-[600] leading-[120%]">
+                      {rentalDuration}{" "}
+                    </p>
+                    <p className="text-12px text-secondary-1 font-[500] leading-[130%]">
+                      일
+                    </p>
+                  </div>
+                </div>
+                <div className="flex w-33 h-7.5 justify-center items-center bg-secondary-4 rounded-[6px] gap-3">
+                  <p className="text-12px text-secondary-1 font-[500] leading-[130%]">
+                    대여 가능 개수
+                  </p>
+                  <div className="flex">
+                    <p className="text-14px text-primary font-[600] leading-[120%]">
+                      {availableQuantity}{" "}
+                    </p>
+                    <p className="text-12px text-secondary-1 font-[500] leading-[130%]">
+                      개
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col w-full px-5 py-3 gap-2 rounded-[6px] shadow-16-gray">
+                <p className="text-12px text-secondary-1 font-normal leading-[140%]">
+                  대여자 입력 요구 정보
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {borrowerRequirements.map((req, index) => (
+                    <span
+                      key={`${req.label}-${index}`}
+                      className="inline-flex shrink-0 items-center text-secondary-1 text-12px font-normal rounded-[30px] bg-secondary-4 px-3 py-1 leading-[140%]"
+                    >
+                      {req.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => navigate(`/item-edit/${itemId}`)}
+                  className="w-22.5 h-8.5 shrink-0 rounded-[10px] text-center bg-neutral-white text-14px font-[600] leading-[20px] text-primary border border-primary cursor-pointer hover:bg-bg-pale"
+                >
+                  수정하기
+                </button>
+              </div>
             </div>
 
             {/* 구분선 아래 ItemStatusCard 목록 */}

@@ -1,15 +1,19 @@
 // 관리자 물품 목록 조회 응답 (기존 물품 관리 페이지용)
 // GET /api/admin/v1/items
+// - borrowerRequirements: 물품 상세·등록 API와 동일한 { label, required }[] (아래 AdminBorrowerRequirementResponse)
 export interface AdminItemListResponse {
   items: {
     itemId: number;
     name: string;
     totalQuantity: number;
+    availableQuantity: number;
     isActive: boolean;
-    availableQuantity?: number;
     rentalDuration?: number;
     description?: string;
     guaranteedGoods?: string;
+    itemManagementType?: string;
+    useMessageAlarmService?: boolean;
+    borrowerRequirements: AdminBorrowerRequirementResponse[];
   }[];
   nextCursor?: number;
 }

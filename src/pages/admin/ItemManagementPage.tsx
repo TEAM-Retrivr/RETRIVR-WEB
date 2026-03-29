@@ -5,6 +5,7 @@ import { useLoadHome } from "../../hooks/queries/useAuthQueries";
 import BlueButton from "../../components/BlueButton";
 import { useNavigate } from "react-router-dom";
 import ItemManagementCard from "../../components/cards/admin/management/ItemManagementCard";
+import type { AdminItemListResponse } from "../../api/admin/admin.type";
 
 const ItemManagementPage = () => {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ const ItemManagementPage = () => {
   const { data: homeData } = useLoadHome();
   const organizationName = homeData?.organizationName;
 
-  const items = data?.items ?? [];
+  const items: AdminItemListResponse["items"] = data?.items ?? [];
   const hasItems = items.length > 0;
 
   // 로딩 화면
@@ -76,10 +77,12 @@ const ItemManagementPage = () => {
             itemId={item.itemId}
             name={item.name}
             totalQuantity={item.totalQuantity}
+            availableQuantity={item.availableQuantity}
             isActive={item.isActive}
             rentalDuration={item.rentalDuration}
             description={item.description}
             guaranteedGoods={item.guaranteedGoods}
+            borrowerRequirements={item.borrowerRequirements}
           />
         ))}
       </div>
