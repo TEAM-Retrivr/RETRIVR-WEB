@@ -14,6 +14,7 @@ import ReturnCheckPage from "./pages/admin/return/ReturnCheckPage";
 import ClientHomePage from "./pages/client/ClientHomePage";
 import RentalInformationSubmitPage from "./pages/client/RentalInformationSubmitPage";
 import RenterSearchPage from "./pages/client/RenterSearchPage";
+import RentalConfirmationPage from "./pages/client/RentalConfirmationPage";
 function App() {
   return (
     <Router>
@@ -59,7 +60,11 @@ function App() {
           path="/client-rental-information-submit"
           element={<RentalInformationSubmitPage />}
         />
-
+        {/* 대여요청 완료 페이지 */}
+        <Route
+          path="/client-rental-confirmation"
+          element={<RentalConfirmationPage />}
+        />
         {/* 테스트 페이지 */}
         <Route path="/test" element={<TestPage />} />
 

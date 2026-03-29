@@ -82,7 +82,11 @@ const ClientHome = () => {
         </div>
         <div className="flex w-full max-h-[72px] mt-[50.64px]">
           {/* 프로필 사진 */}
-          <UserIcon imageURL={imageURL} alt={organizationName || "대여지"} />
+          <UserIcon
+            usage="home"
+            imageURL={imageURL}
+            alt={organizationName || "대여지"}
+          />
           <div />
           {/* 주소 및 단체 이름 */}
           <div className="pl-[12px] pt-[12.68px] gap-[4px] font-[Pretendard] leading-none flex flex-col">
