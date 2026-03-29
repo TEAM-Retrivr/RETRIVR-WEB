@@ -68,7 +68,10 @@ const Home = () => {
           </div>
           <div className="flex w-full max-h-[72px] mt-13">
             {/* 프로필 사진 */}
-            <UserIcon></UserIcon>
+            <UserIcon
+              usage="home"
+              imageURL={UserProfile.profileImageUrl}
+            ></UserIcon>
             {/* 주소 및 단체 이름 */}
             <div className="pl-3 pt-3.25 gap-1 font-[Pretendard] leading-none flex flex-col">
               <span className="text-neutral-dark text-start text-[12px] font-[400]">

@@ -1,19 +1,33 @@
 type UserIconProps = {
+  usage?: "search" | "home";
   imageURL?: string;
   alt?: string;
 };
 
-const UserIcon = ({ imageURL, alt = "프로필 이미지" }: UserIconProps) => {
+const UserIcon = ({
+  imageURL,
+  usage = "home",
+  alt = "프로필 이미지",
+}: UserIconProps) => {
+  const iconSize =
+    usage === "home"
+      ? "w-18 h-18 border border-neutral-gray-4 border-[0.6px] shadow-profile"
+      : "w-14 h-14 pt-2 shadow-[0_0_3px_1px_rgba(92,174,255,0.4)]";
+  const defaultProfileImage =
+    usage === "home"
+      ? "/icons/default-profile.svg"
+      : "/icons/client/search-profile-default.svg";
+  const wrapperClass = `${iconSize} flex items-center justify-center rounded-full  bg-neutral-white  overflow-hidden`;
   if (!imageURL)
     return (
-      <div className="flex w-18 h-18 bg-neutral-white items-center justify-center rounded-[50%] border border-neutral-gray-4 border-[0.6px] shadow-profile">
-        <img src="/icons/default-profile.svg" alt="기본 프로필" />
+      <div className={wrapperClass}>
+        <img src={defaultProfileImage} alt="기본 프로필" />
       </div>
     );
 
   return (
-    <div className="w-18 h-18 bg-neutral-white items-center">
-      <img src={imageURL} alt={alt} />
+    <div className={wrapperClass}>
+      <img src={imageURL} alt={alt} className=" object-cover" />
     </div>
   );
 };
