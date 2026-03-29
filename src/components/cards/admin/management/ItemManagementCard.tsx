@@ -128,7 +128,7 @@ const ItemManagementCard = ({
                   </p>
                   <div className="flex">
                     <p className="text-14px text-primary font-[600] leading-[120%]">
-                      {rentalDuration}{" "}
+                      {rentalDuration ?? "-"}{" "}
                     </p>
                     <p className="text-12px text-secondary-1 font-[500] leading-[130%]">
                       일
