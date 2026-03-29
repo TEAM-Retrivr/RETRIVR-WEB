@@ -159,7 +159,13 @@ export interface AdminItemDetailResponse {
   borrowerRequirements: AdminBorrowerRequirementResponse[];
 }
 
-/** PATCH unitChanges 한 건: 이름 변경·유닛 삭제·유닛 추가 */
+/* PATCH unitChanges 한 건: 이름 변경·유닛 삭제·유닛 추가 */
+/* 타입을 판별 유니언으로 제한하여 차단 하는 방법 논의해보기 */
+// export type AdminItemUnitChangeEntry =
+// | { currentLabel: string; label: string } // 이름 변경
+// | { currentLabel: string; label: null }   // 유닛 삭제
+// | { currentLabel: null; label: string };  // 유닛 추가
+
 export interface AdminItemUnitChangeEntry {
   currentLabel: string | null;
   label: string | null;
@@ -181,7 +187,7 @@ export interface AdminUpdateItemResponse {
   description?: string;
   rentalDuration?: number;
   totalQuantity?: number;
-  itemManagementType?: AdminItemManagementType | string;
+  itemManagementType?: AdminItemManagementType;
   useMessageAlarmService?: boolean;
   guaranteedGoods?: string | null;
   itemUnits?: {

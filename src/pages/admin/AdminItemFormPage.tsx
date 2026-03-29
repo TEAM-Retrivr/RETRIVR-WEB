@@ -181,10 +181,12 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
     const qty = detailData.totalQuantity ?? 1;
     const nameBase = (detailData.name ?? "").trim();
     setUnitDetailLabels(
-      Array.from({ length: qty }, (_, i) => {
-        const fromApi = initialUnitLabels[i]?.trim();
-        return fromApi || `${nameBase || "물품"} (${i + 1})`;
-      }),
+      hasUnitLabels
+        ? Array.from({ length: qty }, (_, i) => {
+            const fromApi = initialUnitLabels[i]?.trim();
+            return fromApi || `${nameBase || "물품"} (${i + 1})`;
+          })
+        : [],
     );
     setSendOverdueMessageEnabled(Boolean(detailData.useMessageAlarmService));
     setHasGuaranteedGoods(Boolean(detailData.guaranteedGoods));
