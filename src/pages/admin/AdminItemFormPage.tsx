@@ -65,6 +65,8 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
     ExtraRenterField[]
   >([{ id: 1, enabled: false, label: "" }]); // 커스텀 추가 입력 항목 목록(초기 1행)
   const [addItemDetailName, setAddItemDetailName] = useState(false); // 세부 물품 라벨 사용 여부
+  // 세부 물품마다 보여줄 이름을 담는 배열임. 체크했을 때만 쓰고, 길이는 항상 totalQuantity랑 맞춤
+  const [unitDetailLabels, setUnitDetailLabels] = useState<string[]>([]);
   const [originalUnitLabels, setOriginalUnitLabels] = useState<string[]>([]); // 수정 시 기존 unit 라벨 원본(패치용)
   const [sendOverdueMessageEnabled, setSendOverdueMessageEnabled] =
     useState(false); // 연체 알림 발송 옵션 체크 상태
@@ -124,10 +126,68 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
     ]);
     setAddItemDetailName(hasUnitLabels);
     setOriginalUnitLabels(initialUnitLabels);
+    // 수정 진입 시: 서버에 있던 세부 이름이 있으면 그걸 쓰고, 없는 슬롯은 물품명 (n) 형태로 채움
+    const qty = detailData.totalQuantity ?? 1;
+    const nameBase = (detailData.name ?? "").trim();
+    setUnitDetailLabels(
+      Array.from({ length: qty }, (_, i) => {
+        const fromApi = initialUnitLabels[i]?.trim();
+        return fromApi || `${nameBase || "물품"} (${i + 1})`;
+      }),
+    );
     setSendOverdueMessageEnabled(Boolean(detailData.useMessageAlarmService));
     setHasGuaranteedGoods(Boolean(detailData.guaranteedGoods));
     setGuaranteedGoodsLabel(detailData.guaranteedGoods ?? "");
   }, [detailData, mode]);
+
+  // 총 개수만 바꿀 때 세부 이름 배열 길이를 같이 맞춤. 늘리면 새 칸은 기본 문구로 채우고, 줄이면 뒤에서 자름
+  const syncUnitDetailLabelsToQuantity = (nextQty: number) => {
+    if (!addItemDetailName) return;
+    setUnitDetailLabels((prev) => {
+      if (prev.length === nextQty) return prev;
+      const base = itemName.trim() || "물품";
+      if (prev.length < nextQty) {
+        return [
+          ...prev,
+          ...Array.from(
+            { length: nextQty - prev.length },
+            (_, j) => `${base} (${prev.length + j + 1})`,
+          ),
+        ];
+      }
+      return prev.slice(0, nextQty);
+    });
+  };
+
+  // 위쪽 총 개수 +/- 버튼에서 호출함. totalQuantity랑 세부 이름 배열을 한 번에 맞추려고 이 경로만 씀 (이펙트로 두면 상세 로드랑 겹칠 수 있음)
+  const handleTotalQuantityDelta = (delta: -1 | 1) => {
+    const nextQty =
+      delta === -1 ? Math.max(1, totalQuantity - 1) : totalQuantity + 1;
+    if (nextQty === totalQuantity) return;
+    setTotalQuantity(nextQty);
+    syncUnitDetailLabelsToQuantity(nextQty);
+  };
+
+  // 체크하면 세부 이름 모드 켜지고, 이미 적어둔 칸은 유지하고 빈 칸만 기본값으로 채움
+  const handleAddItemDetailNameChange = (checked: boolean) => {
+    setAddItemDetailName(checked);
+    if (!checked) return;
+    setUnitDetailLabels((prev) =>
+      Array.from({ length: totalQuantity }, (_, i) => {
+        const existing = prev[i]?.trim();
+        if (existing) return prev[i];
+        return `${itemName.trim() || "물품"} (${i + 1})`;
+      }),
+    );
+  };
+
+  // 한 줄 삭제 = 수량 하나 줄이고, 해당 인덱스만 라벨에서 빼고, PATCH 비교용 originalUnitLabels도 같은 인덱스를 빼서 슬롯이 안 어긋나게 함
+  const handleRemoveUnitDetailRow = (index: number) => {
+    if (totalQuantity <= 1) return;
+    setTotalQuantity((q) => q - 1);
+    setUnitDetailLabels((prev) => prev.filter((_, j) => j !== index));
+    setOriginalUnitLabels((prev) => prev.filter((_, j) => j !== index));
+  };
 
   const isFormValid = useMemo(() => {
     if (!itemName.trim()) return false;
@@ -170,11 +230,12 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
           required: false,
         })),
     ];
+    // 세부 이름 켜진 경우에만 보냄. 칸을 비워두면 서버에는 물품명 (n) 같은 기본값으로 채워서 넣음
     const desiredUnitLabels = addItemDetailName
-      ? Array.from(
-          { length: totalQuantity },
-          (_, i) => `${itemName.trim()}(${i + 1})`,
-        )
+      ? Array.from({ length: totalQuantity }, (_, i) => {
+          const raw = unitDetailLabels[i]?.trim() ?? "";
+          return raw || `${itemName.trim()} (${i + 1})`;
+        })
       : [];
 
     const body = {
@@ -185,14 +246,11 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
       itemManagementType: "NON_UNIT",
       useMessageAlarmService: sendOverdueMessageEnabled,
       guaranteedGoods: hasGuaranteedGoods ? guaranteedGoodsLabel.trim() : null,
-      unitLabels: addItemDetailName
-        ? Array.from(
-            { length: totalQuantity },
-            (_, i) => `${itemName}(${i + 1})`,
-          )
-        : undefined,
+      // 등록 시: 세부 이름 켰을 때만 unitLabels로 같이 보냄
+      unitLabels: addItemDetailName ? desiredUnitLabels : undefined,
       borrowerRequirements,
       isActive: true,
+      // 슬롯별 이전 이름 → 바꿀 이름 (수정 PATCH에서 씀). 등록 POST에서는 unitLabels 위주로 보면 됨
       unitChanges: addItemDetailName
         ? desiredUnitLabels.map((label, i) => ({
             currentLabel: originalUnitLabels[i] ?? "",
@@ -314,7 +372,7 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
                 <button
                   type="button"
                   className="bg-none"
-                  onClick={() => setTotalQuantity((v) => Math.max(1, v - 1))}
+                  onClick={() => handleTotalQuantityDelta(-1)}
                   aria-label="총 개수 감소"
                 >
                   <img src="/icons/minus-count.svg" alt="-" />
@@ -325,7 +383,7 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
                 <button
                   type="button"
                   className="bg-none"
-                  onClick={() => setTotalQuantity((v) => v + 1)}
+                  onClick={() => handleTotalQuantityDelta(1)}
                   aria-label="총 개수 증가"
                 >
                   <img src="/icons/plus-count.svg" alt="+" />
@@ -370,14 +428,57 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
           </div>
         </div>
 
-        <div className="h-13 flex items-center justify-start rounded-small bg-neutral-white shadow-item-card px-5 py-3.5 gap-3">
-          <CustomCheckBox
-            checked={addItemDetailName}
-            onCheckedChange={setAddItemDetailName}
-          />
-          <span className="text-14px text-neutral-gray-2 font-[600]">
-            세부 물품에 이름을 지정하시겠어요?
-          </span>
+        {/* 세부 물품 이름: 체크 행 + (켜졌을 때) 입력 목록을 한 카드로 묶음 */}
+        <div className="rounded-small bg-neutral-white shadow-item-card overflow-hidden">
+          <div className="flex min-h-13 items-center justify-start gap-3 px-5 py-3.5">
+            <CustomCheckBox
+              checked={addItemDetailName}
+              onCheckedChange={handleAddItemDetailNameChange}
+            />
+            <span className="text-14px text-neutral-gray-2 font-[600]">
+              세부 물품에 이름을 지정하시겠어요?
+            </span>
+          </div>
+
+          {addItemDetailName && (
+            <>
+              <div className="flex flex-col pb-2">
+                {/* 많아지면 스크롤 되게 함. 스크롤바는 숨김 */}
+                <div className="no-scrollbar max-h-[min(280px,45vh)] overflow-y-auto flex flex-col gap-0.5 pr-0.5">
+                  {Array.from({ length: totalQuantity }, (_, i) => (
+                    <div
+                      key={i}
+                      className="flex py-1 px-4 items-center font-[Pretendard] gap-2"
+                    >
+                      {/* CommonInput은 가로 풀 넓이 쓰기 애매해서 여기만 동일 스타일로 raw input 씀 */}
+                      <input
+                        type="text"
+                        value={unitDetailLabels[i] ?? ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setUnitDetailLabels((prev) => {
+                            const next = [...prev];
+                            next[i] = value;
+                            return next;
+                          });
+                        }}
+                        placeholder={`${itemName.trim() || "물품"} (${i + 1})`}
+                        className="w-54.5 h-12 flex-1 rounded-[12px] bg-[#F8F9F9] px-4 py-3 text-14px text-neutral-gray-1 font-[Pretendard] outline-none transition-all placeholder:text-gray-400 placeholder:leading-none focus:ring-2 focus:ring-blue-100"
+                      />
+                      <button
+                        type="button"
+                        className="bg-primary text-neutral-white font-[600] w-20 h-11 shrink-0 rounded-[12px] text-14px px-2"
+                        disabled={totalQuantity <= 1}
+                        onClick={() => handleRemoveUnitDetailRow(i)}
+                      >
+                        삭제
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="flex flex-col gap-3">
