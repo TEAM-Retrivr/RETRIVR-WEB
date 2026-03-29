@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../../components/Button";
 import CommonInput from "../../components/CommonInput";
@@ -12,7 +12,12 @@ import {
   useCreateAdminItem,
   useUpdateAdminItem,
 } from "../../hooks/queries/useAdminQueries";
-import type { AdminUpdateItemRequest } from "../../api/admin/admin.type";
+import type {
+  AdminCreateItemRequest,
+  AdminItemDetailResponse,
+  AdminItemUnitChangeEntry,
+  AdminUpdateItemRequest,
+} from "../../api/admin/admin.type";
 import { useLoadHome } from "../../hooks/queries/useAuthQueries";
 
 type RenterFieldKey = "name" | "studentNumber" | "phone" | "major";
@@ -34,6 +39,49 @@ const OPTIONAL_LABELS = {
   studentNumber: "학번",
   major: "학과",
 } as const;
+
+/** PATCH unitChanges 중 슬롯별 반영: 추가는 currentLabel null, 이름 변경만 이전·이후 문자열 */
+function buildUnitSlotChanges(
+  desired: string[],
+  original: string[],
+): AdminItemUnitChangeEntry[] {
+  const out: AdminItemUnitChangeEntry[] = [];
+  for (let i = 0; i < desired.length; i++) {
+    const next = (desired[i] ?? "").trim();
+    const rawPrev = original[i];
+    const currentLabel =
+      rawPrev != null && String(rawPrev).trim() !== ""
+        ? String(rawPrev).trim()
+        : null;
+    if (currentLabel === null) {
+      out.push({ currentLabel: null, label: next });
+    } else if (currentLabel !== next) {
+      out.push({ currentLabel, label: next });
+    }
+  }
+  return out;
+}
+
+/** UNIT → NON_UNIT 저장 시 서버에 남아 있는 유닛을 없애려면 각각 { currentLabel, label: null } 로 보냄 (조회 응답 기준) */
+function buildUnitClearChangesFromDetail(
+  detail: AdminItemDetailResponse | undefined,
+): AdminItemUnitChangeEntry[] {
+  if (!detail) return [];
+  const fromUnits =
+    detail.itemUnits?.map((u) => u.label.trim()).filter(Boolean) ?? [];
+  if (fromUnits.length > 0) {
+    return fromUnits.map((label) => ({
+      currentLabel: label,
+      label: null,
+    }));
+  }
+  const fromLabels =
+    detail.unitLabels?.map((l) => String(l).trim()).filter(Boolean) ?? [];
+  return fromLabels.map((label) => ({
+    currentLabel: label,
+    label: null,
+  }));
+}
 
 const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
   const navigate = useNavigate();
@@ -65,11 +113,16 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
     ExtraRenterField[]
   >([{ id: 1, enabled: false, label: "" }]); // 커스텀 추가 입력 항목 목록(초기 1행)
   const [addItemDetailName, setAddItemDetailName] = useState(false); // 세부 물품 라벨 사용 여부
+  // 세부 물품마다 보여줄 이름을 담는 배열임. 체크했을 때만 쓰고, 길이는 항상 totalQuantity랑 맞춤
+  const [unitDetailLabels, setUnitDetailLabels] = useState<string[]>([]);
   const [originalUnitLabels, setOriginalUnitLabels] = useState<string[]>([]); // 수정 시 기존 unit 라벨 원본(패치용)
   const [sendOverdueMessageEnabled, setSendOverdueMessageEnabled] =
     useState(false); // 연체 알림 발송 옵션 체크 상태
   const [hasGuaranteedGoods, setHasGuaranteedGoods] = useState(false); // 보증 물품 존재 여부
   const [guaranteedGoodsLabel, setGuaranteedGoodsLabel] = useState(""); // 보증 물품명 입력값
+
+  // 행 삭제·수량 감소로 빠진 유닛은 { currentLabel, label: null }로 PATCH에 따로 쌓음
+  const pendingUnitDeleteOpsRef = useRef<AdminItemUnitChangeEntry[]>([]);
 
   useEffect(() => {
     if (!detailData || mode !== "edit") return;
@@ -124,10 +177,98 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
     ]);
     setAddItemDetailName(hasUnitLabels);
     setOriginalUnitLabels(initialUnitLabels);
+    // 수정 진입 시: 서버에 있던 세부 이름이 있으면 그걸 쓰고, 없는 슬롯은 물품명 (n) 형태로 채움
+    const qty = detailData.totalQuantity ?? 1;
+    const nameBase = (detailData.name ?? "").trim();
+    setUnitDetailLabels(
+      hasUnitLabels
+        ? Array.from({ length: qty }, (_, i) => {
+            const fromApi = initialUnitLabels[i]?.trim();
+            return fromApi || `${nameBase || "물품"} (${i + 1})`;
+          })
+        : [],
+    );
     setSendOverdueMessageEnabled(Boolean(detailData.useMessageAlarmService));
     setHasGuaranteedGoods(Boolean(detailData.guaranteedGoods));
     setGuaranteedGoodsLabel(detailData.guaranteedGoods ?? "");
+    pendingUnitDeleteOpsRef.current = [];
   }, [detailData, mode]);
+
+  // 총 개수만 바꿀 때 세부 이름 배열 길이를 같이 맞춤. 늘리면 새 칸은 기본 문구로 채우고, 줄이면 뒤에서 자름
+  const syncUnitDetailLabelsToQuantity = (nextQty: number) => {
+    if (!addItemDetailName) return;
+    setUnitDetailLabels((prev) => {
+      if (prev.length === nextQty) return prev;
+      const base = itemName.trim() || "물품";
+      if (prev.length < nextQty) {
+        return [
+          ...prev,
+          ...Array.from(
+            { length: nextQty - prev.length },
+            (_, j) => `${base} (${prev.length + j + 1})`,
+          ),
+        ];
+      }
+      return prev.slice(0, nextQty);
+    });
+  };
+
+  // 위쪽 총 개수 +/- 버튼에서 호출함. 세부 이름 모드일 때 original·라벨 배열 길이와, 줄이면 끝 슬롯 삭제 PATCH용 기록까지 맞춤
+  const handleTotalQuantityDelta = (delta: -1 | 1) => {
+    const nextQty =
+      delta === -1 ? Math.max(1, totalQuantity - 1) : totalQuantity + 1;
+    if (nextQty === totalQuantity) return;
+
+    if (addItemDetailName) {
+      if (nextQty < totalQuantity) {
+        for (let j = nextQty; j < totalQuantity; j++) {
+          const lab = originalUnitLabels[j]?.trim();
+          if (lab) {
+            pendingUnitDeleteOpsRef.current.push({
+              currentLabel: lab,
+              label: null,
+            });
+          }
+        }
+        setOriginalUnitLabels((prev) => prev.slice(0, nextQty));
+      } else {
+        setOriginalUnitLabels((prev) => {
+          if (prev.length >= nextQty) return prev;
+          return [...prev, ...Array(nextQty - prev.length).fill("")];
+        });
+      }
+      syncUnitDetailLabelsToQuantity(nextQty);
+    }
+    setTotalQuantity(nextQty);
+  };
+
+  // 체크하면 세부 이름 모드 켜지고, 이미 적어둔 칸은 유지하고 빈 칸만 기본값으로 채움
+  const handleAddItemDetailNameChange = (checked: boolean) => {
+    setAddItemDetailName(checked);
+    if (!checked) return;
+    setUnitDetailLabels((prev) =>
+      Array.from({ length: totalQuantity }, (_, i) => {
+        const existing = prev[i]?.trim();
+        if (existing) return prev[i];
+        return `${itemName.trim() || "물품"} (${i + 1})`;
+      }),
+    );
+  };
+
+  // 한 줄 삭제: 서버에 있던 라벨이면 삭제 연산 누적 후, 수량·배열에서 해당 인덱스 제거
+  const handleRemoveUnitDetailRow = (index: number) => {
+    if (totalQuantity <= 1) return;
+    const serverLabel = originalUnitLabels[index]?.trim();
+    if (serverLabel) {
+      pendingUnitDeleteOpsRef.current.push({
+        currentLabel: serverLabel,
+        label: null,
+      });
+    }
+    setTotalQuantity((q) => q - 1);
+    setUnitDetailLabels((prev) => prev.filter((_, j) => j !== index));
+    setOriginalUnitLabels((prev) => prev.filter((_, j) => j !== index));
+  };
 
   const isFormValid = useMemo(() => {
     if (!itemName.trim()) return false;
@@ -170,74 +311,84 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
           required: false,
         })),
     ];
+    // 세부 이름 켜진 경우에만 보냄. 칸을 비워두면 서버에는 물품명 (n) 같은 기본값으로 채워서 넣음
     const desiredUnitLabels = addItemDetailName
-      ? Array.from(
-          { length: totalQuantity },
-          (_, i) => `${itemName.trim()}(${i + 1})`,
-        )
+      ? Array.from({ length: totalQuantity }, (_, i) => {
+          const raw = unitDetailLabels[i]?.trim() ?? "";
+          return raw || `${itemName.trim()} (${i + 1})`;
+        })
       : [];
 
-    const body = {
-      name: itemName.trim(),
-      description: description.trim() || "",
-      totalQuantity,
-      rentalDuration: rentalDurationDays,
-      itemManagementType: "NON_UNIT",
-      useMessageAlarmService: sendOverdueMessageEnabled,
-      guaranteedGoods: hasGuaranteedGoods ? guaranteedGoodsLabel.trim() : null,
-      unitLabels: addItemDetailName
-        ? Array.from(
-            { length: totalQuantity },
-            (_, i) => `${itemName}(${i + 1})`,
-          )
-        : undefined,
-      borrowerRequirements,
-      isActive: true,
-      unitChanges: addItemDetailName
-        ? desiredUnitLabels.map((label, i) => ({
-            currentLabel: originalUnitLabels[i] ?? "",
-            label,
-          }))
-        : [],
+    // 세부 물품(유닛) 이름을 쓰면 UNIT, 아니면 NON_UNIT (요청 바디 종류가 다름)
+    const itemManagementType = addItemDetailName ? "UNIT" : "NON_UNIT";
+
+    const flushPendingDeletesOnSuccess = () => {
+      pendingUnitDeleteOpsRef.current = [];
     };
 
     if (mode === "create") {
-      createItem(body, {
-        onSuccess: () => setModalType("confirm"),
+      // NON_UNIT: unitLabels 없음. UNIT: unitLabels만 (명세상 unitChanges는 PATCH 전용)
+      const createBody: AdminCreateItemRequest = {
+        name: itemName.trim(),
+        description: description.trim() || "",
+        totalQuantity,
+        rentalDuration: rentalDurationDays,
+        itemManagementType,
+        useMessageAlarmService: sendOverdueMessageEnabled,
+        guaranteedGoods: hasGuaranteedGoods
+          ? guaranteedGoodsLabel.trim()
+          : null,
+        borrowerRequirements,
+        ...(addItemDetailName ? { unitLabels: desiredUnitLabels } : {}),
+      };
+      createItem(createBody, {
+        onSuccess: () => {
+          flushPendingDeletesOnSuccess();
+          setModalType("confirm");
+        },
         onError: () => setModalType("error"),
       });
       return;
     }
 
-    // PATCH용 세부 물품 라벨: 신규 등록(POST)과 동일한 규칙으로 "지금 폼에서 기대하는" 라벨 배열을 만듦
-    // - 길이는 항상 totalQuantity와 같음 (1번~N번 슬롯)
-    // - 이전 구현은 originalUnitLabels만 map해서 원래 라벨이 없으면 []만 전달되고 수량 증가로 새 슬롯이 생겨도 반영되지 않음
-
-    const updateBody: AdminUpdateItemRequest = {
-      name: body.name,
-      description: body.description,
-      totalQuantity: body.totalQuantity,
-      rentalDuration: body.rentalDuration,
-      itemManagementType: body.itemManagementType,
-      useMessageAlarmService: body.useMessageAlarmService,
-      guaranteedGoods: body.guaranteedGoods,
-      borrowerRequirements: body.borrowerRequirements,
+    const baseUpdate: AdminUpdateItemRequest = {
+      name: itemName.trim(),
+      description: description.trim() || "",
+      totalQuantity,
+      rentalDuration: rentalDurationDays,
+      itemManagementType,
+      useMessageAlarmService: sendOverdueMessageEnabled,
+      guaranteedGoods: hasGuaranteedGoods ? guaranteedGoodsLabel.trim() : null,
+      borrowerRequirements,
       isActive: true,
-      // 서버 contract: unitChanges[i] = { 기존 표시명 -> 변경 후 표시명 }
-      // - i번째 슬롯에 예전 라벨이 있으면 currentLabel에 넣고, 없으면 "" (신규 슬롯으로 간주; 백엔드가 허용하는 전제)
-      // - label은 항상 desiredUnitLabels[i] (현재 물품명·수량 기준으로 계산한 목표 라벨)
-      unitChanges: addItemDetailName
-        ? desiredUnitLabels.map((label, i) => ({
-            currentLabel: originalUnitLabels[i] ?? "",
-            label,
-          }))
-        : [],
     };
+
+    let updateBody: AdminUpdateItemRequest;
+    if (itemManagementType === "UNIT") {
+      updateBody = {
+        ...baseUpdate,
+        unitChanges: [
+          ...pendingUnitDeleteOpsRef.current,
+          ...buildUnitSlotChanges(desiredUnitLabels, originalUnitLabels),
+        ],
+      };
+    } else {
+      // NON_UNIT: 원래부터 유닛 없음이면 unitChanges 없음.
+      // UNIT이었다가 NON_UNIT으로 바꾸면 DB에 유닛이 남아 있어서 거절되므로, 상세 조회 시점 기준으로 유닛 전부 삭제
+      const clearUnitChanges = buildUnitClearChangesFromDetail(detailData);
+      updateBody =
+        clearUnitChanges.length > 0
+          ? { ...baseUpdate, unitChanges: clearUnitChanges }
+          : baseUpdate;
+    }
 
     updateItem(
       { itemId: itemId as number, body: updateBody },
       {
-        onSuccess: () => setModalType("confirm"),
+        onSuccess: () => {
+          flushPendingDeletesOnSuccess();
+          setModalType("confirm");
+        },
         onError: () => setModalType("error"),
       },
     );
@@ -314,7 +465,7 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
                 <button
                   type="button"
                   className="bg-none"
-                  onClick={() => setTotalQuantity((v) => Math.max(1, v - 1))}
+                  onClick={() => handleTotalQuantityDelta(-1)}
                   aria-label="총 개수 감소"
                 >
                   <img src="/icons/minus-count.svg" alt="-" />
@@ -325,7 +476,7 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
                 <button
                   type="button"
                   className="bg-none"
-                  onClick={() => setTotalQuantity((v) => v + 1)}
+                  onClick={() => handleTotalQuantityDelta(1)}
                   aria-label="총 개수 증가"
                 >
                   <img src="/icons/plus-count.svg" alt="+" />
@@ -370,14 +521,57 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
           </div>
         </div>
 
-        <div className="h-13 flex items-center justify-start rounded-small bg-neutral-white shadow-item-card px-5 py-3.5 gap-3">
-          <CustomCheckBox
-            checked={addItemDetailName}
-            onCheckedChange={setAddItemDetailName}
-          />
-          <span className="text-14px text-neutral-gray-2 font-[600]">
-            세부 물품에 이름을 지정하시겠어요?
-          </span>
+        {/* 세부 물품 이름: 체크 행 + (켜졌을 때) 입력 목록을 한 카드로 묶음 */}
+        <div className="rounded-small bg-neutral-white shadow-item-card overflow-hidden">
+          <div className="flex min-h-13 items-center justify-start gap-3 px-5 py-3.5">
+            <CustomCheckBox
+              checked={addItemDetailName}
+              onCheckedChange={handleAddItemDetailNameChange}
+            />
+            <span className="text-14px text-neutral-gray-2 font-[600]">
+              세부 물품에 이름을 지정하시겠어요?
+            </span>
+          </div>
+
+          {addItemDetailName && (
+            <>
+              <div className="flex flex-col pb-2">
+                {/* 많아지면 스크롤 되게 함. 스크롤바는 숨김 */}
+                <div className="no-scrollbar max-h-[min(280px,45vh)] overflow-y-auto flex flex-col gap-0.5 pr-0.5">
+                  {Array.from({ length: totalQuantity }, (_, i) => (
+                    <div
+                      key={i}
+                      className="flex py-1 px-4 items-center font-[Pretendard] gap-2"
+                    >
+                      {/* CommonInput은 가로 풀 넓이 쓰기 애매해서 여기만 동일 스타일로 raw input 씀 */}
+                      <input
+                        type="text"
+                        value={unitDetailLabels[i] ?? ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setUnitDetailLabels((prev) => {
+                            const next = [...prev];
+                            next[i] = value;
+                            return next;
+                          });
+                        }}
+                        placeholder={`${itemName.trim() || "물품"} (${i + 1})`}
+                        className="w-54.5 h-12 flex-1 rounded-[12px] bg-[#F8F9F9] px-4 py-3 text-14px text-neutral-gray-1 font-[Pretendard] outline-none transition-all placeholder:text-gray-400 placeholder:leading-none focus:ring-2 focus:ring-blue-100"
+                      />
+                      <button
+                        type="button"
+                        className="bg-primary text-neutral-white font-[600] w-20 h-11 shrink-0 rounded-[12px] text-14px px-2"
+                        disabled={totalQuantity <= 1}
+                        onClick={() => handleRemoveUnitDetailRow(i)}
+                      >
+                        삭제
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="flex flex-col gap-3">

@@ -110,19 +110,23 @@ export interface AdminBorrowerRequirementRequest {
   required: boolean; // 필수 여부
 }
 
+/** NON_UNIT: 세부 유닛 이름 없음 / UNIT: 세부 유닛(unitChanges·itemUnits 등) 사용 */
+export type AdminItemManagementType = "UNIT" | "NON_UNIT";
+
 export interface AdminItemBaseRequest {
   name: string; // 물품 이름
   description?: string; // 물품 설명 (선택)
   totalQuantity: number; // 총 개수
   rentalDuration: number; // 대여 기간(일)
-  itemManagementType: string; // 물품 고유번호 존재 여부
+  itemManagementType: AdminItemManagementType | string; // 호환용 string 유지
   useMessageAlarmService: boolean; // 연체 알림(카톡) 발송 여부
   guaranteedGoods?: string | null; // 보증 물품 (없으면 null)
   borrowerRequirements: AdminBorrowerRequirementRequest[]; // 대여자 입력 요구 정보 목록
 }
 
 export interface AdminCreateItemRequest extends AdminItemBaseRequest {
-  unitLabels?: string[]; // 세부 물품 라벨(옵션)
+  /** UNIT일 때만: 생성 시 각 유닛 표시명 (NON_UNIT 요청에는 넣지 않음) */
+  unitLabels?: string[];
 }
 
 // 관리자 물품 등록 응답 바디
@@ -142,10 +146,11 @@ export interface AdminItemDetailResponse {
   description?: string;
   totalQuantity: number;
   rentalDuration: number;
-  itemManagementType: string;
+  itemManagementType: AdminItemManagementType | string;
   useMessageAlarmService: boolean;
   guaranteedGoods?: string | null;
   unitLabels?: string[];
+  /** NON_UNIT이면 빈 배열, UNIT이면 유닛별 id·label */
   itemUnits?: {
     itemUnitId: number;
     label: string;
@@ -154,13 +159,24 @@ export interface AdminItemDetailResponse {
   borrowerRequirements: AdminBorrowerRequirementResponse[];
 }
 
+/* PATCH unitChanges 한 건: 이름 변경·유닛 삭제·유닛 추가 */
+/* 타입을 판별 유니언으로 제한하여 차단 하는 방법 논의해보기 */
+// export type AdminItemUnitChangeEntry =
+// | { currentLabel: string; label: string } // 이름 변경
+// | { currentLabel: string; label: null }   // 유닛 삭제
+// | { currentLabel: null; label: string };  // 유닛 추가
+
+export interface AdminItemUnitChangeEntry {
+  currentLabel: string | null;
+  label: string | null;
+}
+
 // 관리자 물품 수정 요청 바디
 // PATCH /api/admin/v1/items/{itemId}
+// - NON_UNIT: unitChanges 없음
+// - UNIT: unitChanges (이름 변경 / { currentLabel, label: null } 삭제 / { currentLabel: null, label } 추가)
 export interface AdminUpdateItemRequest extends Partial<AdminItemBaseRequest> {
-  unitChanges?: {
-    currentLabel: string;
-    label: string;
-  }[];
+  unitChanges?: AdminItemUnitChangeEntry[];
   isActive?: boolean;
 }
 
@@ -171,7 +187,7 @@ export interface AdminUpdateItemResponse {
   description?: string;
   rentalDuration?: number;
   totalQuantity?: number;
-  itemManagementType?: string;
+  itemManagementType?: AdminItemManagementType;
   useMessageAlarmService?: boolean;
   guaranteedGoods?: string | null;
   itemUnits?: {
