@@ -1,11 +1,13 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
+  requestItemDetail,
   requestItemList,
   sendRentalRequest,
   searchOrganizations,
 } from "../../api/client/client.api";
 import type {
   BorrowerInformationRequest,
+  ItemDetailResponse,
   ItemResponse,
   OrganizationSearchResponse,
 } from "../../api/client/client.type";
@@ -39,7 +41,17 @@ export const useItemList = ({
   });
 };
 
-// 2. 대여 요청 생성 API (POST)
+// 2. 물품 상세 조회 API (GET)
+export const useItemDetail = (itemId: number, enabled = true) => {
+  return useQuery<ItemDetailResponse>({
+    queryKey: ["clientItemDetail", itemId],
+    queryFn: () => requestItemDetail(itemId),
+    enabled: enabled && Number.isFinite(itemId) && itemId > 0,
+    retry: false,
+  });
+};
+
+// 3. 대여 요청 생성 API (POST)
 // - 클라이언트(대여자) 단에서 대여 정보 입력 후 호출
 // - Path Parameter: itemId (대여하려는 물품 ID)
 // - Request Body: BorrowerInformationRequest
@@ -60,7 +72,7 @@ export const useSendRentalRequest = () => {
   });
 };
 
-// 3. 대여지 검색 API (GET)
+// 4. 대여지 검색 API (GET)
 // - 클라이언트(대여자) 홈 진입 전에 대여지를 선택하는 검색 페이지에서 사용
 // - keyword가 비어 있으면 요청을 보내지 않는다(enabled 조건)
 // - cursor 파라미터는 이후 무한 스크롤/페이지네이션 구현 시 확장 가능

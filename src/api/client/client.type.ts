@@ -10,8 +10,27 @@ export interface ItemResponse {
     rentalDuration: number; // 대여 기간
     description: string; // 물품 설명
     guaranteedGoods?: string; // 보증 물품 (있을 수도, 없을 수도)
+    borrowerRequirements?: {
+      label: string;
+      required: boolean;
+    }[]; // 추가 대여자 정보 요구 항목
   }[];
   nextCursor?: number; // (무한스크롤) 사용자에게 보여줄 페이지 단위. nextCursor가 null이면 다음 페이지가 없음.
+}
+
+// 1-2. 물품 상세 조회 응답 바디
+// GET /api/public/v1/items/{itemId}
+export interface ItemDetailResponse {
+  itemUnits?: {
+    itemUnitId: number;
+    label: string;
+    status?: string;
+  }[];
+  itemManagementType?: string;
+  borrowerRequirements?: {
+    label: string;
+    required: boolean;
+  }[];
 }
 
 // 2. 대여 요청 생성
@@ -22,9 +41,7 @@ export interface BorrowerInformationRequest {
   phone?: string; // String, nullable. 대여자 전화번호
   renterFields: {
     // JSON Object, 필수. 추가 대여자 정보 (자유 key-value, 입력값 그대로 전달)
-    학과: string;
-    학번: string;
-    [key: string]: string | undefined; // 요청사항 등 자유 필드
+    [key: string]: string; // 요청사항/학과/학번 등 자유 필드
   };
 }
 
