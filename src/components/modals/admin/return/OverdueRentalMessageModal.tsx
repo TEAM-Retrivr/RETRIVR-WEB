@@ -20,11 +20,7 @@ export interface OverdueRentalMessageModalProps {
 const OverdueRentalMessageModal = ({
   isOpen,
   onClose,
-  itemNameWithCount,
   borrowerName,
-  borrowerStudentNumber,
-  overdueDays,
-  lastSmsSentDateLabel,
   canSendOverdueSms = true,
   onConfirm,
 }: OverdueRentalMessageModalProps) => {
