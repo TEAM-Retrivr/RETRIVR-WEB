@@ -247,6 +247,17 @@ export interface AdminConfirmReturnResponse {
   adminNameToConfirm: string;
 }
 
+// 반납 예정일 수정 요청/응답
+// PATCH /api/admin/v1/rentals/{rentalId}/due-date
+export interface AdminUpdateReturnDueDateRequestBody {
+  newReturnDueDate: string; // YYYY-MM-DD
+}
+
+export interface AdminUpdateReturnDueDateResponse {
+  rentalId: number;
+  updatedDate: string; // YYYY-MM-DD
+}
+
 // 연체 알림 메시지 수동 발송 응답
 // POST /api/admin/v1/rentals/{rentalId}/messages/overdue-reminder
 export interface AdminSendOverdueReminderResponse {

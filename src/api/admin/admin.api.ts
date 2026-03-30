@@ -13,6 +13,8 @@ import type {
   AdminUpdateItemRequest,
   AdminUpdateItemResponse,
   AdminSendOverdueReminderResponse,
+  AdminUpdateReturnDueDateRequestBody,
+  AdminUpdateReturnDueDateResponse,
 } from "./admin.type";
 import { apiClient } from "../core";
 
@@ -131,6 +133,25 @@ export const confirmAdminReturn = async ({
   const response = await apiClient.post<AdminConfirmReturnResponse>(
     `/api/admin/v1/rentals/${rentalId}/return`,
     { adminNameToConfirm },
+  );
+  return response.data;
+};
+
+// 반납 예정일 수정
+// - 물품별 관리(반납 처리) 화면의 "반납일자 수정" 모달에서 사용
+// - rentalId: 반납 예정일을 수정할 대여 ID (path)
+// - newReturnDueDate: 새 반납 예정일 (body, YYYY-MM-DD)
+// PATCH /api/admin/v1/rentals/{rentalId}/due-date
+export const updateAdminRentalReturnDueDate = async ({
+  rentalId,
+  body,
+}: {
+  rentalId: number;
+  body: AdminUpdateReturnDueDateRequestBody;
+}): Promise<AdminUpdateReturnDueDateResponse> => {
+  const response = await apiClient.patch<AdminUpdateReturnDueDateResponse>(
+    `/api/admin/v1/rentals/${rentalId}/due-date`,
+    body,
   );
   return response.data;
 };

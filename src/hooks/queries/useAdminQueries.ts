@@ -12,11 +12,13 @@ import {
   approveAdminRental,
   rejectAdminRental,
   sendAdminOverdueReminder,
+  updateAdminRentalReturnDueDate,
 } from "../../api/admin/admin.api";
 import type {
   AdminCreateItemRequest,
   AdminItemListResponse,
   AdminUpdateItemRequest,
+  AdminUpdateReturnDueDateRequestBody,
 } from "../../api/admin/admin.type";
 
 // 관리자 물품 목록 조회 (관리자 전용 API 사용)
@@ -212,6 +214,41 @@ export const useSendAdminOverdueReminder = () => {
       ];
 
       // 물품별 관리(반납 확인)에서 호출된 경우 itemId 기반 상세도 갱신
+      if (variables.itemId && Number.isFinite(variables.itemId)) {
+        invalidations.push(
+          queryClient.invalidateQueries({
+            queryKey: ["adminActiveRentalsByItem", variables.itemId],
+          }),
+        );
+      }
+
+      await Promise.all(invalidations);
+    },
+  });
+};
+
+// 반납 예정일 수정 (PATCH)
+// - POST 반납 확인 전/후 모두 반영될 수 있어 관련 목록 캐시를 함께 갱신
+// - RentalDateChangeModal 의 "수정하기" 버튼에서 사용
+export const useUpdateAdminRentalReturnDueDate = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      rentalId,
+      body,
+    }: {
+      rentalId: number;
+      body: AdminUpdateReturnDueDateRequestBody;
+      // itemId는 서버 전송용이 아니라 성공 후 쿼리 무효화용
+      itemId?: number;
+    }) => updateAdminRentalReturnDueDate({ rentalId, body }),
+    onSuccess: async (_data, variables) => {
+      const invalidations: Array<Promise<void>> = [
+        queryClient.invalidateQueries({ queryKey: ["adminRentalItemSummary"] }),
+        queryClient.invalidateQueries({ queryKey: ["adminOverdueRentals"] }),
+      ];
+
       if (variables.itemId && Number.isFinite(variables.itemId)) {
         invalidations.push(
           queryClient.invalidateQueries({
