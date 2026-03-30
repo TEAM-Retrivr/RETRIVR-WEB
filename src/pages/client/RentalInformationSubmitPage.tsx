@@ -110,17 +110,11 @@ const RentalInformationSubmitPage = () => {
     const normalizedName = name.trim();
 
     const renterFields: Record<string, string> = {};
-    renterFields["이름"] = normalizedName;
-    renterFields["전화번호"] = normalizedPhone;
 
     borrowerRequirements.forEach(({ label }) => {
-      if (label === "이름") return;
-      if (label === "전화번호") {
-        if (normalizedPhone) {
-          renterFields[label] = normalizedPhone;
-        }
-        return;
-      }
+      // renterFields(additionalBorrowerInfo)에는 이름/전화번호를 넣지 않는다.
+      // - 이름/전화번호는 top-level의 name, phone으로 분리 전송
+      if (label === "이름" || label === "전화번호" || label === "연락처") return;
       const value = additionalFieldValues[label]?.trim();
       if (value) {
         renterFields[label] = value;
@@ -231,7 +225,9 @@ const RentalInformationSubmitPage = () => {
           {additionalBorrowerRequirements.map((requirement) => (
             <div key={requirement.label}>
               <div className="text-neutral-gray-2 text-14px font-[700] mb-2.5">
-                <p className="inline">{requirement.label}</p>
+                <p className="inline">
+                  {requirement.label === "email" ? "이메일" : requirement.label}
+                </p>
                 {requirement.required && (
                   <p className="inline text-primary">*</p>
                 )}
@@ -245,7 +241,9 @@ const RentalInformationSubmitPage = () => {
                     [requirement.label]: e.target.value,
                   }))
                 }
-                placeholder={`${requirement.label}을(를) 입력하세요.`}
+                placeholder={`${
+                  requirement.label === "email" ? "이메일" : requirement.label
+                }을(를) 입력하세요.`}
                 inputSize="large"
                 className="placeholder:text-14px placeholder:font-[400] placeholder:leading-[120%]"
               ></CommonInput>

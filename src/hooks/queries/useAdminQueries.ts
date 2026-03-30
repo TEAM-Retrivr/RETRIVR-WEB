@@ -11,6 +11,7 @@ import {
   updateAdminItem,
   approveAdminRental,
   rejectAdminRental,
+  sendAdminOverdueReminder,
 } from "../../api/admin/admin.api";
 import type {
   AdminCreateItemRequest,
@@ -186,6 +187,40 @@ export const useRejectAdminRental = () => {
       await queryClient.invalidateQueries({
         queryKey: ["home"],
       });
+    },
+  });
+};
+
+// 연체 알림 메시지 수동 발송 (POST)
+// - POST /api/admin/v1/rentals/{rentalId}/messages/overdue-reminder
+// - OverdueRentalMessageModal 의 "전송" 버튼에서 사용
+export const useSendAdminOverdueReminder = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      rentalId,
+    }: {
+      rentalId: number;
+      // itemId는 서버로 보내지 않고, 성공 후 캐시 무효화에만 사용
+      itemId?: number;
+    }) => sendAdminOverdueReminder({ rentalId }),
+    onSuccess: async (_data, variables) => {
+      // 연체 카드 영역(상단) 즉시 갱신
+      const invalidations: Array<Promise<void>> = [
+        queryClient.invalidateQueries({ queryKey: ["adminOverdueRentals"] }),
+      ];
+
+      // 물품별 관리(반납 확인)에서 호출된 경우 itemId 기반 상세도 갱신
+      if (variables.itemId && Number.isFinite(variables.itemId)) {
+        invalidations.push(
+          queryClient.invalidateQueries({
+            queryKey: ["adminActiveRentalsByItem", variables.itemId],
+          }),
+        );
+      }
+
+      await Promise.all(invalidations);
     },
   });
 };

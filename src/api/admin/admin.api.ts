@@ -12,6 +12,7 @@ import type {
   AdminItemDetailResponse,
   AdminUpdateItemRequest,
   AdminUpdateItemResponse,
+  AdminSendOverdueReminderResponse,
 } from "./admin.type";
 import { apiClient } from "../core";
 
@@ -130,6 +131,21 @@ export const confirmAdminReturn = async ({
   const response = await apiClient.post<AdminConfirmReturnResponse>(
     `/api/admin/v1/rentals/${rentalId}/return`,
     { adminNameToConfirm },
+  );
+  return response.data;
+};
+
+// 연체 알림 메시지 수동 발송
+// - 반납 관리 > 연체 확인 카드, 물품별 관리 > 연체 문자 전송 모달에서 사용
+// - rentalId: 연체 알림 메시지를 발송할 대여 ID (path)
+// POST /api/admin/v1/rentals/{rentalId}/messages/overdue-reminder
+export const sendAdminOverdueReminder = async ({
+  rentalId,
+}: {
+  rentalId: number;
+}): Promise<AdminSendOverdueReminderResponse> => {
+  const response = await apiClient.post<AdminSendOverdueReminderResponse>(
+    `/api/admin/v1/rentals/${rentalId}/messages/overdue-reminder`,
   );
   return response.data;
 };

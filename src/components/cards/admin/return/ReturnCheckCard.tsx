@@ -32,9 +32,13 @@ export interface ReturnCheckCardRentalInfo {
 
 interface ReturnCheckCardProps {
   rental: ReturnCheckCardRentalInfo;
+  organizationName?: string;
 }
 
-const ReturnCheckCard = ({ rental }: ReturnCheckCardProps) => {
+const ReturnCheckCard = ({
+  rental,
+  organizationName,
+}: ReturnCheckCardProps) => {
   const [isReturnApprovalOpen, setIsReturnApprovalOpen] = useState(false);
   const [isOverdueMessageOpen, setIsOverdueMessageOpen] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -125,6 +129,9 @@ const ReturnCheckCard = ({ rental }: ReturnCheckCardProps) => {
       <OverdueRentalMessageModal
         isOpen={isOverdueMessageOpen}
         onClose={() => setIsOverdueMessageOpen(false)}
+        rentalId={rental.rentalId}
+        itemId={rental.itemId}
+        organizationName={organizationName}
         itemNameWithCount={rental.borrowedItemName}
         borrowerName={rental.borrowerName}
         borrowerStudentNumber={undefined}

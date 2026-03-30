@@ -19,6 +19,7 @@ const RentalAvailableItemCard = ({
 }: RentalAvailableItemCardProps) => {
   const { item } = itemInfo;
   const isActive = item.isActive;
+  const canRent = isActive && item.availableQuantity > 0;
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
   const [itemManagementType, setItemManagementType] = useState<
@@ -39,7 +40,7 @@ const RentalAvailableItemCard = ({
   const hasUnitSelection = itemManagementType === "UNIT";
 
   const handleExpand = async () => {
-    if (!isActive) return;
+    if (!canRent) return;
     const nextExpanded = !isExpanded;
     setIsExpanded(nextExpanded);
     if (!nextExpanded) return;
@@ -81,7 +82,7 @@ const RentalAvailableItemCard = ({
     <div
       onClick={handleExpand}
       onKeyDown={
-        isActive
+        canRent
           ? (e) => {
               if (e.target !== e.currentTarget) return; // 키보드 이벤트 막기
               if (e.key === "Enter" || e.key === " ") {
@@ -92,11 +93,11 @@ const RentalAvailableItemCard = ({
           : undefined
       }
       role="button"
-      tabIndex={isActive ? 0 : -1}
+      tabIndex={canRent ? 0 : -1}
       aria-expanded={isExpanded}
-      aria-disabled={!isActive}
+      aria-disabled={!canRent}
       className={`w-full max-w-[350px] rounded-[16px] shadow-item-card overflow-hidden font-[Pretendard] ${
-        isActive
+        canRent
           ? "bg-neutral-white cursor-pointer"
           : "bg-neutral-gray-5 cursor-not-allowed opacity-70"
       }`}
@@ -105,7 +106,7 @@ const RentalAvailableItemCard = ({
       <div className="h-22.5 px-7 flex justify-between items-center">
         <p
           className={`text-20px font-[600] ${
-            isActive ? "text-neutral-gray-1" : "text-neutral-gray-3"
+            canRent ? "text-neutral-gray-1" : "text-neutral-gray-3"
           }`}
         >
           {item.name}
@@ -115,7 +116,7 @@ const RentalAvailableItemCard = ({
           <ProgressCircle
             available={item.availableQuantity}
             total={item.totalQuantity}
-            isActive={isActive}
+            isActive={canRent}
           ></ProgressCircle>
         </div>
       </div>
@@ -210,13 +211,13 @@ const RentalAvailableItemCard = ({
                     variant="primary"
                     size="md"
                     disabled={
-                      !isActive ||
+                      !canRent ||
                       (hasUnitSelection &&
                         (availableUnits.length === 0 ||
                           selectedUnitId === null))
                     }
                     onClick={() => {
-                      if (!isActive) return;
+                      if (!canRent) return;
                       if (hasUnitSelection) {
                         if (!selectedUnitId) return;
                         moveToRentalForm(selectedUnitId);
@@ -225,7 +226,7 @@ const RentalAvailableItemCard = ({
                       moveToRentalForm();
                     }}
                   >
-                    {isActive ? "대여하기" : "대여 불가"}
+                    {canRent ? "대여하기" : "대여 불가"}
                   </Button>
                 </div>
               </>

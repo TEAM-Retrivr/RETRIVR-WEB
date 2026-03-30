@@ -216,9 +216,9 @@ export interface AdminActiveRentalItemUnit {
   borrowerPhone: string; // 대여자 연락처 (필수 입력사항)
   // borrowerFields: 선택적 요구사항
   borrowerFields?: {
-    additonalProp1?: string;
-    additonalProp2?: string;
-    additonalProp3?: string;
+    additionalProp1?: string;
+    additionalProp2?: string;
+    additionalProp3?: string;
   };
   rentalDate: string; // ISO date string (대여 일자)
   expectedReturnDueDate: string; // ISO date string (반납 예정 일자)
@@ -245,4 +245,11 @@ export interface AdminConfirmReturnResponse {
   rentalId: number;
   rentalStatus: string;
   adminNameToConfirm: string;
+}
+
+// 연체 알림 메시지 수동 발송 응답
+// POST /api/admin/v1/rentals/{rentalId}/messages/overdue-reminder
+export interface AdminSendOverdueReminderResponse {
+  rentalId: number; // 대여 번호
+  success: boolean; // 전송 성공 여부
 }
