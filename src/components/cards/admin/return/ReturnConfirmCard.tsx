@@ -1,3 +1,6 @@
+import { useState } from "react";
+import OverdueRentalMessageModal from "../../../modals/admin/return/OverdueRentalMessageModal";
+
 // 반납 연체 확인 영역에서 사용하는 카드 컴포넌트 Props
 // - 연체 일수, 마지막 문자 발송일, 대여 물품/대여자 정보, 문자 발송 가능 여부를 전달받음
 interface ReturnConfirmCardProps {
@@ -17,6 +20,8 @@ const ReturnConfirmCard = ({
   borrowerStudentNumber,
   canSendOverdueSms,
 }: ReturnConfirmCardProps) => {
+  const [isOverdueMessageOpen, setIsOverdueMessageOpen] = useState(false);
+
   return (
     <div className="flex flex-col w-46.5 h-39.5 box-border px-3 py-3.5 rounded-[24px] shadow-consent-card">
       {/* */}
@@ -41,7 +46,7 @@ const ReturnConfirmCard = ({
       </div>
       {/* */}
       <button
-        disabled={!canSendOverdueSms}
+        onClick={() => setIsOverdueMessageOpen(true)}
         className={`w-40.5 h-10 mt-auto text-neutral-white text-center text-16px font-[Pretendard] font-[600] rounded-small cursor-pointer ${
           canSendOverdueSms
             ? "bg-primary hover:bg-secondary-2"
@@ -50,6 +55,17 @@ const ReturnConfirmCard = ({
       >
         연체 문자 전송
       </button>
+
+      <OverdueRentalMessageModal
+        isOpen={isOverdueMessageOpen}
+        onClose={() => setIsOverdueMessageOpen(false)}
+        itemNameWithCount={itemNameWithCount}
+        borrowerName={borrowerName}
+        borrowerStudentNumber={borrowerStudentNumber}
+        overdueDays={overdueDays}
+        lastSmsSentDateLabel={lastSmsSentDateLabel}
+        canSendOverdueSms={canSendOverdueSms}
+      />
     </div>
   );
 };

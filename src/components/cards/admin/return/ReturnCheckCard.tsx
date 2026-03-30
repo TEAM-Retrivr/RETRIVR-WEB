@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Button from "../../../Button";
 import ReturnApprovalModal from "../../../modals/admin/return/ReturnApprovalModal";
+import OverdueRentalMessageModal from "../../../modals/admin/return/OverdueRentalMessageModal";
 import { useConfirmAdminReturn } from "../../../../hooks/queries/useAdminQueries";
 
 export interface ReturnCheckCardRentalInfo {
@@ -35,6 +36,7 @@ interface ReturnCheckCardProps {
 
 const ReturnCheckCard = ({ rental }: ReturnCheckCardProps) => {
   const [isReturnApprovalOpen, setIsReturnApprovalOpen] = useState(false);
+  const [isOverdueMessageOpen, setIsOverdueMessageOpen] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const { mutate: confirmReturn, isPending: isConfirming } =
     useConfirmAdminReturn();
@@ -100,7 +102,13 @@ const ReturnCheckCard = ({ rental }: ReturnCheckCardProps) => {
         </div>
         {/* 버튼 영역 - 연체 문자 전송, 반납 확인 */}
         <div className="flex w-full gap-2">
-          <Button variant="outline" className="w-37.25">
+          <Button
+            variant="outline"
+            className={`w-37.25 ${
+              !rental.isOverdue ? "opacity-60 cursor-not-allowed" : ""
+            }`}
+            onClick={() => setIsOverdueMessageOpen(true)}
+          >
             연체 문자 전송
           </Button>
           <Button
@@ -112,6 +120,17 @@ const ReturnCheckCard = ({ rental }: ReturnCheckCardProps) => {
           </Button>
         </div>
       </div>
+
+      <OverdueRentalMessageModal
+        isOpen={isOverdueMessageOpen}
+        onClose={() => setIsOverdueMessageOpen(false)}
+        itemNameWithCount={rental.borrowedItemName}
+        borrowerName={rental.borrowerName}
+        borrowerStudentNumber={undefined}
+        overdueDays={undefined}
+        lastSmsSentDateLabel={undefined}
+        canSendOverdueSms={rental.isOverdue}
+      />
 
       <ReturnApprovalModal
         isOpen={isReturnApprovalOpen}
