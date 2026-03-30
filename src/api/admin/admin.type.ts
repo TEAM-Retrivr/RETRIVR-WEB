@@ -154,10 +154,11 @@ export interface AdminItemDetailResponse {
   useMessageAlarmService: boolean;
   guaranteedGoods?: string | null;
   unitLabels?: string[];
-  /** NON_UNIT이면 빈 배열, UNIT이면 유닛별 id·label */
+  /** NON_UNIT이면 빈 배열, UNIT이면 유닛별 id·label·상태(서버 명세에 따라 optional) */
   itemUnits?: {
     itemUnitId: number;
     label: string;
+    status?: string;
   }[];
   isActive?: boolean;
   borrowerRequirements: AdminBorrowerRequirementResponse[];
@@ -197,6 +198,7 @@ export interface AdminUpdateItemResponse {
   itemUnits?: {
     itemUnitId: number;
     label: string;
+    status?: string;
   }[];
   borrowerRequirements: AdminBorrowerRequirementResponse[];
 }

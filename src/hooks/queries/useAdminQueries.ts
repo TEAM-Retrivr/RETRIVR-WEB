@@ -116,11 +116,18 @@ export const useCreateAdminItem = () => {
 };
 
 // 관리자 물품 상세 조회 (GET)
-export const useAdminItemDetail = (itemId: number) => {
+// - options.enabled: false면 요청하지 않음(예: 목록 카드 접힌 상태)
+export const useAdminItemDetail = (
+  itemId: number,
+  options?: { enabled?: boolean },
+) => {
+  const idOk = Number.isFinite(itemId) && itemId > 0;
+  const enabled =
+    options?.enabled !== undefined ? options.enabled && idOk : idOk;
   return useQuery({
     queryKey: ["adminItemDetail", itemId],
     queryFn: () => requestAdminItemDetail(itemId),
-    enabled: Number.isFinite(itemId) && itemId > 0,
+    enabled,
     retry: false,
   });
 };

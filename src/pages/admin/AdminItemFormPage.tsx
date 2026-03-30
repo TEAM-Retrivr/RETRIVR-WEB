@@ -95,7 +95,7 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
     data: detailData, // 수정 폼 초기값으로 사용할 상세 데이터
     isLoading: isDetailLoading, // 상세 조회 로딩 상태
     error: detailError, // 상세 조회 에러 상태
-  } = useAdminItemDetail(shouldLoadDetail ? (itemId as number) : 0); // 조건 불충족 시 쿼리 enabled=false로 실제 요청 안 함
+  } = useAdminItemDetail(itemId ?? 0, { enabled: shouldLoadDetail }); // 수정 모드에서만 상세 GET
 
   const isPending = isCreatePending || isUpdatePending; // 등록/수정 둘 중 하나라도 진행 중이면 true
   const { data: homeData } = useLoadHome(); // 관리자 홈 정보(단체명 포함)
