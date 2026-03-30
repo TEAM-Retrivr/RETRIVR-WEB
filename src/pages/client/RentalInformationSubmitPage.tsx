@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import type { FormEvent } from "react";
 import { Layout } from "../../components/Layout";
@@ -6,7 +6,10 @@ import Header from "../../components/Header";
 import CommonInput from "../../components/CommonInput";
 import { ConsentSectionCard } from "../../components/cards/client/ConsentSectionCard";
 import Button from "../../components/Button";
-import { useSendRentalRequest } from "../../hooks/queries/useClientQueries";
+import {
+  useItemDetail,
+  useSendRentalRequest,
+} from "../../hooks/queries/useClientQueries";
 import { useQueryClient } from "@tanstack/react-query";
 
 const label1 =
@@ -29,6 +32,7 @@ const RentalInformationSubmitPage = () => {
     rentalDuration?: number;
     guaranteedGoods?: string;
     description?: string;
+    borrowerRequirements?: { label: string; required: boolean }[];
   } | null;
   const itemId = state?.itemId ?? 0;
   const itemUnitId = state?.itemUnitId; // 개별 코드형 물품일 때만 전달
@@ -46,17 +50,30 @@ const RentalInformationSubmitPage = () => {
   const rentalDuration = state?.rentalDuration ?? 0;
   const guaranteedGoods = state?.guaranteedGoods ?? "-";
   const description = state?.description ?? "-";
+  const { data: itemDetail } = useItemDetail(itemId, itemId > 0);
+  const borrowerRequirements =
+    itemDetail?.borrowerRequirements ?? state?.borrowerRequirements ?? [];
+  const additionalBorrowerRequirements = useMemo(
+    () =>
+      borrowerRequirements.filter(
+        (req, index, arr) =>
+          req.label !== "이름" &&
+          req.label !== "연락처" &&
+          req.label !== "전화번호" &&
+          req.label !== "요청사항" &&
+          arr.findIndex((item) => item.label === req.label) === index,
+      ),
+    [borrowerRequirements],
+  );
 
   // 대여자 이름 : string
   const [name, setName] = useState("");
   // 대여자 전화번호 : string
   const [phoneNumber, setPhoneNumber] = useState("");
-  // 대여자 학과 (전공) : string
-  const [major, setMajor] = useState("");
-  // 대여자 학번 : string
-  const [studentId, setStudentId] = useState("");
-  // 요청 사항 : string
   const [requestment, setRequestment] = useState("");
+  const [additionalFieldValues, setAdditionalFieldValues] = useState<
+    Record<string, string>
+  >({});
 
   // 개인 정보 활용 동의 체크 여부 : boolean
   const [firstConsentChecked, setFirstConsentChecked] = useState(false);
@@ -68,13 +85,19 @@ const RentalInformationSubmitPage = () => {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    const hasMissingRequiredAdditionalField =
+      additionalBorrowerRequirements.some(
+        (requirement) =>
+          requirement.required &&
+          !additionalFieldValues[requirement.label]?.trim(),
+      );
+
     if (
       !name.trim() ||
       !phoneNumber.trim() ||
-      !major.trim() ||
-      !studentId.trim()
+      hasMissingRequiredAdditionalField
     ) {
-      alert("필수 항목(이름, 연락처, 학과, 학번)을 모두 입력해주세요.");
+      alert("필수 항목을 모두 입력해주세요.");
       return;
     }
     handleSendRentalRequest();
@@ -83,16 +106,33 @@ const RentalInformationSubmitPage = () => {
   const { mutate: sendRentalRequest, isPending } = useSendRentalRequest();
 
   const handleSendRentalRequest = () => {
+    const normalizedPhone = phoneNumber.trim();
+    const normalizedName = name.trim();
+
+    const renterFields: Record<string, string> = {};
+    renterFields["이름"] = normalizedName;
+    renterFields["전화번호"] = normalizedPhone;
+
+    borrowerRequirements.forEach(({ label }) => {
+      if (label === "이름") return;
+      if (label === "전화번호") {
+        if (normalizedPhone) {
+          renterFields[label] = normalizedPhone;
+        }
+        return;
+      }
+      const value = additionalFieldValues[label]?.trim();
+      if (value) {
+        renterFields[label] = value;
+      }
+    });
+
     // POST /api/public/v1/items/{itemId}/rentals 의 Request Body
     const body = {
       itemUnitId,
-      name,
-      phone: phoneNumber.trim() || undefined,
-      renterFields: {
-        학과: major.trim(),
-        학번: studentId.trim(),
-        ...(requestment.trim() && { 요청사항: requestment.trim() }),
-      },
+      name: normalizedName,
+      phone: normalizedPhone || undefined,
+      renterFields,
     };
 
     sendRentalRequest(
@@ -102,7 +142,6 @@ const RentalInformationSubmitPage = () => {
       },
       {
         onSuccess: () => {
-          alert("대여 요청이 접수되었습니다.");
           if (organizationId && organizationId > 0) {
             navigate(
               `/client-rental-confirmation?organizationId=${organizationId}`,
@@ -189,38 +228,33 @@ const RentalInformationSubmitPage = () => {
               className="text-14px text-neutral-gray-1 placeholder:text-14px placeholder:font-[400] placeholder:leading-[120%]"
             ></CommonInput>
           </div>
+          {additionalBorrowerRequirements.map((requirement) => (
+            <div key={requirement.label}>
+              <div className="text-neutral-gray-2 text-14px font-[700] mb-2.5">
+                <p className="inline">{requirement.label}</p>
+                {requirement.required && (
+                  <p className="inline text-primary">*</p>
+                )}
+              </div>
+              <CommonInput
+                type="text"
+                value={additionalFieldValues[requirement.label] ?? ""}
+                onChange={(e) =>
+                  setAdditionalFieldValues((prev) => ({
+                    ...prev,
+                    [requirement.label]: e.target.value,
+                  }))
+                }
+                placeholder={`${requirement.label}을(를) 입력하세요.`}
+                inputSize="large"
+                className="placeholder:text-14px placeholder:font-[400] placeholder:leading-[120%]"
+              ></CommonInput>
+            </div>
+          ))}
           <div>
             <div className="text-neutral-gray-2 text-14px font-[700] mb-2.5">
-              <p className="inline">학과</p>
-              <p className="inline text-primary">*</p>
+              <p className="inline">요청사항</p>
             </div>
-            <CommonInput
-              type="text"
-              value={major}
-              onChange={(e) => setMajor(e.target.value)}
-              placeholder="공식 명칭을 사용해주세요. ex) 컴공(X), 컴퓨터공학부(O)"
-              inputSize="large"
-              className="placeholder:text-14px placeholder:font-[400] placeholder:leading-[120%]"
-            ></CommonInput>
-          </div>
-          <div>
-            <div className="text-neutral-gray-2 text-14px font-[700] mb-2.5">
-              <p className="inline">학번</p>
-              <p className="inline text-primary">*</p>
-            </div>
-            <CommonInput
-              type="text"
-              value={studentId}
-              onChange={(e) => setStudentId(e.target.value)}
-              placeholder="202312680"
-              inputSize="large"
-              className="placeholder:text-14px placeholder:font-[400] placeholder:leading-[120%]"
-            ></CommonInput>
-          </div>
-          <div>
-            <p className="text-neutral-gray-2 text-14px font-[700] mb-2.5">
-              요청사항
-            </p>
             <CommonInput
               type="text"
               value={requestment}

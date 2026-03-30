@@ -2,6 +2,7 @@ import { apiClient } from "../core";
 import type {
   BorrowerInformationRequest,
   BorrowerInformationResponse,
+  ItemDetailResponse,
   ItemResponse,
   OrganizationSearchResponse,
 } from "./client.type";
@@ -23,7 +24,18 @@ export const requestItemList = async (
   return response.data;
 };
 
-// 2. 대여 요청 생성 (POST)
+// 2. 물품 상세 조회 (GET)
+// 엔드포인트 : /api/public/v1/items/{itemId}
+export const requestItemDetail = async (
+  itemId: number,
+): Promise<ItemDetailResponse> => {
+  const response = await apiClient.get<ItemDetailResponse>(
+    `/api/public/v1/items/${itemId}`,
+  );
+  return response.data;
+};
+
+// 3. 대여 요청 생성 (POST)
 // 엔드포인트 : /api/public/v1/items/{itemId}/rentals
 export const sendRentalRequest = async (
   itemId: number,
@@ -36,7 +48,7 @@ export const sendRentalRequest = async (
   return response.data;
 };
 
-// 3. 대여지 검색 (GET)
+// 4. 대여지 검색 (GET)
 // 엔드포인트 : /api/public/v1/organizations/search
 // Query Parameter :
 // - keyword: string (required)  검색 키워드

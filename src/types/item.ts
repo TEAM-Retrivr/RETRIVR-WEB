@@ -13,4 +13,8 @@ export interface ItemInfo {
   rentalDuration: number; // 대여 기간
   description: string; // 물품 설명
   guaranteedGoods?: string; // 보증 물품 (있을 수도, 없을 수도)
+  borrowerRequirements?: {
+    label: string;
+    required: boolean;
+  }[];
 }
