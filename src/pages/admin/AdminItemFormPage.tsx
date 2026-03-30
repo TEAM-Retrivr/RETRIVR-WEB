@@ -35,8 +35,12 @@ type AdminItemFormPageProps = {
 
 // 백엔드로 보내는 이메일 라벨은 'email'로 통일
 const EMAIL_BACKEND_LABEL = "email" as const;
-const BASE_REQUIRED_LABELS = ["이름", "전화번호", EMAIL_BACKEND_LABEL] as const;
-
+const BASE_REQUIRED_LABELS = [
+  "이름",
+  "전화번호",
+  "이메일",
+  EMAIL_BACKEND_LABEL,
+] as const;
 const OPTIONAL_LABELS = {
   studentNumber: "학번",
   major: "학과",
