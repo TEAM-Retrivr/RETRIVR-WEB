@@ -83,6 +83,7 @@ const ItemManagementPage = () => {
             description={item.description}
             guaranteedGoods={item.guaranteedGoods}
             borrowerRequirements={item.borrowerRequirements}
+            itemManagementType={item.itemManagementType}
           />
         ))}
       </div>

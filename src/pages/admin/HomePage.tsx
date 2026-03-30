@@ -34,7 +34,9 @@ const Home = () => {
       id: req.rentalId,
       itemName: req.itemName,
       count: `(${req.availableQuantity}/${req.totalQuantity})`,
-      applicant: `${req.borrowerName} | ${req.borrowerMajor}`,
+      applicant: req.borrowerMajor?.trim()
+        ? `${req.borrowerName} | ${req.borrowerMajor}`
+        : req.borrowerName,
       time: req.requestedAt,
     })) ?? [];
 

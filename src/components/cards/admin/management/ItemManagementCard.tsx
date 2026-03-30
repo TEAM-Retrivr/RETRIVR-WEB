@@ -1,7 +1,65 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ItemStatusCard from "./ItemStatusCard";
-import type { AdminBorrowerRequirementResponse } from "../../../../api/admin/admin.type";
+import type {
+  AdminBorrowerRequirementResponse,
+  AdminItemDetailResponse,
+} from "../../../../api/admin/admin.type";
+import { useAdminItemDetail } from "../../../../hooks/queries/useAdminQueries";
+
+type ItemStatusCardStatus =
+  | "rentalAvailable"
+  | "rentedOut"
+  | "rentalUnavailable";
+
+/** GET 상세의 유닛 status 문자열 → ItemStatusCard 상태 */
+function mapServerUnitStatusToCardStatus(
+  status?: string,
+): ItemStatusCardStatus {
+  if (!status) return "rentalAvailable";
+  const s = status.trim().toUpperCase();
+  if (s === "AVAILABLE") return "rentalAvailable";
+  if (
+    s === "RENTED" ||
+    s === "BORROWED" ||
+    s === "RENTED_OUT" ||
+    s === "OUT" ||
+    s === "BORROWING"
+  ) {
+    return "rentedOut";
+  }
+  if (
+    s === "UNAVAILABLE" ||
+    s === "DISABLED" ||
+    s === "INACTIVE" ||
+    s === "UNAVAILABLE_FOR_RENT"
+  ) {
+    return "rentalUnavailable";
+  }
+  return "rentalAvailable";
+}
+
+type StatusRow = {
+  key: string | number;
+  itemName: string;
+  itemCode?: string;
+  status: ItemStatusCardStatus;
+};
+
+/** UNIT 물품만 개별 유닛 행 생성. NON_UNIT이면 빈 배열(카드 미렌더). */
+function buildItemStatusRows(
+  detail: AdminItemDetailResponse | undefined,
+): StatusRow[] {
+  if (!detail || detail.itemManagementType !== "UNIT") return [];
+  const units = detail.itemUnits ?? [];
+  if (units.length === 0) return [];
+  return units.map((u) => ({
+    key: u.itemUnitId,
+    itemName: u.label,
+    itemCode: String(u.itemUnitId),
+    status: mapServerUnitStatusToCardStatus(u.status),
+  }));
+}
 
 type ItemManagementCardProps = {
   itemId: number;
@@ -9,6 +67,7 @@ type ItemManagementCardProps = {
   totalQuantity: number;
   availableQuantity: number;
   isActive: boolean;
+  itemManagementType?: string;
   rentalDuration?: number;
   description?: string;
   useMessageAlarmService?: boolean;
@@ -16,19 +75,13 @@ type ItemManagementCardProps = {
   borrowerRequirements: AdminBorrowerRequirementResponse[];
 };
 
-// TODO: ItemStatusCard 목록은 향후 개별 물품 단위 데이터로 교체 예정
-const MOCK_ITEM_NAME = "c타입 충전기 (1)";
-const MOCK_ITEM_CODE = "345ss2";
-const MOCK_ITEM_STATUSES: Array<
-  "rentalAvailable" | "rentedOut" | "rentalUnavailable"
-> = ["rentedOut", "rentalAvailable", "rentalUnavailable"];
-
 const ItemManagementCard = ({
   itemId,
   name,
   totalQuantity,
   availableQuantity,
   isActive,
+  itemManagementType,
   rentalDuration,
   description,
   useMessageAlarmService,
@@ -39,43 +92,62 @@ const ItemManagementCard = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [isToggledOn, setIsToggledOn] = useState(isActive);
 
+  // 목록 응답의 itemManagementType으로 사전 분기 (접힌 상태에서는 상세 GET이 없거나 실패할 수 있음)
+  const isUnitItem = itemManagementType === "UNIT";
+
+  const {
+    data: itemDetail,
+    isFetching: isDetailFetching,
+    isError: isDetailError,
+  } = useAdminItemDetail(itemId, { enabled: isExpanded && isUnitItem });
+
+  const effectiveBorrowerRequirements = useMemo(
+    () => itemDetail?.borrowerRequirements ?? borrowerRequirements,
+    [itemDetail?.borrowerRequirements, borrowerRequirements],
+  );
+
+  const statusRows = useMemo(
+    () => buildItemStatusRows(itemDetail),
+    [itemDetail],
+  );
+
   return (
     <div className="w-87.5 min-h-25 overflow-hidden rounded-[16px] bg-neutral-white font-[Pretendard] shadow-item-card">
       {/* 상단 영역 - 물품명, 토글, 총 개수, 화살표 */}
       <div className="flex h-25 items-center justify-between gap-3 px-7.5">
-        <div className="flex min-w-0 flex-1 items-center gap-3">
-          <div>
+        <div className="flex flex-col min-w-0 gap-0.5">
+          <div className="flex items-center gap-2.5">
             {" "}
             <h3 className="truncate text-24px font-bold text-neutral-gray-1">
               {name}
             </h3>
-            <p className="text-12px text-[#000000] opacity-[0.4] font-normal leading-[140%]">
-              총 개수: {totalQuantity}개
-            </p>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={isToggledOn}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsToggledOn((prev) => !prev);
+              }}
+              className="relative flex h-4.25 w-8 shrink-0 items-center rounded-full bg-neutral-gray-4"
+            >
+              {/* 배경을 직접 교체하지 않고, 그라데이션 레이어를 opacity로만 전환해서 깜빡임 방지 */}
+              <span
+                aria-hidden="true"
+                className={`absolute inset-0 rounded-full bg-logo-gradient transition-opacity duration-200 ${
+                  isToggledOn ? "opacity-100" : "opacity-0"
+                }`}
+              />
+              <span
+                className={`absolute left-0.5 top-1/2 h-[10px] w-[10px] -translate-y-1/2 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                  isToggledOn ? "translate-x-4" : "translate-x-0"
+                }`}
+              />
+            </button>
           </div>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={isToggledOn}
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsToggledOn((prev) => !prev);
-            }}
-            className="relative flex h-4 w-8 shrink-0 items-center rounded-full bg-neutral-gray-4"
-          >
-            {/* 배경을 직접 교체하지 않고, 그라데이션 레이어를 opacity로만 전환해서 깜빡임 방지 */}
-            <span
-              aria-hidden="true"
-              className={`absolute inset-0 rounded-full bg-logo-gradient transition-opacity duration-200 ${
-                isToggledOn ? "opacity-100" : "opacity-0"
-              }`}
-            />
-            <span
-              className={`absolute left-0.5 top-1/2 h-[10px] w-[10px] -translate-y-1/2 rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                isToggledOn ? "translate-x-4" : "translate-x-0"
-              }`}
-            />
-          </button>
+          <p className="text-12px text-[#000000] opacity-[0.4] font-normal leading-[140%]">
+            총 개수: {totalQuantity}개
+          </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <button
@@ -154,14 +226,22 @@ const ItemManagementCard = ({
                   대여자 입력 요구 정보
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {borrowerRequirements.map((req, index) => (
-                    <span
-                      key={`${req.label}-${index}`}
-                      className="inline-flex shrink-0 items-center text-secondary-1 text-12px font-normal rounded-[30px] bg-secondary-4 px-3 py-1 leading-[140%]"
-                    >
-                      {req.label}
+                  {effectiveBorrowerRequirements.length === 0 &&
+                  isDetailFetching &&
+                  !itemDetail ? (
+                    <span className="text-12px text-neutral-gray-3">
+                      불러오는 중...
                     </span>
-                  ))}
+                  ) : (
+                    effectiveBorrowerRequirements.map((req, index) => (
+                      <span
+                        key={`${req.label}-${index}`}
+                        className="inline-flex shrink-0 items-center text-secondary-1 text-12px font-normal rounded-[30px] bg-secondary-4 px-3 py-1 leading-[140%]"
+                      >
+                        {req.label}
+                      </span>
+                    ))
+                  )}
                 </div>
               </div>
               <div className="flex justify-end">
@@ -175,17 +255,34 @@ const ItemManagementCard = ({
               </div>
             </div>
 
-            {/* 구분선 아래 ItemStatusCard 목록 */}
-            <div className="flex flex-col gap-1.5 border-t pt-6 border-neutral-gray-4/50 items-center">
-              {MOCK_ITEM_STATUSES.map((status, index) => (
-                <ItemStatusCard
-                  key={index}
-                  status={status}
-                  itemName={MOCK_ITEM_NAME}
-                  itemCode={MOCK_ITEM_CODE}
-                />
-              ))}
-            </div>
+            {/* UNIT 물품만: 구분선 아래 ItemStatusCard */}
+            {isUnitItem && (
+              <div className="flex flex-col gap-1.5 border-t pt-6 border-neutral-gray-4 items-center">
+                {isDetailFetching && !itemDetail ? (
+                  <p className="text-12px text-neutral-gray-3">
+                    개별 물품 정보를 불러오는 중...
+                  </p>
+                ) : isDetailError ? (
+                  <p className="text-12px text-red-500">
+                    물품 상세를 불러오지 못했습니다.
+                  </p>
+                ) : statusRows.length === 0 ? (
+                  <p className="text-12px text-neutral-gray-3">
+                    표시할 물품 단위가 없습니다.
+                  </p>
+                ) : (
+                  statusRows.map((row) => (
+                    <ItemStatusCard
+                      key={row.key}
+                      status={row.status}
+                      itemName={row.itemName}
+                      itemCode={row.itemCode}
+                      borrowerRequirements={effectiveBorrowerRequirements}
+                    />
+                  ))
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
