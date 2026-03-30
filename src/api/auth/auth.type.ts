@@ -81,7 +81,7 @@ export interface LoadHomeResponse {
     availableQuantity: number; // 대여 가능한 수량
     totalQuantity: number; // 총 수량
     borrowerName: string; // 대여자 이름
-    borrowerMajor: string; // 대여자 전공
+    borrowerMajor?: string; // 대여자 전공 (선택사항)
     requestedAt: string; // 요청 일자 (언제 요청을 보냈는지, 가장 오래된 요청부터 화면에 보일 것)
   }[];
 }

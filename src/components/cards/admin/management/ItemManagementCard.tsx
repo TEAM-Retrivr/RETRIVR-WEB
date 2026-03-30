@@ -67,6 +67,7 @@ type ItemManagementCardProps = {
   totalQuantity: number;
   availableQuantity: number;
   isActive: boolean;
+  itemManagementType?: string;
   rentalDuration?: number;
   description?: string;
   useMessageAlarmService?: boolean;
@@ -80,6 +81,7 @@ const ItemManagementCard = ({
   totalQuantity,
   availableQuantity,
   isActive,
+  itemManagementType,
   rentalDuration,
   description,
   useMessageAlarmService,
@@ -90,11 +92,14 @@ const ItemManagementCard = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [isToggledOn, setIsToggledOn] = useState(isActive);
 
+  // 목록 응답의 itemManagementType으로 사전 분기 (접힌 상태에서는 상세 GET이 없거나 실패할 수 있음)
+  const isUnitItem = itemManagementType === "UNIT";
+
   const {
     data: itemDetail,
     isFetching: isDetailFetching,
     isError: isDetailError,
-  } = useAdminItemDetail(itemId, { enabled: isExpanded });
+  } = useAdminItemDetail(itemId, { enabled: isExpanded && isUnitItem });
 
   const effectiveBorrowerRequirements = useMemo(
     () => itemDetail?.borrowerRequirements ?? borrowerRequirements,
@@ -105,8 +110,6 @@ const ItemManagementCard = ({
     () => buildItemStatusRows(itemDetail),
     [itemDetail],
   );
-
-  const isUnitItem = itemDetail?.itemManagementType === "UNIT";
 
   return (
     <div className="w-87.5 min-h-25 overflow-hidden rounded-[16px] bg-neutral-white font-[Pretendard] shadow-item-card">
@@ -223,7 +226,9 @@ const ItemManagementCard = ({
                   대여자 입력 요구 정보
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {isDetailFetching && !itemDetail ? (
+                  {effectiveBorrowerRequirements.length === 0 &&
+                  isDetailFetching &&
+                  !itemDetail ? (
                     <span className="text-12px text-neutral-gray-3">
                       불러오는 중...
                     </span>
@@ -250,16 +255,14 @@ const ItemManagementCard = ({
               </div>
             </div>
 
-            {/* UNIT 물품만: 구분선 아래 ItemStatusCard — GET /api/admin/v1/items/{itemId} 상세 */}
-            {isDetailFetching && !itemDetail ? (
-              <div className="flex flex-col gap-1.5 border-t pt-6 border-neutral-gray-4/50 items-center">
-                <p className="text-12px text-neutral-gray-3">
-                  개별 물품 정보를 불러오는 중...
-                </p>
-              </div>
-            ) : isUnitItem ? (
+            {/* UNIT 물품만: 구분선 아래 ItemStatusCard */}
+            {isUnitItem && (
               <div className="flex flex-col gap-1.5 border-t pt-6 border-neutral-gray-4 items-center">
-                {isDetailError ? (
+                {isDetailFetching && !itemDetail ? (
+                  <p className="text-12px text-neutral-gray-3">
+                    개별 물품 정보를 불러오는 중...
+                  </p>
+                ) : isDetailError ? (
                   <p className="text-12px text-red-500">
                     물품 상세를 불러오지 못했습니다.
                   </p>
@@ -279,7 +282,7 @@ const ItemManagementCard = ({
                   ))
                 )}
               </div>
-            ) : null}
+            )}
           </div>
         </div>
       </div>
