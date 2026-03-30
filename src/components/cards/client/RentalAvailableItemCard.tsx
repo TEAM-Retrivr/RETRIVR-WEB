@@ -55,7 +55,6 @@ const RentalAvailableItemCard = ({
       );
     } catch (error) {
       console.error("물품 상세 조회 실패", error);
-      setItemManagementType("NON_UNIT");
       setBorrowerRequirements(item.borrowerRequirements ?? []);
     } finally {
       setIsDetailLoading(false);
@@ -84,6 +83,7 @@ const RentalAvailableItemCard = ({
       onKeyDown={
         isActive
           ? (e) => {
+              if (e.target !== e.currentTarget) return; // 키보드 이벤트 막기
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
                 handleExpand();

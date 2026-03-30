@@ -142,7 +142,6 @@ const RentalInformationSubmitPage = () => {
       },
       {
         onSuccess: () => {
-          alert("대여 요청이 접수되었습니다.");
           if (organizationId && organizationId > 0) {
             navigate(
               `/client-rental-confirmation?organizationId=${organizationId}`,
