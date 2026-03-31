@@ -23,7 +23,7 @@ interface RentalDateChangeModalProps {
 
 // 캐러셀에서 선택 가능한 연도 범위
 const YEAR_MIN = 2026;
-const YEAR_MAX = 2035;
+const YEAR_MAX = 2029;
 const WHEEL_ITEM_HEIGHT = 32;
 
 // API 포맷(YYYY-MM-DD) 맞춤용 2자리 패딩
@@ -352,7 +352,7 @@ const RentalDateChangeModal = ({
 
         {/* 제출 실패 메시지 */}
         {submitError && (
-          <p className="text-12px text-red mt-3">{submitError}</p>
+          <p className="text-12px text-[#FF0000] mt-3">{submitError}</p>
         )}
 
         {/* 확인 버튼 */}
