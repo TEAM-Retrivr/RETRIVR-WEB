@@ -38,7 +38,22 @@ const parseDateParts = (value?: string) => {
   const year = Number(yearText);
   const month = Number(monthText);
   const day = Number(dayText);
-  if (!year || !month || !day) return null;
+  if (
+    !Number.isInteger(year) ||
+    !Number.isInteger(month) ||
+    !Number.isInteger(day)
+  ) {
+    return null;
+  }
+  if (month < 1 || month > 12) return null;
+  const probe = new Date(year, month - 1, day);
+  if (
+    probe.getFullYear() !== year ||
+    probe.getMonth() + 1 !== month ||
+    probe.getDate() !== day
+  ) {
+    return null;
+  }
   return { year, month, day };
 };
 
