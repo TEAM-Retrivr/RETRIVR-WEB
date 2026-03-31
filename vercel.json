@@ -1,9 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://retrivr-server.kr/api/:path*"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
-
