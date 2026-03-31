@@ -147,11 +147,14 @@ const ReturnManagementPage = () => {
                 return (
                   <ReturnConfirmCard
                     key={rental.rentalId}
+                    rentalId={rental.rentalId}
+                    itemId={rental.itemId}
                     overdueDays={rental.overdueDays}
                     lastSmsSentDateLabel={lastSmsSentDateLabel}
                     itemNameWithCount={itemNameWithCount}
                     borrowerName={rental.borrowerName}
                     borrowerStudentNumber={rental.borrowerStudentNumber}
+                    organizationName={organizationName}
                     canSendOverdueSms={
                       overdueRentalData?.canSendOverdueSms ?? false
                     }

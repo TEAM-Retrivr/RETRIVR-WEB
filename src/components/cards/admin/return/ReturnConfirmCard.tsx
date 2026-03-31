@@ -4,21 +4,27 @@ import OverdueRentalMessageModal from "../../../modals/admin/return/OverdueRenta
 // 반납 연체 확인 영역에서 사용하는 카드 컴포넌트 Props
 // - 연체 일수, 마지막 문자 발송일, 대여 물품/대여자 정보, 문자 발송 가능 여부를 전달받음
 interface ReturnConfirmCardProps {
+  rentalId: number;
+  itemId: number;
   overdueDays: number;
   lastSmsSentDateLabel: string;
   itemNameWithCount: string;
   borrowerName: string;
   borrowerStudentNumber: string;
   canSendOverdueSms: boolean;
+  organizationName?: string;
 }
 
 const ReturnConfirmCard = ({
+  rentalId,
+  itemId,
   overdueDays,
   lastSmsSentDateLabel,
   itemNameWithCount,
   borrowerName,
   borrowerStudentNumber,
   canSendOverdueSms,
+  organizationName,
 }: ReturnConfirmCardProps) => {
   const [isOverdueMessageOpen, setIsOverdueMessageOpen] = useState(false);
 
@@ -59,6 +65,9 @@ const ReturnConfirmCard = ({
       <OverdueRentalMessageModal
         isOpen={isOverdueMessageOpen}
         onClose={() => setIsOverdueMessageOpen(false)}
+        rentalId={rentalId}
+        itemId={itemId}
+        organizationName={organizationName}
         itemNameWithCount={itemNameWithCount}
         borrowerName={borrowerName}
         borrowerStudentNumber={borrowerStudentNumber}

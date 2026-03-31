@@ -20,7 +20,7 @@ import type {
 } from "../../api/admin/admin.type";
 import { useLoadHome } from "../../hooks/queries/useAuthQueries";
 
-type RenterFieldKey = "name" | "studentNumber" | "phone" | "major";
+type RenterFieldKey = "name" | "email" | "studentNumber" | "phone" | "major";
 
 type ExtraRenterField = {
   id: number;
@@ -33,8 +33,14 @@ type AdminItemFormPageProps = {
   itemId?: number;
 };
 
-const BASE_REQUIRED_LABELS = ["이름", "전화번호"] as const;
-
+// 백엔드로 보내는 이메일 라벨은 'email'로 통일
+const EMAIL_BACKEND_LABEL = "email" as const;
+const BASE_REQUIRED_LABELS = [
+  "이름",
+  "전화번호",
+  "이메일",
+  EMAIL_BACKEND_LABEL,
+] as const;
 const OPTIONAL_LABELS = {
   studentNumber: "학번",
   major: "학과",
@@ -287,6 +293,8 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
   const renterRequiredFields: { key: RenterFieldKey; label: string }[] = [
     { key: "name", label: "이름" },
     { key: "phone", label: "전화번호" },
+    // 화면에는 '이메일'로 보이되, 요청 바디에서는 label을 'email'로 전송
+    { key: "email", label: "이메일" },
   ];
 
   const handleSubmit = () => {
@@ -294,10 +302,14 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
     if (mode === "edit" && (!itemId || itemId <= 0)) return;
 
     const borrowerRequirements = [
-      ...renterRequiredFields.map((f) => ({
-        label: f.label,
-        required: true,
-      })),
+      // 이름/전화번호는 추가 정보가 아니므로 요청 바디(additionalBorrowerInfo)에서 제외
+      // 이메일만 label='email'로 변환해 필수로 전송
+      ...renterRequiredFields
+        .filter((f) => f.key === "email")
+        .map((f) => ({
+          label: f.key === "email" ? EMAIL_BACKEND_LABEL : f.label,
+          required: true,
+        })),
       ...(optionalStudentNumberEnabled
         ? [{ label: OPTIONAL_LABELS.studentNumber, required: true }]
         : []),

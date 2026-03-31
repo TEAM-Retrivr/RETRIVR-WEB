@@ -2,6 +2,7 @@ import { useState } from "react";
 import Button from "../../../Button";
 import ReturnApprovalModal from "../../../modals/admin/return/ReturnApprovalModal";
 import OverdueRentalMessageModal from "../../../modals/admin/return/OverdueRentalMessageModal";
+import RentalDateChangeModal from "../../../modals/admin/return/RentalDateChangeModal";
 import { useConfirmAdminReturn } from "../../../../hooks/queries/useAdminQueries";
 
 export interface ReturnCheckCardRentalInfo {
@@ -32,11 +33,16 @@ export interface ReturnCheckCardRentalInfo {
 
 interface ReturnCheckCardProps {
   rental: ReturnCheckCardRentalInfo;
+  organizationName?: string;
 }
 
-const ReturnCheckCard = ({ rental }: ReturnCheckCardProps) => {
+const ReturnCheckCard = ({
+  rental,
+  organizationName,
+}: ReturnCheckCardProps) => {
   const [isReturnApprovalOpen, setIsReturnApprovalOpen] = useState(false);
   const [isOverdueMessageOpen, setIsOverdueMessageOpen] = useState(false);
+  const [isRentalDateChangeOpen, setIsRentalDateChangeOpen] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const { mutate: confirmReturn, isPending: isConfirming } =
     useConfirmAdminReturn();
@@ -63,7 +69,11 @@ const ReturnCheckCard = ({ rental }: ReturnCheckCardProps) => {
               </p>
             </div>
             {/* 수정하기 버튼 */}
-            <button className="w-17.5 h-7.25 border border-primary text-12px text-primary font-normal bg-neutral-white mt-auto mb-0 hover:bg-bg-pale rounded-[10px] leading-[140%]">
+            <button
+              type="button"
+              onClick={() => setIsRentalDateChangeOpen(true)}
+              className="w-17.5 h-7.25 border border-primary text-12px text-primary font-normal bg-neutral-white mt-auto mb-0 hover:bg-bg-pale rounded-[10px] leading-[140%]"
+            >
               수정하기
             </button>
           </div>
@@ -125,12 +135,26 @@ const ReturnCheckCard = ({ rental }: ReturnCheckCardProps) => {
       <OverdueRentalMessageModal
         isOpen={isOverdueMessageOpen}
         onClose={() => setIsOverdueMessageOpen(false)}
+        rentalId={rental.rentalId}
+        itemId={rental.itemId}
+        organizationName={organizationName}
         itemNameWithCount={rental.borrowedItemName}
         borrowerName={rental.borrowerName}
         borrowerStudentNumber={undefined}
         overdueDays={undefined}
         lastSmsSentDateLabel={undefined}
         canSendOverdueSms={rental.isOverdue}
+      />
+
+      <RentalDateChangeModal
+        isOpen={isRentalDateChangeOpen}
+        onClose={() => setIsRentalDateChangeOpen(false)}
+        rentalId={rental.rentalId}
+        itemId={rental.itemId}
+        borrowerName={rental.borrowerName}
+        borrowerFields={rental.borrowerFields}
+        rentalDate={rental.rentalDate}
+        expectedReturnDueDate={rental.expectedReturnDueDate}
       />
 
       <ReturnApprovalModal

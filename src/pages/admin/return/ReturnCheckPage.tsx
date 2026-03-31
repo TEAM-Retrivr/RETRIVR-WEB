@@ -32,15 +32,9 @@ const ReturnCheckPage = () => {
         borrowerPhone: unit.borrowerPhone,
         borrowerFields: unit.borrowerFields
           ? {
-              additionalProp1:
-                unit.borrowerFields.additonalProp1 ??
-                (unit.borrowerFields as any).additionalProp1,
-              additionalProp2:
-                unit.borrowerFields.additonalProp2 ??
-                (unit.borrowerFields as any).additionalProp2,
-              additionalProp3:
-                unit.borrowerFields.additonalProp3 ??
-                (unit.borrowerFields as any).additionalProp3,
+              additionalProp1: unit.borrowerFields.additionalProp1,
+              additionalProp2: unit.borrowerFields.additionalProp2,
+              additionalProp3: unit.borrowerFields.additionalProp3,
             }
           : undefined,
         rentalDate: unit.rentalDate,
@@ -103,6 +97,7 @@ const ReturnCheckPage = () => {
               <ReturnCheckCard
                 key={`${rental.rentalId ?? "no-rentalId"}-${idx}`}
                 rental={rental}
+                organizationName={organizationName}
               />
             ))}
           </div>

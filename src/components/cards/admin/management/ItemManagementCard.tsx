@@ -226,6 +226,14 @@ const ItemManagementCard = ({
                   대여자 입력 요구 정보
                 </p>
                 <div className="flex flex-wrap gap-2">
+                  {/* 기본 요구 정보는 고정 노출 */}
+                  <span className="inline-flex shrink-0 items-center text-secondary-1 text-12px font-normal rounded-[30px] bg-secondary-4 px-3 py-1 leading-[140%]">
+                    이름
+                  </span>
+                  <span className="inline-flex shrink-0 items-center text-secondary-1 text-12px font-normal rounded-[30px] bg-secondary-4 px-3 py-1 leading-[140%]">
+                    전화번호
+                  </span>
+
                   {effectiveBorrowerRequirements.length === 0 &&
                   isDetailFetching &&
                   !itemDetail ? (
@@ -233,14 +241,21 @@ const ItemManagementCard = ({
                       불러오는 중...
                     </span>
                   ) : (
-                    effectiveBorrowerRequirements.map((req, index) => (
-                      <span
-                        key={`${req.label}-${index}`}
-                        className="inline-flex shrink-0 items-center text-secondary-1 text-12px font-normal rounded-[30px] bg-secondary-4 px-3 py-1 leading-[140%]"
-                      >
-                        {req.label}
-                      </span>
-                    ))
+                    effectiveBorrowerRequirements.map((req, index) =>
+                      req.label === "이름" ||
+                      req.label === "전화번호" ||
+                      req.label === "연락처" ? null : (
+                        <span
+                          key={`${req.label}-${index}`}
+                          className="inline-flex shrink-0 items-center text-secondary-1 text-12px font-normal rounded-[30px] bg-secondary-4 px-3 py-1 leading-[140%]"
+                        >
+                          {req.label === "email" ||
+                          req.label === "addtionalProp"
+                            ? "이메일"
+                            : req.label}
+                        </span>
+                      ),
+                    )
                   )}
                 </div>
               </div>

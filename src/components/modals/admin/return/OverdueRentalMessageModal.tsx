@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
 import Button from "../../../Button";
 import { Modal } from "../../../Modal";
+import { useSendAdminOverdueReminder } from "../../../../hooks/queries/useAdminQueries";
 
 export interface OverdueRentalMessageModalProps {
   isOpen: boolean;
   onClose: () => void;
+  rentalId?: number;
+  itemId?: number;
+
+  organizationName?: string;
 
   itemNameWithCount?: string;
   borrowerName?: string;
@@ -14,36 +19,42 @@ export interface OverdueRentalMessageModalProps {
   lastSmsSentDateLabel?: string;
 
   canSendOverdueSms?: boolean;
-  onConfirm?: () => Promise<void> | void;
 }
 
 const OverdueRentalMessageModal = ({
   isOpen,
   onClose,
+  rentalId,
+  itemId,
+  organizationName,
   borrowerName,
+  itemNameWithCount,
+  overdueDays,
   canSendOverdueSms = true,
-  onConfirm,
 }: OverdueRentalMessageModalProps) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const { mutateAsync: sendOverdueReminder, isPending: isSubmitting } =
+    useSendAdminOverdueReminder();
 
   useEffect(() => {
     if (!isOpen) return;
-    setIsSubmitting(false);
     setSubmitError(null);
   }, [isOpen]);
 
   const handleConfirm = async () => {
     if (!canSendOverdueSms) return;
+    if (!rentalId) {
+      setSubmitError("문자 전송에 필요한 rentalId가 없어 요청할 수 없습니다.");
+      return;
+    }
 
     try {
-      setIsSubmitting(true);
       setSubmitError(null);
-      await onConfirm?.();
+      // 서버로는 rentalId만 전송하고, itemId는 성공 후 캐시 무효화에만 사용
+      await sendOverdueReminder({ rentalId, itemId });
       onClose();
     } catch (e) {
       setSubmitError("연체 문자 전송에 실패했습니다. 다시 시도해주세요.");
-      setIsSubmitting(false);
     }
   };
 
@@ -58,12 +69,15 @@ const OverdueRentalMessageModal = ({
 
         {/* 연체 메시지 입력 영역 */}
         <div className="flex flex-col w-full mt-6.5 gap-5">
-          <textarea
-            rows={3}
-            className="w-full bg-neutral-gray-5 text-14px text-left text-neutral-gray-2 px-4 py-3 rounded-[12px] font-normal leading-[140%]
-            outline-hidden transition-all focus:ring-2 focus:ring-blue-100 resize-none"
-            placeholder="여기에 대여자에게 보낼 메시지를 입력하세요."
-          />
+          <div className="w-full bg-neutral-gray-5 text-14px text-left text-neutral-gray-3 px-4 py-3 rounded-[12px] font-normal leading-[140%]">
+            {organizationName ? <p>'{organizationName}'입니다.</p> : null}
+            <p>
+              대여해 가신 '{itemNameWithCount ?? ""}'가{" "}
+              {overdueDays !== undefined ? `${overdueDays}일` : ""}{" "}
+              연체되었습니다.
+            </p>
+            <p>빠른 시일 내에 반납 부탁드립니다.</p>
+          </div>
 
           {submitError && <p className="text-12px text-red">{submitError}</p>}
 
