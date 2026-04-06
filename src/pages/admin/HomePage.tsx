@@ -104,9 +104,9 @@ const Home = () => {
           </div>
           <div>
             {rentRequests.length === 0 ? (
-              <div className="relative flex items-center justify-between w-full h-full text-neutral-dark/50 text-sm">
+              <div className="relative flex items-center justify-between w-full h-full ">
                 <img
-                  className="w-full object-fit mt-auto mb-0"
+                  className="w-full mt-0"
                   src="/icons/home/no-rental-icon.svg"
                   alt=""
                 />
