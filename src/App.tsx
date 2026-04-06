@@ -1,10 +1,4 @@
-import { useEffect } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  useLocation,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import TestPage from "./pages/TestPage";
 import { ModalTestPage } from "./pages/ModalTestPage";
 import LoginPage from "./pages/admin/LoginPage";
@@ -21,69 +15,9 @@ import ClientHomePage from "./pages/client/ClientHomePage";
 import RentalInformationSubmitPage from "./pages/client/RentalInformationSubmitPage";
 import RenterSearchPage from "./pages/client/RenterSearchPage";
 import RentalConfirmationPage from "./pages/client/RentalConfirmationPage";
-
-// Google Analytics 측정 ID (Vercel 환경변수: VITE_GA_ID)
-const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_ID as string | undefined;
-
-const GAEventTracker = () => {
-  const location = useLocation();
-
-  // 앱 최초 진입 시 gtag 스크립트/초기화 1회 수행
-  useEffect(() => {
-    // ID가 기본값이면 추적 비활성화
-    if (!GA_MEASUREMENT_ID?.trim()) return;
-
-    // 중복 삽입 방지: 이미 로딩된 스크립트가 있으면 건너뜀
-    const existingScript = document.querySelector(
-      `script[src="https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}"]`,
-    );
-
-    if (!existingScript) {
-      const script = document.createElement("script");
-      script.async = true;
-      script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
-      document.head.appendChild(script);
-    }
-
-    // gtag 초기화 (dataLayer/gtag 함수 등록)
-    const w = window as typeof window & {
-      dataLayer?: unknown[];
-      gtag?: (...args: unknown[]) => void;
-    };
-
-    w.dataLayer = w.dataLayer || [];
-    if (!w.gtag) {
-      w.gtag = (...args: unknown[]) => {
-        w.dataLayer?.push(args);
-      };
-    }
-
-    w.gtag("js", new Date());
-    // SPA에서는 라우트 변경마다 별도 전송할 것이므로 초기 자동 page_view는 비활성화
-    w.gtag("config", GA_MEASUREMENT_ID, { send_page_view: false });
-  }, []);
-
-  // 라우트 변경 시 page_view 전송
-  useEffect(() => {
-    if (!GA_MEASUREMENT_ID?.trim()) return;
-
-    const w = window as typeof window & {
-      gtag?: (...args: unknown[]) => void;
-    };
-    if (!w.gtag) return;
-
-    w.gtag("config", GA_MEASUREMENT_ID, {
-      page_path: location.pathname + location.search,
-    });
-  }, [location]);
-
-  return null;
-};
-
 function App() {
   return (
     <Router>
-      <GAEventTracker />
       <Routes>
         {/* 랜딩 페이지 */}
         <Route path="/" element={<LandingPage />} />
