@@ -6,6 +6,8 @@ import { HOME_MENUS } from "../../types/menu";
 import { useLoadHome } from "../../hooks/queries/useAuthQueries";
 import BlueButton from "../../components/BlueButton";
 import { useNavigate } from "react-router-dom";
+import { useMemo, useState } from "react";
+import QRcodeModal from "../../components/modals/admin/QRcodeModal";
 
 interface RentRequestCardData {
   id: number;
@@ -17,6 +19,7 @@ interface RentRequestCardData {
 
 const Home = () => {
   const navigate = useNavigate();
+  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   // 대여 요청
   const { data, isLoading, error } = useLoadHome();
   // 최근 대여 요청 개수
@@ -39,6 +42,13 @@ const Home = () => {
         : req.borrowerName,
       time: req.requestedAt,
     })) ?? [];
+
+  const rentalPageUrl = useMemo(() => {
+    if (!UserProfile.organizationId) {
+      return `${window.location.origin}/client-search`;
+    }
+    return `${window.location.origin}/client-home?organizationId=${UserProfile.organizationId}`;
+  }, [UserProfile.organizationId]);
 
   if (isLoading) {
     return (
@@ -138,8 +148,14 @@ const Home = () => {
       </div>
       {/* QR 코드 생성 버튼 */}
       <div className="flex justify-end mt-auto mb-11">
-        <BlueButton option="makeQR" />
+        <BlueButton option="makeQR" onClick={() => setIsQRModalOpen(true)} />
       </div>
+      <QRcodeModal
+        isOpen={isQRModalOpen}
+        onClose={() => setIsQRModalOpen(false)}
+        managerName={UserProfile.organizationName ?? ""}
+        rentalPageUrl={rentalPageUrl}
+      />
     </Layout>
   );
 };

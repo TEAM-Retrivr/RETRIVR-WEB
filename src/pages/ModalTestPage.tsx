@@ -2,9 +2,12 @@ import { useMemo, useState } from "react";
 import Button from "../components/Button";
 import ConfirmModal from "../components/modals/ConfirmModal";
 import ErrorModal from "../components/modals/ErrorModal";
+import QRCodeDisplay from "../components/qr/QRCodeDisplay";
+import QRcodeModal from "../components/modals/admin/QRcodeModal";
 
 export const ModalTestPage = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isQROpen, setIsQROpen] = useState(false);
   const [modalType, setModalType] = useState<"confirm" | "error">("confirm");
   const [selectedKey, setSelectedKey] = useState<
     "noAuth" | "signupDone" | "approveDone" | "editDone"
@@ -41,6 +44,18 @@ export const ModalTestPage = () => {
       <h1 className="text-2xl font-bold">컴포넌트 테스트 페이지</h1>
 
       <div className="w-full max-w-[520px] flex flex-col gap-3">
+        <div className="rounded-[20px] border border-neutral-gray-5 p-5">
+          <p className="mb-3 text-center text-16px font-[700] text-secondary-1">
+            QR 컴포넌트 미리보기
+          </p>
+          <QRCodeDisplay value={`${window.location.origin}/client-home?organizationId=1`} />
+          <div className="mt-4 flex justify-center">
+            <Button variant="primary" size="lg" onClick={() => setIsQROpen(true)}>
+              QRcodeModal 열기
+            </Button>
+          </div>
+        </div>
+
         <div className="flex flex-wrap gap-2 justify-center">
           <Button
             variant={selectedKey === "noAuth" ? "primary" : "outline"}
@@ -114,6 +129,13 @@ export const ModalTestPage = () => {
           confirmText="확인하기"
         />
       )}
+
+      <QRcodeModal
+        isOpen={isQROpen}
+        onClose={() => setIsQROpen(false)}
+        managerName="건국대학교 도서관자치위원회"
+        rentalPageUrl={`${window.location.origin}/client-home?organizationId=1`}
+      />
     </div>
   );
 };
