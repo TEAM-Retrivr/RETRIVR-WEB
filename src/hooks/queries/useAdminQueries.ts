@@ -13,12 +13,14 @@ import {
   rejectAdminRental,
   sendAdminOverdueReminder,
   updateAdminRentalReturnDueDate,
+  verifyAdminCode,
 } from "../../api/admin/admin.api";
 import type {
   AdminCreateItemRequest,
   AdminItemListResponse,
   AdminUpdateItemRequest,
   AdminUpdateReturnDueDateRequestBody,
+  AdminVerifyCodeRequestBody,
 } from "../../api/admin/admin.type";
 
 // 관리자 물품 목록 조회 (관리자 전용 API 사용)
@@ -259,5 +261,13 @@ export const useUpdateAdminRentalReturnDueDate = () => {
 
       await Promise.all(invalidations);
     },
+  });
+};
+
+// 관리자 코드 검증 (POST)
+// - 대여 완료 페이지에서 현장 승인 진입 전 검증
+export const useVerifyAdminCode = () => {
+  return useMutation({
+    mutationFn: (body: AdminVerifyCodeRequestBody) => verifyAdminCode(body),
   });
 };

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Modal } from "../Modal";
 import Button from "../Button";
+import { useVerifyAdminCode } from "../../hooks/queries/useAdminQueries";
 
 interface AdminCodeInputModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ const AdminCodeInputModal = ({
   const [adminCodeError, setAdminCodeError] = useState<string | null>(null);
   const [isErrorHighlightActive, setIsErrorHighlightActive] = useState(false);
   const highlightTimerRef = useRef<number | null>(null);
+  const { mutate: verifyCode, isPending: isVerifyingCode } = useVerifyAdminCode();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -49,21 +51,38 @@ const AdminCodeInputModal = ({
   const handleSubmit = () => {
     const enteredCode = adminCode.join("");
     if (enteredCode.length !== codeLength) {
-      setAdminCodeError(`관리자 코드를 ${codeLength}자리로 입력해주세요.`);
-      setIsErrorHighlightActive(true);
-
-      if (highlightTimerRef.current) {
-        window.clearTimeout(highlightTimerRef.current);
-      }
-
-      highlightTimerRef.current = window.setTimeout(() => {
-        setIsErrorHighlightActive(false);
-      }, 3000);
+      triggerErrorState(`관리자 코드를 ${codeLength}자리로 입력해주세요.`);
       return;
     }
 
-    setAdminCodeError(null);
-    onSuccess(enteredCode);
+    verifyCode(
+      {
+        adminCode: enteredCode,
+        purpose: "ORGANIZATION_UPDATE",
+      },
+      {
+        onSuccess: () => {
+          setAdminCodeError(null);
+          onSuccess(enteredCode);
+        },
+        onError: () => {
+          triggerErrorState("관리자 코드가 올바르지 않아요. 다시 입력해주세요.");
+        },
+      },
+    );
+  };
+
+  const triggerErrorState = (message: string) => {
+    setAdminCodeError(message);
+    setIsErrorHighlightActive(true);
+
+    if (highlightTimerRef.current) {
+      window.clearTimeout(highlightTimerRef.current);
+    }
+
+    highlightTimerRef.current = window.setTimeout(() => {
+      setIsErrorHighlightActive(false);
+    }, 3000);
   };
 
   return (
@@ -109,11 +128,21 @@ const AdminCodeInputModal = ({
         </div>
 
         <div className="mt-1 flex w-full justify-center gap-2">
-          <Button variant="outline" size="md" onClick={onClose}>
+          <Button
+            variant="outline"
+            size="md"
+            onClick={onClose}
+            disabled={isVerifyingCode}
+          >
             취소
           </Button>
-          <Button variant="primary" size="md" onClick={handleSubmit}>
-            확인
+          <Button
+            variant="primary"
+            size="md"
+            onClick={handleSubmit}
+            disabled={isVerifyingCode}
+          >
+            {isVerifyingCode ? "검증 중..." : "확인"}
           </Button>
         </div>
       </div>

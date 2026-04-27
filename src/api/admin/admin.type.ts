@@ -264,3 +264,14 @@ export interface AdminSendOverdueReminderResponse {
   rentalId: number; // 대여 번호
   success: boolean; // 전송 성공 여부
 }
+
+// 관리자 코드 검증 요청/응답
+// POST /api/admin/v1/admin-code/verification
+export interface AdminVerifyCodeRequestBody {
+  adminCode: string;
+  purpose: "ORGANIZATION_UPDATE" | string;
+}
+
+export interface AdminVerifyCodeResponse {
+  rawToken: string;
+}
