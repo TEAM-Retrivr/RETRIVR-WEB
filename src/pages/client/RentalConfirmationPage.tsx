@@ -4,12 +4,14 @@ import Header from "../../components/Header";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import LongRentalApprovalModal from "../../components/modals/admin/rentalApprovalModal/LongRentalApprovalModal";
 import AdminCodeInputModal from "../../components/modals/AdminCodeInputModal";
+import { useRentalDetail } from "../../hooks/queries/useClientQueries";
 
 const RentalConfirmationPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isAdminCodeModalOpen, setIsAdminCodeModalOpen] = useState(false);
   const [isLongApprovalModalOpen, setIsLongApprovalModalOpen] = useState(false);
+  const [approvalToken, setApprovalToken] = useState("");
   // 완료 페이지 URL 쿼리에서 organizationId를 읽어, 확인 시 원래 대여지 홈으로 복귀하는 데 사용함
   const organizationIdParam = searchParams.get("organizationId");
   const organizationId = organizationIdParam
@@ -17,14 +19,6 @@ const RentalConfirmationPage = () => {
     : NaN;
   const rentalIdParam = searchParams.get("rentalId");
   const rentalId = rentalIdParam ? Number(rentalIdParam) : 0;
-  const requestTime = useMemo(() => {
-    const date = new Date();
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
-      date.getDate(),
-    ).padStart(2, "0")} ${String(date.getHours()).padStart(2, "0")}:${String(
-      date.getMinutes(),
-    ).padStart(2, "0")}:${String(date.getSeconds()).padStart(2, "0")}`;
-  }, []);
 
   // 상단 뒤로가기/하단 확인 버튼 공통 핸들러:
   // organizationId가 유효하면 해당 대여지 홈으로, 없으면 검색 페이지로 이동함
@@ -40,10 +34,26 @@ const RentalConfirmationPage = () => {
     setIsAdminCodeModalOpen(true);
   };
 
-  const handleAdminCodeSuccess = () => {
+  const handleAdminCodeSuccess = (rowToken: string) => {
+    setApprovalToken(rowToken);
     setIsAdminCodeModalOpen(false);
     setIsLongApprovalModalOpen(true);
   };
+
+  const { data: rentalDetail } = useRentalDetail(
+    rentalId,
+    approvalToken,
+    isLongApprovalModalOpen,
+  );
+  const requestTime = useMemo(() => {
+    if (!rentalDetail?.requestedAt) return "";
+    return rentalDetail.requestedAt.replace("T", " ").replace("Z", "");
+  }, [rentalDetail?.requestedAt]);
+  const applicantSummary = useMemo(() => {
+    if (!rentalDetail?.borrowerField) return "대여자 정보";
+    const values = Object.values(rentalDetail.borrowerField).filter(Boolean);
+    return values.length > 0 ? values.join(" | ") : "대여자 정보";
+  }, [rentalDetail?.borrowerField]);
 
   return (
     <Layout>
@@ -94,17 +104,17 @@ const RentalConfirmationPage = () => {
       <AdminCodeInputModal
         isOpen={isAdminCodeModalOpen}
         onClose={() => setIsAdminCodeModalOpen(false)}
-        onSuccess={() => handleAdminCodeSuccess()}
+        onSuccess={handleAdminCodeSuccess}
       />
 
       <LongRentalApprovalModal
         isOpen={isLongApprovalModalOpen}
         onClose={() => setIsLongApprovalModalOpen(false)}
         rentalId={Number.isFinite(rentalId) && rentalId > 0 ? rentalId : 0}
-        itemName="대여 물품"
-        count="(1/1)"
-        applicant="대여자 정보"
-        time={requestTime}
+        itemName={rentalDetail?.itemName ?? "대여 물품"}
+        count={rentalDetail?.itemUnitLabel ? `(${rentalDetail.itemUnitLabel})` : "(1/1)"}
+        applicant={applicantSummary}
+        time={requestTime || "요청 시각 정보 없음"}
       />
     </Layout>
   );

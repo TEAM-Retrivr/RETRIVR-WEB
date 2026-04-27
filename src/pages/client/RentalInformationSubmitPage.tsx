@@ -157,15 +157,24 @@ const RentalInformationSubmitPage = () => {
         ...body,
       },
       {
-        onSuccess: () => {
+        onSuccess: (response) => {
           sessionStorage.removeItem(CLIENT_RENTAL_SUBMIT_STATE_STORAGE_KEY);
+          const createdRentalId = response.rentalId;
+          const rentalIdQuery =
+            Number.isFinite(createdRentalId) && createdRentalId > 0
+              ? `&rentalId=${createdRentalId}`
+              : "";
           if (organizationId && organizationId > 0) {
             navigate(
-              `/client-rental-confirmation?organizationId=${organizationId}`,
+              `/client-rental-confirmation?organizationId=${organizationId}${rentalIdQuery}`,
             );
             return;
           }
-          navigate("/client-rental-confirmation");
+          navigate(
+            rentalIdQuery
+              ? `/client-rental-confirmation?${rentalIdQuery.slice(1)}`
+              : "/client-rental-confirmation",
+          );
         },
         onError: () => {
           alert("대여 요청에 실패했습니다. 다시 시도해주세요.");

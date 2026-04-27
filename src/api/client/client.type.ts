@@ -55,6 +55,16 @@ export interface BorrowerInformationResponse {
   requestedAt: string; // 대여 요청 생성 시각
 }
 
+// 2-3. 대여 상세 조회 응답 바디 (현장 즉시 완료용)
+// GET /api/public/v1/rentals/{rentalId}?token=...
+export interface RentalDetailResponse {
+  rentalId: number;
+  itemName: string;
+  itemUnitLabel?: string;
+  borrowerField?: Record<string, string>;
+  requestedAt: string;
+}
+
 // 3. 대여지 검색
 // 3-1. 대여지 검색 응답 바디
 // GET /api/public/v1/organizations/search

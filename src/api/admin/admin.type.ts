@@ -273,5 +273,5 @@ export interface AdminVerifyCodeRequestBody {
 }
 
 export interface AdminVerifyCodeResponse {
-  rawToken: string;
+  rowToken: string;
 }
