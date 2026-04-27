@@ -73,6 +73,12 @@ const TermsConsentPage = () => {
 
   // 약관 동의 완료 후 진입 목적(관리자/대여자)에 맞는 다음 화면으로 이동
   const handleNextStep = () => {
+    if (isAllRequiredChecked && !hasGrantedAnalyticsRef.current) {
+      grantAnalyticsConsent();
+      localStorage.setItem(GA_CONSENT_STORAGE_KEY, "true");
+      hasGrantedAnalyticsRef.current = true;
+    }
+
     if (userType === "client") {
       if (effectiveState?.nextState) {
         sessionStorage.setItem(
