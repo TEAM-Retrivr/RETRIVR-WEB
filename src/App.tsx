@@ -5,6 +5,7 @@ import LoginPage from "./pages/admin/LoginPage";
 import HomePage from "./pages/admin/HomePage";
 import LandingPage from "./pages/LandingPage";
 import RegisterPage from "./pages/admin/RegisterPage";
+import TermsConsentPage from "./pages/admin/TermsConsentPage";
 import RentalRequestPage from "./pages/admin/RentalRequestPage";
 import ItemManagementPage from "./pages/admin/ItemManagementPage";
 import ItemRegisterationPage from "./pages/admin/ItemRegisterationPage";
@@ -25,7 +26,8 @@ function App() {
         {/* 로그인 페이지 */}
         <Route path="/login" element={<LoginPage />} />
 
-        {/* 회원가입 페이지 */}
+        {/* 이용 약관 동의 페이지 & 회원가입 페이지 */}
+        <Route path="/terms" element={<TermsConsentPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
         {/* 관리자 홈 페이지 */}

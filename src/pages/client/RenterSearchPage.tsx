@@ -7,6 +7,8 @@ import { useOrganizationSearch } from "../../hooks/queries/useClientQueries";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 
+const CLIENT_HOME_STATE_STORAGE_KEY = "clientHomeSelectedOrganization";
+
 const escapeRegExp = (value: string) =>
   value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -189,6 +191,14 @@ const RenterSearchPage = () => {
                   name: selectedOrg.name,
                   imageURL: selectedOrg.imageURL,
                 },
+              );
+              sessionStorage.setItem(
+                CLIENT_HOME_STATE_STORAGE_KEY,
+                JSON.stringify({
+                  organizationId: selectedOrg.organizationId,
+                  name: selectedOrg.name,
+                  imageURL: selectedOrg.imageURL,
+                }),
               );
               navigate(
                 `/client-home?organizationId=${selectedOrg.organizationId}`,
