@@ -12,6 +12,7 @@ import Button from "../../components/Button";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import ErrorModal from "../../components/modals/ErrorModal";
 
+// 비밀번호 입력규칙 : 소문자 + 숫자 + 특수문자 각 1개씩 포함하여 8자 이상
 const PASSWORD_MIN_LENGTH = 8;
 const PASSWORD_ALLOWED_SPECIALS = "!@#$%^&*";
 const PASSWORD_ALLOWED_PATTERN = /^[a-z0-9!@#$%^&*]+$/;
@@ -115,10 +116,14 @@ const RegisterPage = () => {
       { email, code: authCode, purpose: "SIGNUP" }, // 이메일과 인증번호를 함께 백엔드로 전달
       {
         onSuccess: (data) => {
+          if (!data.token) {
+            alert("인증 토큰 발급에 실패했습니다. 다시 시도해주세요.");
+            return;
+          }
           alert("이메일 인증이 완료되었습니다.");
           setIsTimerActive(false); // 성공 시 타이머 정지
           setIsVerified(true); // 인증 완료 상태로 변경
-          setSignupToken(data.token ?? ""); // 일회성 토큰 발급
+          setSignupToken(data.token); // 일회성 토큰 발급
         },
         onError: () => {
           alert("인증번호가 올바르지 않거나 만료되었습니다.");

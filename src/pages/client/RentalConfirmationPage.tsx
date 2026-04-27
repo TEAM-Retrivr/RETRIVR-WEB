@@ -40,7 +40,7 @@ const RentalConfirmationPage = () => {
     setIsAdminCodeModalOpen(true);
   };
 
-  const handleAdminCodeSuccess = (_enteredCode: string) => {
+  const handleAdminCodeSuccess = () => {
     setIsAdminCodeModalOpen(false);
     setIsLongApprovalModalOpen(true);
   };
@@ -94,7 +94,7 @@ const RentalConfirmationPage = () => {
       <AdminCodeInputModal
         isOpen={isAdminCodeModalOpen}
         onClose={() => setIsAdminCodeModalOpen(false)}
-        onSuccess={handleAdminCodeSuccess}
+        onSuccess={() => handleAdminCodeSuccess()}
       />
 
       <LongRentalApprovalModal
