@@ -1,10 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import { Layout } from "../components/Layout";
 import Button from "../components/Button";
 import CustomCheckBox from "../components/CustomCheckbox";
-import { GA_CONSENT_STORAGE_KEY, grantAnalyticsConsent } from "../lib/analytics";
+import {
+  GA_CONSENT_STORAGE_KEY,
+  grantAnalyticsConsent,
+  trackPageView,
+} from "../lib/analytics";
 
 const CLIENT_TERMS_REDIRECT_STORAGE_KEY = "clientTermsRedirectPayload";
 const CLIENT_RENTAL_SUBMIT_STATE_STORAGE_KEY = "clientRentalSubmitState";
@@ -75,6 +79,7 @@ const TermsConsentPage = () => {
   const handleNextStep = () => {
     if (isAllRequiredChecked && !hasGrantedAnalyticsRef.current) {
       grantAnalyticsConsent();
+      trackPageView(`${location.pathname}${location.search}`);
       localStorage.setItem(GA_CONSENT_STORAGE_KEY, "true");
       hasGrantedAnalyticsRef.current = true;
     }
@@ -97,17 +102,6 @@ const TermsConsentPage = () => {
     }
     navigate("/register");
   };
-
-  // 필수 약관 동의가 완료되는 순간부터 GA4 수집을 허용
-  // - gtag consent update 호출
-  // - 로컬스토리지 플래그 저장(추후 초기화 로직에서 재사용 가능)
-  useEffect(() => {
-    if (!isAllRequiredChecked || hasGrantedAnalyticsRef.current) return;
-
-    grantAnalyticsConsent();
-    localStorage.setItem(GA_CONSENT_STORAGE_KEY, "true");
-    hasGrantedAnalyticsRef.current = true;
-  }, [isAllRequiredChecked]);
 
   return (
     <Layout>
