@@ -16,13 +16,15 @@ const AdminCodeInputModal = ({
   onSuccess,
   codeLength = 6,
 }: AdminCodeInputModalProps) => {
+  const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
   const [adminCode, setAdminCode] = useState<string[]>(
     Array(codeLength).fill(""),
   );
   const [adminCodeError, setAdminCodeError] = useState<string | null>(null);
   const [isErrorHighlightActive, setIsErrorHighlightActive] = useState(false);
   const highlightTimerRef = useRef<number | null>(null);
-  const { mutate: verifyCode, isPending: isVerifyingCode } = useVerifyAdminCode();
+  const { mutate: verifyCode, isPending: isVerifyingCode } =
+    useVerifyAdminCode();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -40,12 +42,33 @@ const AdminCodeInputModal = ({
   }, []);
 
   const handleAdminCodeChange = (index: number, value: string) => {
-    if (!/^\d?$/.test(value)) return;
+    const digits = value.replace(/\D/g, "");
+    if (!digits) {
+      setAdminCode((prev) => {
+        const next = [...prev];
+        next[index] = "";
+        return next;
+      });
+      return;
+    }
     setAdminCode((prev) => {
       const next = [...prev];
-      next[index] = value;
+      for (let i = 0; i < digits.length && index + i < codeLength; i++) {
+        next[index + i] = digits[i];
+      }
       return next;
     });
+    const nextIndex = Math.min(index + digits.length, codeLength - 1);
+    inputRefs.current[nextIndex]?.focus();
+  };
+
+  const handleKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>,
+  ) => {
+    if (e.key === "Backspace" && !adminCode[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
   };
 
   const handleSubmit = () => {
@@ -66,7 +89,9 @@ const AdminCodeInputModal = ({
           onSuccess(enteredCode);
         },
         onError: () => {
-          triggerErrorState("관리자 코드가 올바르지 않아요. 다시 입력해주세요.");
+          triggerErrorState(
+            "관리자 코드가 올바르지 않아요. 다시 입력해주세요.",
+          );
         },
       },
     );
@@ -106,11 +131,15 @@ const AdminCodeInputModal = ({
             {adminCode.map((digit, index) => (
               <input
                 key={index}
+                ref={(el) => {
+                  inputRefs.current[index] = el;
+                }}
                 type="text"
                 inputMode="numeric"
-                maxLength={1}
+                maxLength={codeLength}
                 value={digit}
                 onChange={(e) => handleAdminCodeChange(index, e.target.value)}
+                onKeyDown={(e) => handleKeyDown(index, e)}
                 className={`h-10 w-9 rounded-[6px] border bg-[#F8F9F9] text-center text-18px text-secondary-1 font-bold ${
                   isErrorHighlightActive
                     ? "border-red-500"
@@ -136,12 +165,7 @@ const AdminCodeInputModal = ({
           >
             취소
           </Button>
-          <Button
-            variant="primary"
-            size="md"
-            onClick={handleSubmit}
-            disabled={isVerifyingCode}
-          >
+          <Button variant="primary" size="md" onClick={handleSubmit}>
             {isVerifyingCode ? "검증 중..." : "확인"}
           </Button>
         </div>
