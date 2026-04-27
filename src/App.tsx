@@ -5,7 +5,7 @@ import LoginPage from "./pages/admin/LoginPage";
 import HomePage from "./pages/admin/HomePage";
 import LandingPage from "./pages/LandingPage";
 import RegisterPage from "./pages/admin/RegisterPage";
-import TermsConsentPage from "./pages/admin/TermsConsentPage";
+import TermsConsentPage from "./pages/TermsConsentPage";
 import RentalRequestPage from "./pages/admin/RentalRequestPage";
 import ItemManagementPage from "./pages/admin/ItemManagementPage";
 import ItemRegisterationPage from "./pages/admin/ItemRegisterationPage";

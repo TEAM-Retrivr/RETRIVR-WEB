@@ -186,7 +186,7 @@ const RentalAvailableItemCard = ({
                             className={`w-full h-11.25 flex items-center justify-between rounded-[14px] pl-5.5 pr-5 ${
                               isAvailable
                                 ? "shadow-16-gray"
-                                : "bg-neutral-gray-6"
+                                : "bg-neutral-gray-5"
                             } cursor-pointer`}
                           >
                             <span className="text-14px text-neutral-gray-2 font-normal leading-[140%] ">

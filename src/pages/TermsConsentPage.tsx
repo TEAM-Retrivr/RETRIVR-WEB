@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import Header from "../../components/Header";
-import { Layout } from "../../components/Layout";
-import Button from "../../components/Button";
-import CustomCheckBox from "../../components/CustomCheckbox";
+import Header from "../components/Header";
+import { Layout } from "../components/Layout";
+import Button from "../components/Button";
+import CustomCheckBox from "../components/CustomCheckbox";
 
 const GA_CONSENT_STORAGE_KEY = "ga4ConsentGranted";
 const CLIENT_TERMS_REDIRECT_STORAGE_KEY = "clientTermsRedirectPayload";
@@ -41,15 +41,19 @@ const TermsConsentPage = () => {
     }
   }, []);
 
-  const effectiveState = routeState ?? storedClientState;
-
+  const effectiveState =
+    routeState ??
+    (storedClientState?.userType === "client" ? storedClientState : null);
   {
     /* 상태변수 */
   }
 
   const [isTermsChecked, setIsTermsChecked] = useState(false);
   const [isPrivacyChecked, setIsPrivacyChecked] = useState(false);
-  const hasGrantedAnalyticsRef = useRef(false);
+  const hasGrantedAnalyticsRef = useRef(
+    typeof window !== "undefined" &&
+      localStorage.getItem(GA_CONSENT_STORAGE_KEY) === "true",
+  );
   const userType = effectiveState?.userType ?? "admin";
 
   {
@@ -134,7 +138,7 @@ const TermsConsentPage = () => {
             </p>
           </div>
           {/* 이용약관 내용 박스 - 내부 스크롤 가능 */}
-          <div className="h-30 w-full overflow-y-auto rounded-[12px] border border-neutral-gray-4/50 bg-neutral-gray-6 p-4 text-12px text-neutral-gray-3 leading-[140%] [scrollbar-width:thin] [scrollbar-color:#d9d9d9_transparent] [&::-webkit-scrollbar]:w-px [&::-webkit-scrollbar-track]:my-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-track]:border-none [&::-webkit-scrollbar-thumb]:min-h-[20px] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#d9d9d9]">
+          <div className="h-30 w-full overflow-y-auto rounded-[12px] border border-neutral-gray-4/50 bg-neutral-gray-5 p-4 text-12px text-neutral-gray-3 leading-[140%] [scrollbar-width:thin] [scrollbar-color:#d9d9d9_transparent] [&::-webkit-scrollbar]:w-px [&::-webkit-scrollbar-track]:my-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-track]:border-none [&::-webkit-scrollbar-thumb]:min-h-[20px] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#d9d9d9]">
             <p className="pb-3">
               {" "}
               본 이용약관(이하 "약관")은 [리트리버]가 제공하는 학생회 물품 대여
