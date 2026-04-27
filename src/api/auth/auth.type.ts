@@ -25,7 +25,8 @@ export interface VerifyEmailCodeRequest {
 
 // 2-2. 이메일 인증 코드 검증 응답 바디
 export interface VerifyEmailCodeResponse {
-  signupToken: string; // 인증 성공 시 발급되는 토큰 (일회성/단기만료)
+  tokenType: "SIGNUP"; // 토큰 용도 (회원가입용)
+  token: string; // 인증 성공 시 발급되는 토큰 (일회성/단기만료)
   expiresInSeconds: number; // 인증 코드 유효 시간 (코드가 일치하더라도 유효 시간 이후에 인증 받으면 실패)
 }
 

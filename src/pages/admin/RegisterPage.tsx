@@ -12,6 +12,14 @@ import Button from "../../components/Button";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import ErrorModal from "../../components/modals/ErrorModal";
 
+// 비밀번호 입력규칙 : 소문자 + 숫자 + 특수문자 각 1개씩 포함하여 8자 이상
+const PASSWORD_MIN_LENGTH = 8;
+const PASSWORD_ALLOWED_SPECIALS = "!@#$%^&*";
+const PASSWORD_ALLOWED_PATTERN = /^[a-z0-9!@#$%^&*]+$/;
+const PASSWORD_LOWERCASE_PATTERN = /[a-z]/;
+const PASSWORD_NUMBER_PATTERN = /\d/;
+const PASSWORD_SPECIAL_PATTERN = /[!@#$%^&*]/;
+
 // 관리자 회원가입 페이지
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -108,10 +116,14 @@ const RegisterPage = () => {
       { email, code: authCode, purpose: "SIGNUP" }, // 이메일과 인증번호를 함께 백엔드로 전달
       {
         onSuccess: (data) => {
+          if (!data.token) {
+            alert("인증 토큰 발급에 실패했습니다. 다시 시도해주세요.");
+            return;
+          }
           alert("이메일 인증이 완료되었습니다.");
           setIsTimerActive(false); // 성공 시 타이머 정지
           setIsVerified(true); // 인증 완료 상태로 변경
-          setSignupToken(data.signupToken); // 일회성 토큰 발급
+          setSignupToken(data.token); // 일회성 토큰 발급
         },
         onError: () => {
           alert("인증번호가 올바르지 않거나 만료되었습니다.");
@@ -129,7 +141,25 @@ const RegisterPage = () => {
     if (!organizationName.trim()) return alert("이름(단체명)을 입력해주세요.");
     if (!isVerified) return alert("이메일 인증을 진행해주세요.");
     if (!password) return alert("비밀번호를 입력해주세요.");
-    if (password.length < 8) return alert("비밀번호는 최소 8자여야 합니다.");
+    if (password.length < PASSWORD_MIN_LENGTH) {
+      return alert("비밀번호는 8자 이상이어야 합니다.");
+    }
+    if (!PASSWORD_LOWERCASE_PATTERN.test(password)) {
+      return alert("비밀번호에 소문자를 최소 1개 이상 포함해주세요.");
+    }
+    if (!PASSWORD_NUMBER_PATTERN.test(password)) {
+      return alert("비밀번호에 숫자를 최소 1개 이상 포함해주세요.");
+    }
+    if (!PASSWORD_SPECIAL_PATTERN.test(password)) {
+      return alert(
+        `비밀번호에 특수문자를 최소 1개 이상 포함해주세요. (${PASSWORD_ALLOWED_SPECIALS})`,
+      );
+    }
+    if (!PASSWORD_ALLOWED_PATTERN.test(password)) {
+      return alert(
+        `비밀번호는 소문자, 숫자, 특수문자 ${PASSWORD_ALLOWED_SPECIALS}만 사용할 수 있습니다.`,
+      );
+    }
     if (!passwordChecked) return alert("비밀번호 확인 입력을 진행해주세요.");
     if (!isPasswordSame)
       return alert("비밀번호가 일치하지 않습니다. 다시 입력해주세요.");
@@ -137,6 +167,10 @@ const RegisterPage = () => {
     // 정규식으로 관리자 콛드 확인
     if (!/^\d{6}$/.test(adminCode))
       return alert("관리자 코드는 6자리 숫자여야 합니다.");
+    if (!signupToken.trim())
+      return alert(
+        "이메일 인증 토큰이 없습니다. 인증번호 확인을 다시 진행해주세요.",
+      );
 
     if (isRegistering) return; // 회원가입 중복 요청 방지
 

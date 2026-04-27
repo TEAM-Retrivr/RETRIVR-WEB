@@ -15,6 +15,8 @@ import type {
   AdminSendOverdueReminderResponse,
   AdminUpdateReturnDueDateRequestBody,
   AdminUpdateReturnDueDateResponse,
+  AdminVerifyCodeRequestBody,
+  AdminVerifyCodeResponse,
 } from "./admin.type";
 import { apiClient } from "../core";
 
@@ -211,6 +213,18 @@ export const rejectAdminRental = async ({
     {
       adminNameToReject,
     },
+  );
+  return response.data;
+};
+
+// 관리자 코드 검증
+// POST /api/admin/v1/admin-code/verification
+export const verifyAdminCode = async (
+  body: AdminVerifyCodeRequestBody,
+): Promise<AdminVerifyCodeResponse> => {
+  const response = await apiClient.post<AdminVerifyCodeResponse>(
+    "/api/admin/v1/admin-code/verification",
+    body,
   );
   return response.data;
 };

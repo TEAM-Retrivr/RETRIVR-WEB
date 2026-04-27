@@ -45,7 +45,13 @@ export const requestRegisteration = async (
 ): Promise<RegisterResponse> => {
   const response = await apiClient.post<RegisterResponse>(
     "/api/admin/v1/auth/signup",
-    data,
+    {
+      email: data.email,
+      password: data.password,
+      organizationName: data.organizationName,
+      adminCode: data.adminCode,
+      signupToken: data.signupToken,
+    },
   );
   return response.data;
 };
