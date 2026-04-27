@@ -5,6 +5,18 @@ import ErrorModal from "../components/modals/ErrorModal";
 import QRCodeDisplay from "../components/qr/QRCodeDisplay";
 import QRcodeModal from "../components/modals/admin/QRcodeModal";
 
+const PRODUCTION_WEB_ORIGIN = "https://www.retrivr.kr";
+const PREVIEW_WEB_ORIGIN = "https://retrivr-web.vercel.app";
+
+const getPublicWebOrigin = () => {
+  if (typeof window === "undefined") return PREVIEW_WEB_ORIGIN;
+  const { hostname } = window.location;
+  if (hostname === "www.retrivr.kr" || hostname === "retrivr.kr") {
+    return PRODUCTION_WEB_ORIGIN;
+  }
+  return PREVIEW_WEB_ORIGIN;
+};
+
 export const ModalTestPage = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isQROpen, setIsQROpen] = useState(false);
@@ -12,6 +24,7 @@ export const ModalTestPage = () => {
   const [selectedKey, setSelectedKey] = useState<
     "noAuth" | "signupDone" | "approveDone" | "editDone"
   >("noAuth");
+  const publicWebOrigin = getPublicWebOrigin();
 
   const preset = useMemo(() => {
     switch (selectedKey) {
@@ -48,7 +61,7 @@ export const ModalTestPage = () => {
           <p className="mb-3 text-center text-16px font-[700] text-secondary-1">
             QR 컴포넌트 미리보기
           </p>
-          <QRCodeDisplay value={`${window.location.origin}/client-home?organizationId=1`} />
+          <QRCodeDisplay value={`${publicWebOrigin}/client-home?organizationId=1`} />
           <div className="mt-4 flex justify-center">
             <Button variant="primary" size="lg" onClick={() => setIsQROpen(true)}>
               QRcodeModal 열기
@@ -134,7 +147,7 @@ export const ModalTestPage = () => {
         isOpen={isQROpen}
         onClose={() => setIsQROpen(false)}
         managerName="건국대학교 도서관자치위원회"
-        rentalPageUrl={`${window.location.origin}/client-home?organizationId=1`}
+        rentalPageUrl={`${publicWebOrigin}/client-home?organizationId=1`}
       />
     </div>
   );

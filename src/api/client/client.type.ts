@@ -1,6 +1,8 @@
 // 1. 대여지 소유 물품 목록 조회 정보
 // 1-1. 전체 응답 바디
 export interface ItemResponse {
+  organizationId: number; // 대여지(단체) ID
+  organizationName: string; // 대여지 이름
   items: {
     itemId: number; // 물품 번호
     name: string; // 물품 이름

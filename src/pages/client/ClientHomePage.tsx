@@ -75,6 +75,8 @@ const ClientHome = () => {
     size: 10,
     enabled: Number.isFinite(organizationId) && organizationId > 0,
   });
+  const organizationNameFromItemsApi = data?.organizationName ?? "";
+  const displayOrganizationName = organizationNameFromItemsApi || organizationName;
 
   const itemRequests: ItemRequest[] =
     data?.items?.map((item) => ({
@@ -125,7 +127,7 @@ const ClientHome = () => {
           <UserIcon
             usage="home"
             imageURL={imageURL}
-            alt={organizationName || "대여지"}
+            alt={displayOrganizationName || "대여지"}
           />
           <div />
           {/* 주소 및 단체 이름 */}
@@ -134,7 +136,7 @@ const ClientHome = () => {
               {/* 주소 영역 - 아직 구현 X */}
             </span>
             <span className="text-neutral-white text-start text-[16px] font-[600]">
-              {organizationName}
+              {displayOrganizationName}
             </span>
           </div>
         </div>
@@ -165,7 +167,7 @@ const ClientHome = () => {
                 key={itemRequest.item.itemId}
                 itemInfo={itemRequest}
                 organizationId={organizationId}
-                organizationName={organizationName}
+                organizationName={displayOrganizationName}
               />
             ))}
         </div>

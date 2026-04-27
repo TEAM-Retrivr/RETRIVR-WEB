@@ -57,7 +57,6 @@ const QRCodeDisplay = ({
         <QRCodeSVG
           value={value}
           size={size}
-          includeMargin
           bgColor="#FFFFFF"
           fgColor="#1A1A1A"
           imageSettings={
