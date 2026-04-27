@@ -4,8 +4,8 @@ import Header from "../components/Header";
 import { Layout } from "../components/Layout";
 import Button from "../components/Button";
 import CustomCheckBox from "../components/CustomCheckbox";
+import { GA_CONSENT_STORAGE_KEY, grantAnalyticsConsent } from "../lib/analytics";
 
-const GA_CONSENT_STORAGE_KEY = "ga4ConsentGranted";
 const CLIENT_TERMS_REDIRECT_STORAGE_KEY = "clientTermsRedirectPayload";
 const CLIENT_RENTAL_SUBMIT_STATE_STORAGE_KEY = "clientRentalSubmitState";
 
@@ -13,16 +13,6 @@ type TermsRouteState = {
   userType?: "admin" | "client";
   nextPath?: string;
   nextState?: unknown;
-};
-
-const enableGA4Collection = () => {
-  const gtag = (window as Window & { gtag?: (...args: unknown[]) => void })
-    .gtag;
-  if (typeof gtag !== "function") return;
-
-  gtag("consent", "update", {
-    analytics_storage: "granted",
-  });
 };
 
 const TermsConsentPage = () => {
@@ -108,7 +98,7 @@ const TermsConsentPage = () => {
   useEffect(() => {
     if (!isAllRequiredChecked || hasGrantedAnalyticsRef.current) return;
 
-    enableGA4Collection();
+    grantAnalyticsConsent();
     localStorage.setItem(GA_CONSENT_STORAGE_KEY, "true");
     hasGrantedAnalyticsRef.current = true;
   }, [isAllRequiredChecked]);
