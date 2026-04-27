@@ -119,7 +119,7 @@ const LoginPage = () => {
           <Button
             variant="outline"
             size="lg"
-            onClick={() => navigate("/register")}
+            onClick={() => navigate("/terms", { state: { userType: "admin" } })}
           >
             회원가입
           </Button>

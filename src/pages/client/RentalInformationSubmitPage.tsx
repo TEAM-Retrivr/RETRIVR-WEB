@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import type { FormEvent } from "react";
 import { Layout } from "../../components/Layout";
@@ -18,12 +18,13 @@ const label1 =
 const label2 = "대여 시 ";
 const label3 =
   "을 맡기셔야 합니다.\n물품 반납 시 반환됩니다. 이에 동의하시나요?";
+const CLIENT_RENTAL_SUBMIT_STATE_STORAGE_KEY = "clientRentalSubmitState";
 
 const RentalInformationSubmitPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
-  const state = location.state as {
+  const routeState = location.state as {
     itemId?: number;
     itemUnitId?: number;
     organizationId?: number;
@@ -34,6 +35,27 @@ const RentalInformationSubmitPage = () => {
     description?: string;
     borrowerRequirements?: { label: string; required: boolean }[];
   } | null;
+
+  const restoredState = useMemo(() => {
+    const raw = sessionStorage.getItem(CLIENT_RENTAL_SUBMIT_STATE_STORAGE_KEY);
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw) as typeof routeState;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const state = routeState ?? restoredState;
+
+  useEffect(() => {
+    if (!routeState) return;
+    sessionStorage.setItem(
+      CLIENT_RENTAL_SUBMIT_STATE_STORAGE_KEY,
+      JSON.stringify(routeState),
+    );
+  }, [routeState]);
+
   const itemId = state?.itemId ?? 0;
   const itemUnitId = state?.itemUnitId; // 개별 코드형 물품일 때만 전달
   const organizationId = state?.organizationId;
@@ -136,6 +158,7 @@ const RentalInformationSubmitPage = () => {
       },
       {
         onSuccess: () => {
+          sessionStorage.removeItem(CLIENT_RENTAL_SUBMIT_STATE_STORAGE_KEY);
           if (organizationId && organizationId > 0) {
             navigate(
               `/client-rental-confirmation?organizationId=${organizationId}`,
