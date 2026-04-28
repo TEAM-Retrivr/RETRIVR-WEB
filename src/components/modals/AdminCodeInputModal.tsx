@@ -6,7 +6,7 @@ import { useVerifyAdminCode } from "../../hooks/queries/useAdminQueries";
 interface AdminCodeInputModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: (code: string) => void;
+  onSuccess: (rowToken: string) => void;
   codeLength?: number;
 }
 
@@ -84,9 +84,9 @@ const AdminCodeInputModal = ({
         purpose: "ORGANIZATION_UPDATE",
       },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
           setAdminCodeError(null);
-          onSuccess(enteredCode);
+          onSuccess(data.rowToken);
         },
         onError: () => {
           triggerErrorState(

@@ -1,6 +1,8 @@
 // 1. 대여지 소유 물품 목록 조회 정보
 // 1-1. 전체 응답 바디
 export interface ItemResponse {
+  organizationId: number; // 대여지(단체) ID
+  organizationName: string; // 대여지 이름
   items: {
     itemId: number; // 물품 번호
     name: string; // 물품 이름
@@ -51,6 +53,16 @@ export interface BorrowerInformationResponse {
   itemId: number; // 대여 요청한 물품 ID
   itemUnitId: number; // 요청에 연결된 물품 고유번호 ID (선택사항)
   requestedAt: string; // 대여 요청 생성 시각
+}
+
+// 2-3. 대여 상세 조회 응답 바디 (현장 즉시 완료용)
+// GET /api/public/v1/rentals/{rentalId}?token=...
+export interface RentalDetailResponse {
+  rentalId: number;
+  itemName: string;
+  itemUnitLabel?: string;
+  borrowerField?: Record<string, string>;
+  requestedAt: string;
 }
 
 // 3. 대여지 검색

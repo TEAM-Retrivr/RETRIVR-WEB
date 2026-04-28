@@ -71,6 +71,7 @@ export interface LoginResponse {
 // 5-1. 홈 화면 출력 응답 바디
 export interface LoadHomeResponse {
   organizationId: number; // 관리자 아이디
+  orgId?: number; // 서버 응답 호환용(organizationId 미제공 시 fallback)
   organizationName: string; // 관리자 이름 (단체명)
   profileImageUrl?: string; // 프로필 사진 URL (없는 경우 기본 아이콘 사용됨)
   requestCount: number; // 대여 요청 개수

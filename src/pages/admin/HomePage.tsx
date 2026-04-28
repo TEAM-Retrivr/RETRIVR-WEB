@@ -17,6 +17,18 @@ interface RentRequestCardData {
   time: string;
 }
 
+const PRODUCTION_WEB_ORIGIN = "https://www.retrivr.kr";
+const PREVIEW_WEB_ORIGIN = "https://retrivr-web.vercel.app";
+
+const getPublicWebOrigin = () => {
+  if (typeof window === "undefined") return PREVIEW_WEB_ORIGIN;
+  const { hostname } = window.location;
+  if (hostname === "www.retrivr.kr" || hostname === "retrivr.kr") {
+    return PRODUCTION_WEB_ORIGIN;
+  }
+  return PREVIEW_WEB_ORIGIN;
+};
+
 const Home = () => {
   const navigate = useNavigate();
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
@@ -26,7 +38,7 @@ const Home = () => {
   // 임시: API 연동 전까지 빈 배열과 0 사용
 
   const UserProfile = {
-    organizationId: data?.organizationId, // 관리자 ID
+    organizationId: data?.organizationId ?? data?.orgId, // 관리자 ID
     organizationName: data?.organizationName, // 관리자 이름 (단체명)
     profileImageUrl: data?.profileImageUrl, // 프로필 사진 URL
     requestCount: data?.requestCount ?? 0, // 대여 요청 개수
@@ -44,10 +56,11 @@ const Home = () => {
     })) ?? [];
 
   const rentalPageUrl = useMemo(() => {
+    const publicWebOrigin = getPublicWebOrigin();
     if (!UserProfile.organizationId) {
-      return `${window.location.origin}/client-search`;
+      return `${publicWebOrigin}/client-search`;
     }
-    return `${window.location.origin}/client-home?organizationId=${UserProfile.organizationId}`;
+    return `${publicWebOrigin}/client-home?organizationId=${UserProfile.organizationId}`;
   }, [UserProfile.organizationId]);
 
   if (isLoading) {

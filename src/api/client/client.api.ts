@@ -5,6 +5,7 @@ import type {
   ItemDetailResponse,
   ItemResponse,
   OrganizationSearchResponse,
+  RentalDetailResponse,
 } from "./client.type";
 
 // 1. 대여지 소유 물품 목록 조회 (GET)
@@ -63,6 +64,23 @@ export const searchOrganizations = async (params: {
     "/api/public/v1/organizations/search",
     {
       params,
+    },
+  );
+  return response.data;
+};
+
+// 5. 대여 상세 조회 (GET) - 현장 즉시 완료용
+// 엔드포인트 : /api/public/v1/rentals/{rentalId}
+// Query Parameter :
+// - token: string (required)
+export const requestRentalDetail = async (
+  rentalId: number,
+  token: string,
+): Promise<RentalDetailResponse> => {
+  const response = await apiClient.get<RentalDetailResponse>(
+    `/api/public/v1/rentals/${rentalId}`,
+    {
+      params: { token },
     },
   );
   return response.data;

@@ -81,7 +81,7 @@ const RenterSearchPage = () => {
       <Header pageName="대여자 찾기" backTo="/"></Header>
 
       {/* 검색 영역 - 검색 바 + 검색 결과 목록 */}
-      <div className="flex flex-col pt-6.5 px-8 gap-3">
+      <div className="flex flex-col pt-6.5 px-8 gap-3 pb-32">
         {/* 검색 바 영역 */}
         <form
           onSubmit={handleSubmit}
@@ -166,16 +166,16 @@ const RenterSearchPage = () => {
         </div>
       </div>
       {!(keyword && organizations.length !== 0) && (
-        <div>
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center">
           <img
-            className="absolute bottom-0 object-fit"
+            className="h-auto w-full max-w-[402px] object-contain"
             src="/icons/client/search-bg.svg"
             alt="이미지"
           />
         </div>
       )}
       {organizations.length !== 0 && selectedOrg && (
-        <div className="flex flex-col justify-center items-center w-full mt-auto mb-12 gap-1.5">
+        <div className="fixed left-1/2 bottom-24 z-20 flex w-full max-w-[402px] -translate-x-1/2 flex-col items-center justify-center gap-1.5 px-8">
           <p className="text-center text-10px text-primary font-normal leading-[130%]">
             해당 대여지가 맞나요?
           </p>

@@ -2,6 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   requestItemDetail,
   requestItemList,
+  requestRentalDetail,
   sendRentalRequest,
   searchOrganizations,
 } from "../../api/client/client.api";
@@ -10,6 +11,7 @@ import type {
   ItemDetailResponse,
   ItemResponse,
   OrganizationSearchResponse,
+  RentalDetailResponse,
 } from "../../api/client/client.type";
 
 interface UseItemListParams {
@@ -87,6 +89,20 @@ export const useOrganizationSearch = (keyword: string) => {
         size: 15,
       }),
     enabled: trimmed.length > 0, // 검색어가 있을 때만 호출
+    retry: false,
+  });
+};
+
+// 5. 대여 상세 조회 API (GET) - 현장 즉시 완료용
+export const useRentalDetail = (
+  rentalId: number,
+  token: string,
+  enabled = true,
+) => {
+  return useQuery<RentalDetailResponse>({
+    queryKey: ["clientRentalDetail", rentalId, token],
+    queryFn: () => requestRentalDetail(rentalId, token),
+    enabled: enabled && Number.isFinite(rentalId) && rentalId > 0 && !!token.trim(),
     retry: false,
   });
 };
