@@ -66,6 +66,21 @@ export interface AdminOverdueRentalListResponse {
   nextCursor?: number;
 }
 
+// 대여중인 물품 검색 응답
+// GET /api/admin/v1/rentals/search
+export interface AdminRentalSearchItem {
+  rentalId: number;
+  borrowerName: string;
+  contact: string;
+  itemName: string;
+}
+
+export interface AdminRentalSearchResponse {
+  rentals: AdminRentalSearchItem[];
+  nextScoreCursor?: number;
+  nextRentalIdCursor?: number;
+}
+
 // 대여 요청 목록 조회 응답
 // GET /api/admin/v1/rentals/requests
 // 관리자 대여 요청 확인 페이지에서 사용

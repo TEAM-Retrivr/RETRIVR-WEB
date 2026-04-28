@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   requestAdminItemList,
   requestAdminRentalItemSummaryList,
@@ -14,6 +19,7 @@ import {
   sendAdminOverdueReminder,
   updateAdminRentalReturnDueDate,
   verifyAdminCode,
+  requestAdminRentalSearch,
 } from "../../api/admin/admin.api";
 import type {
   AdminCreateItemRequest,
@@ -54,6 +60,46 @@ export const useAdminOverdueRentalList = () => {
   return useQuery({
     queryKey: ["adminOverdueRentals"],
     queryFn: () => requestAdminOverdueRentalList({ size: 20 }),
+    retry: false,
+  });
+};
+
+// 반납 관리 검색 결과 조회
+// - GET /api/admin/v1/rentals/search
+// - keyword가 비어있으면 요청하지 않음
+export const useAdminRentalSearch = (keyword: string) => {
+  const trimmedKeyword = keyword.trim();
+  return useInfiniteQuery({
+    queryKey: ["adminRentalSearch", trimmedKeyword],
+    initialPageParam: {
+      cursorRentalId: undefined,
+      cursorScore: undefined,
+    } as { cursorRentalId?: number; cursorScore?: number },
+    queryFn: ({ pageParam }) =>
+      requestAdminRentalSearch({
+        keyword: trimmedKeyword,
+        cursorRentalId: pageParam.cursorRentalId,
+        cursorScore: pageParam.cursorScore,
+        size: 15,
+      }),
+    getNextPageParam: (lastPage) => {
+      const nextRentalIdCursor = lastPage.nextRentalIdCursor;
+      const nextScoreCursor = lastPage.nextScoreCursor;
+
+      if (
+        typeof nextRentalIdCursor !== "number" ||
+        nextRentalIdCursor <= 0 ||
+        typeof nextScoreCursor !== "number"
+      ) {
+        return undefined;
+      }
+
+      return {
+        cursorRentalId: nextRentalIdCursor,
+        cursorScore: nextScoreCursor,
+      };
+    },
+    enabled: trimmedKeyword.length > 0,
     retry: false,
   });
 };
