@@ -7,7 +7,6 @@ import { useAdminProfile } from "../../hooks/queries/useAuthQueries";
 
 const PRODUCTION_WEB_ORIGIN = "https://www.retrivr.kr";
 const PREVIEW_WEB_ORIGIN = "https://retrivr-web.vercel.app";
-const DEFAULT_PROFILE_IMAGE = "/icons/default-profile.svg";
 
 const getPublicWebOrigin = () => {
   if (typeof window === "undefined") return PREVIEW_WEB_ORIGIN;
