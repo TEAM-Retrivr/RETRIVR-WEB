@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
+import ConfirmModal from "../../components/modals/ConfirmModal";
 import QRCodeDisplay from "../../components/qr/QRCodeDisplay";
-import { useLoadHome } from "../../hooks/queries/useAuthQueries";
+import { useAdminProfile } from "../../hooks/queries/useAuthQueries";
 
 const PRODUCTION_WEB_ORIGIN = "https://www.retrivr.kr";
 const PREVIEW_WEB_ORIGIN = "https://retrivr-web.vercel.app";
@@ -17,32 +18,32 @@ const getPublicWebOrigin = () => {
 };
 
 const AccountPage = () => {
-  const { data } = useLoadHome();
+  const { data } = useAdminProfile();
   const qrCanvasRef = useRef<HTMLCanvasElement>(null);
-  const copyToastTimerRef = useRef<number | null>(null);
-  const [isCopyToastOpen, setIsCopyToastOpen] = useState(false);
+  const [confirmModalMessage, setConfirmModalMessage] = useState<string | null>(
+    null,
+  );
+  const organizationId =
+    typeof window === "undefined"
+      ? null
+      : Number(localStorage.getItem("orgId") ?? "");
 
   const userProfile = {
-    organizationId: data?.organizationId ?? data?.orgId,
+    organizationId: data?.organizationId,
     organizationName: data?.organizationName,
     profileImageUrl: data?.profileImageUrl,
+    email: data?.email,
   };
 
   const rentalPageUrl = useMemo(() => {
     const publicWebOrigin = getPublicWebOrigin();
-    if (!userProfile.organizationId) {
+    if (!Number.isFinite(organizationId) || (organizationId ?? 0) <= 0) {
       return `${publicWebOrigin}/client-search`;
     }
-    return `${publicWebOrigin}/client-home?organizationId=${userProfile.organizationId}`;
-  }, [userProfile.organizationId]);
-
-  useEffect(() => {
-    return () => {
-      if (copyToastTimerRef.current) {
-        window.clearTimeout(copyToastTimerRef.current);
-      }
-    };
-  }, []);
+    return `${publicWebOrigin}/client-home?organizationId=${encodeURIComponent(
+      String(userProfile.organizationId),
+    )}`;
+  }, [organizationId]);
 
   const getQRDataUrl = () => qrCanvasRef.current?.toDataURL("image/png");
 
@@ -103,20 +104,13 @@ const AccountPage = () => {
     link.href = qrDataUrl;
     link.download = "retrivr-rental-qr.png";
     link.click();
+    setConfirmModalMessage("사진이 다운로드되었어요");
   };
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(rentalPageUrl);
-      setIsCopyToastOpen(true);
-
-      if (copyToastTimerRef.current) {
-        window.clearTimeout(copyToastTimerRef.current);
-      }
-
-      copyToastTimerRef.current = window.setTimeout(() => {
-        setIsCopyToastOpen(false);
-      }, 1300);
+      setConfirmModalMessage("URL이 복사되었어요");
     } catch (error) {
       console.error("URL 복사 실패:", error);
     }
@@ -129,7 +123,7 @@ const AccountPage = () => {
         {/* 프로필 영역 - 프로필 사진, 대여지명, 이메일, 개인정보 수정하기 버튼 */}
         <div className="flex flex-col items-center pt-11.5 gap-3.5">
           <div className="relative w-25 h-25 rounded-[50%] shadow-account-profile">
-            <img src={userProfile.profileImageUrl} />
+            <img src={userProfile.profileImageUrl} alt="프로필 이미지" />
             <button className="absolute right-0 bottom-0 flex items-center bg-neutral-white justify-center w-7 h-7 rounded-[50%] shadow-camera cursor-pointer">
               <img src="/icons/camera.svg" alt="프로필 이미지 변경하기" />
             </button>
@@ -139,7 +133,7 @@ const AccountPage = () => {
               {userProfile.organizationName}
             </p>
             <p className="text-center text-12px font-normal leading-[140%]">
-              이메일 props
+              {userProfile.email}
             </p>
           </div>
           <button
@@ -205,23 +199,6 @@ const AccountPage = () => {
                 사진 다운로드
               </button>
             </div>
-
-            {isCopyToastOpen && (
-              <div className="absolute inset-0 z-20 px-3 py-8">
-                <div className="flex h-10 w-full items-center justify-center rounded-[26px] bg-neutral-white">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src="/icons/modal-check.svg"
-                      alt="복사 완료"
-                      className="h-8.5 w-7"
-                    />
-                    <p className="text-20px font-[Pretendard] font-[600] text-neutral-gray-1 leading-[140%]">
-                      복사되었어요
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
           {/* 이용약관, 개인정보 처리 방침 */}
           <div className="flex flex-col w-full h-26.5 text-14px font-bold shadow-16-gray rounded-2xl">
@@ -247,6 +224,12 @@ const AccountPage = () => {
           </div>
         </div>
       </div>
+      <ConfirmModal
+        isOpen={confirmModalMessage !== null}
+        onClose={() => setConfirmModalMessage(null)}
+        message={confirmModalMessage ?? ""}
+        confirmText="확인"
+      />
     </Layout>
   );
 };

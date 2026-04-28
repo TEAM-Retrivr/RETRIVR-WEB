@@ -6,7 +6,7 @@ import { HOME_MENUS } from "../../types/menu";
 import { useLoadHome } from "../../hooks/queries/useAuthQueries";
 import BlueButton from "../../components/BlueButton";
 import { useNavigate } from "react-router-dom";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import QRcodeModal from "../../components/modals/admin/QRcodeModal";
 
 interface RentRequestCardData {
@@ -61,6 +61,12 @@ const Home = () => {
       return `${publicWebOrigin}/client-search`;
     }
     return `${publicWebOrigin}/client-home?organizationId=${UserProfile.organizationId}`;
+  }, [UserProfile.organizationId]);
+
+  useEffect(() => {
+    if (UserProfile.organizationId) {
+      localStorage.setItem("orgId", String(UserProfile.organizationId));
+    }
   }, [UserProfile.organizationId]);
 
   if (isLoading) {

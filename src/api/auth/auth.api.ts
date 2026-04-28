@@ -8,6 +8,7 @@ import type {
   RegisterResponse,
   LoginRequest,
   LoginResponse,
+  AdminProfileResponse,
   LoadHomeResponse,
 } from "./auth.type";
 
@@ -74,5 +75,15 @@ export const requestLogin = async (
 // 엔드포인트 : "/api/admin/v1/home"
 export const requestLoadHome = async (): Promise<LoadHomeResponse> => {
   const response = await apiClient.get<LoadHomeResponse>("/api/admin/v1/home");
+  return response.data;
+};
+
+//
+// 6. 관리자 프로필 조회 API (GET)
+// 엔드포인트 : "/api/admin/v1/profile"
+export const requestAdminProfile = async (): Promise<AdminProfileResponse> => {
+  const response = await apiClient.get<AdminProfileResponse>(
+    "/api/admin/v1/profile",
+  );
   return response.data;
 };
