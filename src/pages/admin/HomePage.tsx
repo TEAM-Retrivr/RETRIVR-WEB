@@ -6,7 +6,7 @@ import { HOME_MENUS } from "../../types/menu";
 import { useLoadHome } from "../../hooks/queries/useAuthQueries";
 import BlueButton from "../../components/BlueButton";
 import { useNavigate } from "react-router-dom";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import QRcodeModal from "../../components/modals/admin/QRcodeModal";
 
 interface RentRequestCardData {
@@ -63,6 +63,12 @@ const Home = () => {
     return `${publicWebOrigin}/client-home?organizationId=${UserProfile.organizationId}`;
   }, [UserProfile.organizationId]);
 
+  useEffect(() => {
+    if (UserProfile.organizationId) {
+      localStorage.setItem("orgId", String(UserProfile.organizationId));
+    }
+  }, [UserProfile.organizationId]);
+
   if (isLoading) {
     return (
       <Layout>
@@ -89,7 +95,13 @@ const Home = () => {
           {/* 상단 로고 텍스트 및 사람 아이콘 */}
           <div className="w-full flex justify-between">
             <img src="/icons/home/retrivr_text_outline.svg" alt="로고 텍스트" />
-            <img src="/icons/home/man_icon.svg" alt="사람 아이콘" />
+            <button
+              type="button"
+              className="cursor-pointer"
+              onClick={() => navigate("/account")}
+            >
+              <img src="/icons/home/man_icon.svg" alt="사람 아이콘" />
+            </button>
           </div>
           <div className="flex w-full max-h-[72px] mt-13">
             {/* 프로필 사진 */}

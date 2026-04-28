@@ -1,9 +1,15 @@
 import { useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
 import TestPage from "./pages/TestPage";
 import { ModalTestPage } from "./pages/ModalTestPage";
 import LoginPage from "./pages/admin/LoginPage";
 import HomePage from "./pages/admin/HomePage";
+import AccountPage from "./pages/admin/AccountPage";
 import LandingPage from "./pages/LandingPage";
 import RegisterPage from "./pages/admin/RegisterPage";
 import TermsConsentPage from "./pages/TermsConsentPage";
@@ -46,6 +52,7 @@ function App() {
 
         {/* 관리자 홈 페이지 */}
         <Route path="/home" element={<HomePage />} />
+        <Route path="/account" element={<AccountPage />} />
 
         {/* 대여자 물품 관리 페이지 */}
         <Route path="/item-manage" element={<ItemManagementPage />} />

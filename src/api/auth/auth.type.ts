@@ -65,6 +65,14 @@ export interface LoginResponse {
   refreshToken: string; // 리프레시 토큰
 }
 
+// 5. 관리자 프로필 조회
+export interface AdminProfileResponse {
+  organizationId: number; // 관리자 고유 번호
+  organizationName: string; // 관리자 이름 (단체명)
+  profileImageUrl?: string; // 프로필 사진 URL
+  email: string; // 관리자 이메일
+}
+
 // 5. 홈 화면 출력 요청
 // 홈 화면 출력 요청 바디 없음
 

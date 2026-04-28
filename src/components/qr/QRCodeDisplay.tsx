@@ -32,7 +32,7 @@ const QRCodeDisplay = ({
 
   return (
     <div
-      className={`flex items-center justify-center rounded-[20px] bg-neutral-white shadow-item-card ${className}`}
+      className={`flex items-center justify-center rounded-[20px] bg-neutral-white shadow-qr-box ${className}`}
     >
       {mode === "canvas" ? (
         <QRCodeCanvas

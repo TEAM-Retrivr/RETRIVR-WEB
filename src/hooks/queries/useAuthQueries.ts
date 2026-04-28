@@ -5,6 +5,7 @@ import {
   requestRegisteration,
   requestLogin,
   requestLoadHome,
+  requestAdminProfile,
 } from "../../api/auth/auth.api";
 
 //
@@ -85,6 +86,17 @@ export const useLoadHome = () => {
   return useQuery({
     queryKey: ["home"],
     queryFn: requestLoadHome,
+    retry: false,
+  });
+};
+
+//
+// 6. 관리자 프로필 조회 요청
+//
+export const useAdminProfile = () => {
+  return useQuery({
+    queryKey: ["adminProfile"],
+    queryFn: requestAdminProfile,
     retry: false,
   });
 };
