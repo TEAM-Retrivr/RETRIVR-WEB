@@ -4,6 +4,7 @@ import ConfirmModal from "../components/modals/ConfirmModal";
 import ErrorModal from "../components/modals/ErrorModal";
 import QRCodeDisplay from "../components/qr/QRCodeDisplay";
 import QRcodeModal from "../components/modals/admin/QRcodeModal";
+import AdminCodeInputModal from "../components/modals/AdminCodeInputModal";
 
 const PRODUCTION_WEB_ORIGIN = "https://www.retrivr.kr";
 const PREVIEW_WEB_ORIGIN = "https://retrivr-web.vercel.app";
@@ -20,6 +21,7 @@ const getPublicWebOrigin = () => {
 export const ModalTestPage = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isQROpen, setIsQROpen] = useState(false);
+  const [isAdminCodeOpen, setIsAdminCodeOpen] = useState(false);
   const [modalType, setModalType] = useState<"confirm" | "error">("confirm");
   const [selectedKey, setSelectedKey] = useState<
     "noAuth" | "signupDone" | "approveDone" | "editDone"
@@ -119,6 +121,13 @@ export const ModalTestPage = () => {
             <Button variant="gray" size="lg" onClick={() => setIsOpen(true)}>
               열기
             </Button>
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={() => setIsAdminCodeOpen(true)}
+            >
+              AdminCodeInputModal
+            </Button>
           </div>
         </div>
       </div>
@@ -148,6 +157,14 @@ export const ModalTestPage = () => {
         onClose={() => setIsQROpen(false)}
         managerName="건국대학교 도서관자치위원회"
         rentalPageUrl={`${publicWebOrigin}/client-home?organizationId=1`}
+      />
+      <AdminCodeInputModal
+        isOpen={isAdminCodeOpen}
+        onClose={() => setIsAdminCodeOpen(false)}
+        onSuccess={() => {
+          setIsAdminCodeOpen(false);
+        }}
+        rentalId={1}
       />
     </div>
   );

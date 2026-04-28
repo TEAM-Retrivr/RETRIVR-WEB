@@ -18,6 +18,10 @@ import type {
   AdminVerifyCodeRequestBody,
   AdminVerifyCodeResponse,
   AdminRentalSearchResponse,
+  PublicApproveRentalRequestBody,
+  PublicApproveRentalResponse,
+  PublicRejectRentalRequestBody,
+  PublicRejectRentalResponse,
 } from "./admin.type";
 import { apiClient } from "../core";
 
@@ -215,6 +219,38 @@ export const approveAdminRental = async ({
     {
       adminNameToApprove,
     },
+  );
+  return response.data;
+};
+
+// 대여 요청 현장 승인
+// POST /api/public/v1/rentals/{rentalId}/approve
+export const approvePublicRental = async ({
+  rentalId,
+  body,
+}: {
+  rentalId: number;
+  body: PublicApproveRentalRequestBody;
+}): Promise<PublicApproveRentalResponse> => {
+  const response = await apiClient.post<PublicApproveRentalResponse>(
+    `/api/public/v1/rentals/${rentalId}/approve`,
+    body,
+  );
+  return response.data;
+};
+
+// 대여 요청 현장 거절
+// POST /api/public/v1/rentals/{rentalId}/reject
+export const rejectPublicRental = async ({
+  rentalId,
+  body,
+}: {
+  rentalId: number;
+  body: PublicRejectRentalRequestBody;
+}): Promise<PublicRejectRentalResponse> => {
+  const response = await apiClient.post<PublicRejectRentalResponse>(
+    `/api/public/v1/rentals/${rentalId}/reject`,
+    body,
   );
   return response.data;
 };

@@ -20,6 +20,8 @@ import {
   updateAdminRentalReturnDueDate,
   verifyAdminCode,
   requestAdminRentalSearch,
+  approvePublicRental,
+  rejectPublicRental,
 } from "../../api/admin/admin.api";
 import type {
   AdminCreateItemRequest,
@@ -220,6 +222,46 @@ export const useApproveAdminRental = () => {
         queryKey: ["home"],
       });
     },
+  });
+};
+
+// 대여 요청 현장 승인 (public API)
+// - RentalConfirmationPage > LongRentalApprovalModal 에서 사용
+export const useApprovePublicRental = () => {
+  return useMutation({
+    mutationFn: ({
+      rentalId,
+      adminNameToApprove,
+      adminCodeVerificationToken,
+    }: {
+      rentalId: number;
+      adminNameToApprove: string;
+      adminCodeVerificationToken: string;
+    }) =>
+      approvePublicRental({
+        rentalId,
+        body: { adminNameToApprove, adminCodeVerificationToken },
+      }),
+  });
+};
+
+// 대여 요청 현장 거절 (public API)
+// - RentalConfirmationPage > LongRentalApprovalModal 에서 사용
+export const useRejectPublicRental = () => {
+  return useMutation({
+    mutationFn: ({
+      rentalId,
+      adminNameToReject,
+      adminCodeVerificationToken,
+    }: {
+      rentalId: number;
+      adminNameToReject: string;
+      adminCodeVerificationToken: string;
+    }) =>
+      rejectPublicRental({
+        rentalId,
+        body: { adminNameToReject, adminCodeVerificationToken },
+      }),
   });
 };
 

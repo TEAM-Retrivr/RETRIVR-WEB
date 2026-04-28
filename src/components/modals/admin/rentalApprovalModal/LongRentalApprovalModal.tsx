@@ -1,51 +1,133 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Modal } from "../../../Modal";
 import CustomCheckBox from "../../../CustomCheckbox";
 import Button from "../../../Button";
+import { useRentalDetail } from "../../../../hooks/queries/useClientQueries";
 import {
   useApproveAdminRental,
+  useApprovePublicRental,
   useRejectAdminRental,
+  useRejectPublicRental,
 } from "../../../../hooks/queries/useAdminQueries";
 
 interface LongRentalApproveModalProps {
   isOpen: boolean;
   onClose: () => void;
   rentalId: number;
-  itemName: string;
-  count: string;
-  applicant: string;
-  time: string;
+  approvalApiMode?: "admin" | "public";
+  verificationToken?: string;
+  itemName?: string;
+  count?: string;
+  applicant?: string;
+  time?: string;
 }
 
 const LongRentalApprovalModal = ({
   isOpen,
   onClose,
   rentalId,
-  itemName,
-  count,
-  applicant,
-  time,
+  approvalApiMode = "admin",
+  verificationToken,
+  itemName: itemNameProp,
+  count: countProp,
+  applicant: applicantProp,
+  time: timeProp,
 }: LongRentalApproveModalProps) => {
+  const navigate = useNavigate();
   const [isGuaranteedChecked, setIsGuaranteedChecked] = useState(false);
   const [adminName, setAdminName] = useState("");
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const { mutate: approveRental, isPending: isApproving } =
     useApproveAdminRental();
+  const { mutate: approvePublicRentalMutate, isPending: isPublicApproving } =
+    useApprovePublicRental();
   const { mutate: rejectRental, isPending: isRejecting } =
     useRejectAdminRental();
+  const { mutate: rejectPublicRentalMutate, isPending: isPublicRejecting } =
+    useRejectPublicRental();
 
-  const isMutating = isApproving || isRejecting;
+  const verificationTokenValue = verificationToken?.trim() ?? "";
+  const isPublicApprovalFlow = approvalApiMode === "public";
+  const isMutating =
+    isApproving || isPublicApproving || isRejecting || isPublicRejecting;
+  const shouldFetchRentalDetail =
+    isOpen && isPublicApprovalFlow && verificationTokenValue.length > 0;
+  const { data: rentalDetail, isLoading: isRentalDetailLoading } = useRentalDetail(
+    rentalId,
+    verificationToken ?? "",
+    shouldFetchRentalDetail,
+  );
+  const requestTime = useMemo(() => {
+    if (rentalDetail?.requestedAt) {
+      return rentalDetail.requestedAt.replace("T", " ").replace("Z", "");
+    }
+    return timeProp ?? "요청 시각 정보 없음";
+  }, [rentalDetail?.requestedAt, timeProp]);
+  const itemName = rentalDetail?.itemName ?? itemNameProp ?? "대여 물품";
+  const count = rentalDetail?.itemUnitLabel
+    ? `(${rentalDetail.itemUnitLabel})`
+    : countProp ?? "(1/1)";
+  const applicant = useMemo(() => {
+    if (rentalDetail?.borrowerField) {
+      const values = Object.values(rentalDetail.borrowerField).filter(Boolean);
+      return values.length > 0 ? values.join(" | ") : "대여자 정보";
+    }
+    return applicantProp ?? "대여자 정보";
+  }, [rentalDetail?.borrowerField, applicantProp]);
+  const isDetailReady = shouldFetchRentalDetail ? !!rentalDetail : true;
   const canSubmit = useMemo(
-    () => isGuaranteedChecked && !!adminName.trim() && !isMutating,
-    [adminName, isGuaranteedChecked, isMutating],
+    () =>
+      isGuaranteedChecked &&
+      !!adminName.trim() &&
+      !isMutating &&
+      !isRentalDetailLoading &&
+      isDetailReady &&
+      (!isPublicApprovalFlow || verificationTokenValue.length > 0),
+    [
+      adminName,
+      isGuaranteedChecked,
+      isMutating,
+      isRentalDetailLoading,
+      isDetailReady,
+      isPublicApprovalFlow,
+      verificationTokenValue,
+    ],
   );
 
   const handleApprove = () => {
     if (!canSubmit) return;
     setSubmitError(null);
+    const adminNameToApprove = adminName.trim();
+
+    if (isPublicApprovalFlow) {
+      if (!verificationTokenValue) {
+        setSubmitError("관리자 코드 검증 정보가 없어 승인할 수 없습니다.");
+        return;
+      }
+
+      approvePublicRentalMutate(
+        {
+          rentalId,
+          adminNameToApprove,
+          adminCodeVerificationToken: verificationTokenValue,
+        },
+        {
+          onSuccess: (data) => {
+            alert("대여 요청 승인이 완료되었습니다.");
+            onClose();
+            navigate(`/client-home?organizationId=${data.organizationId}`);
+          },
+          onError: () =>
+            setSubmitError("대여 요청 승인에 실패했습니다. 다시 시도해주세요."),
+        },
+      );
+      return;
+    }
+
     approveRental(
-      { rentalId, adminNameToApprove: adminName.trim() },
+      { rentalId, adminNameToApprove },
       {
         onSuccess: () => {
           alert("대여 요청 승인이 완료되었습니다.");
@@ -60,6 +142,32 @@ const LongRentalApprovalModal = ({
   const handleReject = () => {
     if (!canSubmit) return;
     setSubmitError(null);
+
+    if (isPublicApprovalFlow) {
+      if (!verificationTokenValue) {
+        setSubmitError("관리자 코드 검증 정보가 없어 거절할 수 없습니다.");
+        return;
+      }
+
+      rejectPublicRentalMutate(
+        {
+          rentalId,
+          adminNameToReject: adminName.trim(),
+          adminCodeVerificationToken: verificationTokenValue,
+        },
+        {
+          onSuccess: (data) => {
+            alert("대여 요청 거절이 완료되었습니다.");
+            onClose();
+            navigate(`/client-home?organizationId=${data.organizationId}`);
+          },
+          onError: () =>
+            setSubmitError("대여 요청 거절에 실패했습니다. 다시 시도해주세요."),
+        },
+      );
+      return;
+    }
+
     rejectRental(
       { rentalId, adminNameToReject: adminName.trim() },
       {
@@ -83,7 +191,7 @@ const LongRentalApprovalModal = ({
             {/* 대여 물품 정보 */}
             <div className="flex flex-col w-full border-b-1 border-neutral-gray-5 px-4.5 gap-2.5">
               <p className="text-10px text-primary font-normal leading-[130%]">
-                요청 시각 {time}
+                요청 시각 {requestTime}
               </p>
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col">
@@ -113,7 +221,11 @@ const LongRentalApprovalModal = ({
             </div>
             {/* 대여자 정보 */}
             <div className="flex flex-col w-full text-12px text-secondary-1 font-normal leading-[140%] px-4.5 pt-3">
-              <p>{applicant}</p>
+              <p>
+                {isRentalDetailLoading
+                  ? "대여 정보를 불러오는 중입니다..."
+                  : applicant}
+              </p>
             </div>
           </div>
           {/* 체크박스 영역 - 보증물품 확인 여부 체크 */}
@@ -160,7 +272,7 @@ const LongRentalApprovalModal = ({
               onClick={handleReject}
               disabled={!canSubmit}
             >
-              거부
+              {isRejecting || isPublicRejecting ? "거절 중..." : "거부"}
             </Button>
             <Button
               variant="primary"
@@ -168,7 +280,7 @@ const LongRentalApprovalModal = ({
               onClick={handleApprove}
               disabled={!canSubmit}
             >
-              {isApproving ? "승인 중..." : "승인"}
+              {isApproving || isPublicApproving ? "승인 중..." : "승인"}
             </Button>
           </div>
         </div>

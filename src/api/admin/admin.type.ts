@@ -113,6 +113,28 @@ export interface AdminApproveRentalResponse {
   decisionDate: string;
 }
 
+// 대여 요청 현장 승인 요청/응답
+// POST /api/public/v1/rentals/{rentalId}/approve
+export interface PublicApproveRentalRequestBody {
+  adminNameToApprove: string;
+  adminCodeVerificationToken: string;
+}
+
+export interface PublicApproveRentalResponse {
+  organizationId: number;
+}
+
+// 대여 요청 현장 거절 요청/응답
+// POST /api/public/v1/rentals/{rentalId}/reject
+export interface PublicRejectRentalRequestBody {
+  adminNameToReject: string;
+  adminCodeVerificationToken: string;
+}
+
+export interface PublicRejectRentalResponse {
+  organizationId: number;
+}
+
 // 대여 요청 거절 응답
 // POST /api/admin/v1/rentals/{rentalId}/reject
 export interface AdminRejectRentalResponse {
@@ -281,13 +303,14 @@ export interface AdminSendOverdueReminderResponse {
 }
 
 // 관리자 코드 검증 요청/응답
-// POST /api/admin/v1/admin-code/verification
+// POST /api/public/v1/admin-code/verification
 export interface AdminVerifyCodeRequestBody {
   adminCode: string;
-  purpose: "IMMEDIATE_APPROVAL";
-  rentalId: number;
+  purpose: "ORGANIZATION_UPDATE" | "ITEM_UPDATE" | "IMMEDIATE_APPROVAL";
+  rentalId?: number;
 }
 
 export interface AdminVerifyCodeResponse {
-  rowToken: string;
+  rawToken: string;
+  rentalId: number;
 }
