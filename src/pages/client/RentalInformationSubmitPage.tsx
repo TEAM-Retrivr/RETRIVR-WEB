@@ -19,6 +19,11 @@ const label2 = "대여 시 ";
 const label3 =
   "을 맡기셔야 합니다.\n물품 반납 시 반환됩니다. 이에 동의하시나요?";
 const CLIENT_RENTAL_SUBMIT_STATE_STORAGE_KEY = "clientRentalSubmitState";
+const formatPhoneNumber = (rawPhone: string) => {
+  const digits = rawPhone.replace(/\D/g, "");
+  if (!/^010\d{8}$/.test(digits)) return digits;
+  return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7, 11)}`;
+};
 
 const RentalInformationSubmitPage = () => {
   const navigate = useNavigate();
@@ -91,8 +96,6 @@ const RentalInformationSubmitPage = () => {
           req.label !== "이름" &&
           req.label !== "연락처" &&
           req.label !== "전화번호" &&
-          req.label.toLowerCase() !== "email" &&
-          req.label !== "이메일" &&
           req.label !== "요청사항" &&
           arr.findIndex((item) => item.label === req.label) === index,
       ),
@@ -143,8 +146,9 @@ const RentalInformationSubmitPage = () => {
   const { mutate: sendRentalRequest, isPending } = useSendRentalRequest();
 
   const handleSendRentalRequest = () => {
-    const normalizedPhone = phoneNumber.trim();
+    const normalizedPhone = formatPhoneNumber(phoneNumber.trim());
     const normalizedName = name.trim();
+    const normalizedRequestment = requestment.trim();
 
     const renterFields: Record<string, string> = {};
 
@@ -158,12 +162,15 @@ const RentalInformationSubmitPage = () => {
         renterFields[label] = value;
       }
     });
+    if (normalizedRequestment) {
+      renterFields["요청사항"] = normalizedRequestment;
+    }
 
     // POST /api/public/v1/items/{itemId}/rentals 의 Request Body
     const body = {
-      itemUnitId,
+      itemUnitId: itemUnitId ?? null,
       name: normalizedName,
-      phone: normalizedPhone || undefined,
+      phone: normalizedPhone,
       renterFields,
     };
 

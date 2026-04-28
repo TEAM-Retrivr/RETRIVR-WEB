@@ -21,6 +21,8 @@ interface LongRentalApproveModalProps {
   count?: string;
   applicant?: string;
   time?: string;
+  rentalDurationDays?: number;
+  guaranteedGoods?: string;
 }
 
 const LongRentalApprovalModal = ({
@@ -33,6 +35,8 @@ const LongRentalApprovalModal = ({
   count: countProp,
   applicant: applicantProp,
   time: timeProp,
+  rentalDurationDays,
+  guaranteedGoods,
 }: LongRentalApproveModalProps) => {
   const navigate = useNavigate();
   const [isGuaranteedChecked, setIsGuaranteedChecked] = useState(false);
@@ -208,13 +212,16 @@ const LongRentalApprovalModal = ({
                   </p>
                 </div>
                 {/* 대여 기간 및 보증물품 영역 */}
-                {/*TODO : 대여기간과 보증물품을 현재 API로부터는 받을 수 없는 상태이므로 해당 Props도 응답 바디에 넣어달라고 백엔드에 요청 */}
                 <div className="flex flex-col px-1.75 pb-4.25">
                   <p className="text-14px text-neutral-gray-1 opacity-[0.9] leading-[140%]">
-                    • 대여 기간: 3일
+                    • 대여 기간:{" "}
+                    {Number.isFinite(rentalDurationDays) && (rentalDurationDays ?? 0) > 0
+                      ? `${rentalDurationDays}일`
+                      : "정보 없음"}
                   </p>
                   <p className="text-14px text-neutral-gray-1 opacity-[0.9] leading-[140%]">
-                    • 보증 물품 O: 신분증 or 학생증
+                    • 보증 물품:{" "}
+                    {guaranteedGoods?.trim() ? guaranteedGoods : "없음"}
                   </p>
                 </div>
               </div>

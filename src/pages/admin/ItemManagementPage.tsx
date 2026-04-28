@@ -65,11 +65,7 @@ const ItemManagementPage = () => {
   // 등록된 물품이 있을 때: 물품 목록 렌더링
   return (
     <Layout>
-      <Header
-        name={organizationName}
-        pageName="물품 관리"
-        backTo="/home"
-      ></Header>
+      <Header name={organizationName} pageName="물품 관리" backTo="/home" />
       <div className="flex flex-col items-center mx-6.5 my-8.5 gap-4">
         {items.map((item) => (
           <ItemManagementCard

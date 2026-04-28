@@ -20,7 +20,7 @@ import type {
 } from "../../api/admin/admin.type";
 import { useLoadHome } from "../../hooks/queries/useAuthQueries";
 
-type RenterFieldKey = "name" | "email" | "studentNumber" | "phone" | "major";
+type RenterFieldKey = "name" | "studentNumber" | "phone" | "major";
 
 type ExtraRenterField = {
   id: number;
@@ -31,16 +31,10 @@ type ExtraRenterField = {
 type AdminItemFormPageProps = {
   mode: "create" | "edit";
   itemId?: number;
+  adminCodeVerificationToken?: string;
 };
 
-// 백엔드로 보내는 이메일 라벨은 'email'로 통일
-const EMAIL_BACKEND_LABEL = "email" as const;
-const BASE_REQUIRED_LABELS = [
-  "이름",
-  "전화번호",
-  "이메일",
-  EMAIL_BACKEND_LABEL,
-] as const;
+const BASE_REQUIRED_LABELS = ["이름", "전화번호"] as const;
 const OPTIONAL_LABELS = {
   studentNumber: "학번",
   major: "학과",
@@ -89,7 +83,11 @@ function buildUnitClearChangesFromDetail(
   }));
 }
 
-const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
+const AdminItemFormPage = ({
+  mode,
+  itemId,
+  adminCodeVerificationToken,
+}: AdminItemFormPageProps) => {
   const navigate = useNavigate();
   const { mutate: createItem, isPending: isCreatePending } =
     useCreateAdminItem(); // 신규 등록 요청 함수 & 등록 진행 상태
@@ -293,23 +291,21 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
   const renterRequiredFields: { key: RenterFieldKey; label: string }[] = [
     { key: "name", label: "이름" },
     { key: "phone", label: "전화번호" },
-    // 화면에는 '이메일'로 보이되, 요청 바디에서는 label을 'email'로 전송
-    { key: "email", label: "이메일" },
   ];
 
   const handleSubmit = () => {
     if (!isFormValid) return;
     if (mode === "edit" && (!itemId || itemId <= 0)) return;
+    if (
+      mode === "edit" &&
+      (!adminCodeVerificationToken || !adminCodeVerificationToken.trim())
+    ) {
+      alert("관리자 코드 검증 토큰이 없어 수정할 수 없습니다. 다시 시도해주세요.");
+      return;
+    }
 
     const borrowerRequirements = [
       // 이름/전화번호는 추가 정보가 아니므로 요청 바디(additionalBorrowerInfo)에서 제외
-      // 이메일만 label='email'로 변환해 필수로 전송
-      ...renterRequiredFields
-        .filter((f) => f.key === "email")
-        .map((f) => ({
-          label: f.key === "email" ? EMAIL_BACKEND_LABEL : f.label,
-          required: true,
-        })),
       ...(optionalStudentNumberEnabled
         ? [{ label: OPTIONAL_LABELS.studentNumber, required: true }]
         : []),
@@ -373,6 +369,7 @@ const AdminItemFormPage = ({ mode, itemId }: AdminItemFormPageProps) => {
       guaranteedGoods: hasGuaranteedGoods ? guaranteedGoodsLabel.trim() : null,
       borrowerRequirements,
       isActive: true,
+      adminCodeVerificationToken: adminCodeVerificationToken?.trim() ?? "",
     };
 
     let updateBody: AdminUpdateItemRequest;

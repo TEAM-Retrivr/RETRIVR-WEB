@@ -1,13 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import { Modal } from "../Modal";
 import Button from "../Button";
-import { useVerifyAdminCode } from "../../hooks/queries/useAdminQueries";
+import {
+  useVerifyAdminCode,
+  useVerifyAdminCodeByAdmin,
+} from "../../hooks/queries/useAdminQueries";
+import type { AdminVerifyCodeRequestBody } from "../../api/admin/admin.type";
 
 interface AdminCodeInputModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (rawToken: string) => void;
-  rentalId: number;
+  rentalId?: number;
+  purpose?: AdminVerifyCodeRequestBody["purpose"];
+  verificationApiMode?: "public" | "admin";
   codeLength?: number;
 }
 
@@ -16,6 +22,8 @@ const AdminCodeInputModal = ({
   onClose,
   onSuccess,
   rentalId,
+  purpose = "IMMEDIATE_APPROVAL",
+  verificationApiMode = "public",
   codeLength = 6,
 }: AdminCodeInputModalProps) => {
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
@@ -25,8 +33,11 @@ const AdminCodeInputModal = ({
   const [adminCodeError, setAdminCodeError] = useState<string | null>(null);
   const [isErrorHighlightActive, setIsErrorHighlightActive] = useState(false);
   const highlightTimerRef = useRef<number | null>(null);
-  const { mutate: verifyCode, isPending: isVerifyingCode } =
+  const { mutate: verifyCodePublic, isPending: isPublicVerifyingCode } =
     useVerifyAdminCode();
+  const { mutate: verifyCodeAdmin, isPending: isAdminVerifyingCode } =
+    useVerifyAdminCodeByAdmin();
+  const isVerifyingCode = isPublicVerifyingCode || isAdminVerifyingCode;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -112,30 +123,46 @@ const AdminCodeInputModal = ({
 
   const handleSubmit = () => {
     const enteredCode = adminCode.join("");
-    if (!Number.isFinite(rentalId) || rentalId <= 0) {
-      triggerErrorState("대여 정보가 올바르지 않아 검증할 수 없어요.");
-      return;
-    }
 
     if (enteredCode.length !== codeLength) {
       triggerErrorState(`관리자 코드를 ${codeLength}자리로 입력해주세요.`);
       return;
     }
-    if (!Number.isFinite(rentalId) || rentalId <= 0) {
+
+    const shouldRequireRentalId = purpose === "IMMEDIATE_APPROVAL";
+    if (
+      shouldRequireRentalId &&
+      (!Number.isFinite(rentalId) || (rentalId ?? 0) <= 0)
+    ) {
       triggerErrorState("대여 정보가 없어 관리자 코드를 검증할 수 없습니다.");
       return;
     }
 
-    verifyCode(
-      {
+    const payload: AdminVerifyCodeRequestBody = shouldRequireRentalId
+      ? {
+          adminCode: enteredCode,
+          purpose,
+          rentalId: rentalId as number,
+        }
+      : {
         adminCode: enteredCode,
-        purpose: "IMMEDIATE_APPROVAL",
-        rentalId,
-      },
+        purpose,
+      };
+
+    const verifyCode =
+      verificationApiMode === "admin" ? verifyCodeAdmin : verifyCodePublic;
+
+    verifyCode(
+      payload,
       {
         onSuccess: (data) => {
+          const verificationToken = data.rowToken ?? data.rawToken;
+          if (!verificationToken) {
+            triggerErrorState("검증 토큰이 없어 다시 시도해주세요.");
+            return;
+          }
           setAdminCodeError(null);
-          onSuccess(data.rawToken);
+          onSuccess(verificationToken);
         },
         onError: () => {
           triggerErrorState(

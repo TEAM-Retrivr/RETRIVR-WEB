@@ -220,6 +220,7 @@ export interface AdminItemUnitChangeEntry {
 export interface AdminUpdateItemRequest extends Partial<AdminItemBaseRequest> {
   unitChanges?: AdminItemUnitChangeEntry[];
   isActive?: boolean;
+  adminCodeVerificationToken: string;
 }
 
 // 관리자 물품 수정 응답 바디
@@ -311,6 +312,7 @@ export interface AdminVerifyCodeRequestBody {
 }
 
 export interface AdminVerifyCodeResponse {
-  rawToken: string;
-  rentalId: number;
+  rawToken?: string;
+  rowToken?: string;
+  rentalId?: number;
 }

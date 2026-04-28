@@ -19,6 +19,7 @@ import {
   sendAdminOverdueReminder,
   updateAdminRentalReturnDueDate,
   verifyAdminCode,
+  verifyAdminCodeByAdmin,
   requestAdminRentalSearch,
   approvePublicRental,
   rejectPublicRental,
@@ -357,5 +358,13 @@ export const useUpdateAdminRentalReturnDueDate = () => {
 export const useVerifyAdminCode = () => {
   return useMutation({
     mutationFn: (body: AdminVerifyCodeRequestBody) => verifyAdminCode(body),
+  });
+};
+
+// 관리자 코드 검증 (admin API)
+// - 관리자 화면(물품 수정 진입 등)에서 사용
+export const useVerifyAdminCodeByAdmin = () => {
+  return useMutation({
+    mutationFn: (body: AdminVerifyCodeRequestBody) => verifyAdminCodeByAdmin(body),
   });
 };

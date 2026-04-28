@@ -38,9 +38,9 @@ export interface ItemDetailResponse {
 // 2. 대여 요청 생성
 // 2-1. 대여 요청 생성 요청 바디
 export interface BorrowerInformationRequest {
-  itemUnitId?: number; // Long, nullable. 개별 코드형 물품일 경우에만 사용
+  itemUnitId?: number | null; // Long, nullable. 개별 코드형 물품일 경우에만 사용
   name: string; // String, 필수. 대여자 이름
-  phone?: string; // String, nullable. 대여자 전화번호
+  phone: string; // String, 필수. 대여자 전화번호 (예: 010-1234-5678)
   renterFields: {
     // JSON Object, 필수. 추가 대여자 정보 (자유 key-value, 입력값 그대로 전달)
     [key: string]: string; // 요청사항/학과/학번 등 자유 필드
