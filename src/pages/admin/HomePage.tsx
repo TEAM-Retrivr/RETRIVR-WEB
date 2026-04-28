@@ -38,7 +38,7 @@ const Home = () => {
   // 임시: API 연동 전까지 빈 배열과 0 사용
 
   const UserProfile = {
-    organizationId: data?.organizationId ?? data?.orgId, // 관리자 ID
+    organizationId: data?.organizationId, // 관리자 ID
     organizationName: data?.organizationName, // 관리자 이름 (단체명)
     profileImageUrl: data?.profileImageUrl, // 프로필 사진 URL
     requestCount: data?.requestCount ?? 0, // 대여 요청 개수
