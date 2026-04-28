@@ -7,6 +7,7 @@ import { useAdminProfile } from "../../hooks/queries/useAuthQueries";
 
 const PRODUCTION_WEB_ORIGIN = "https://www.retrivr.kr";
 const PREVIEW_WEB_ORIGIN = "https://retrivr-web.vercel.app";
+const DEFAULT_PROFILE_IMAGE = "/icons/default-profile.svg";
 
 const getPublicWebOrigin = () => {
   if (typeof window === "undefined") return PREVIEW_WEB_ORIGIN;
@@ -31,7 +32,7 @@ const AccountPage = () => {
   const userProfile = {
     organizationId: data?.organizationId,
     organizationName: data?.organizationName,
-    profileImageUrl: data?.profileImageUrl,
+    profileImageUrl: data?.profileImageUrl ?? "/icons/profile-default-icon.svg",
     email: data?.email,
   };
 
@@ -122,8 +123,12 @@ const AccountPage = () => {
       <div className="w-full font-[Pretendard] text-neutral-gray-1 px-7.75">
         {/* 프로필 영역 - 프로필 사진, 대여지명, 이메일, 개인정보 수정하기 버튼 */}
         <div className="flex flex-col items-center pt-11.5 gap-3.5">
-          <div className="relative w-25 h-25 rounded-[50%] shadow-account-profile">
-            <img src={userProfile.profileImageUrl} alt="프로필 이미지" />
+          <div className="relative flex items-center justify-center w-25 h-25 rounded-[50%] shadow-account-profile">
+            <img
+              className="object-cover"
+              src={userProfile.profileImageUrl}
+              alt="프로필 이미지"
+            />
             <button className="absolute right-0 bottom-0 flex items-center bg-neutral-white justify-center w-7 h-7 rounded-[50%] shadow-camera cursor-pointer">
               <img src="/icons/camera.svg" alt="프로필 이미지 변경하기" />
             </button>

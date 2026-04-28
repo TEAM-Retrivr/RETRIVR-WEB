@@ -10,6 +10,7 @@ import { ModalTestPage } from "./pages/ModalTestPage";
 import LoginPage from "./pages/admin/LoginPage";
 import HomePage from "./pages/admin/HomePage";
 import AccountPage from "./pages/admin/AccountPage";
+import ProfileEditPage from "./pages/admin/ProfileEditPage";
 import LandingPage from "./pages/LandingPage";
 import RegisterPage from "./pages/admin/RegisterPage";
 import TermsConsentPage from "./pages/TermsConsentPage";
@@ -53,6 +54,7 @@ function App() {
         {/* 관리자 홈 페이지 */}
         <Route path="/home" element={<HomePage />} />
         <Route path="/account" element={<AccountPage />} />
+        <Route path="/profile" element={<ProfileEditPage />} />
 
         {/* 대여자 물품 관리 페이지 */}
         <Route path="/item-manage" element={<ItemManagementPage />} />
