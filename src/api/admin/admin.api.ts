@@ -17,6 +17,11 @@ import type {
   AdminUpdateReturnDueDateResponse,
   AdminVerifyCodeRequestBody,
   AdminVerifyCodeResponse,
+  AdminRentalSearchResponse,
+  PublicApproveRentalRequestBody,
+  PublicApproveRentalResponse,
+  PublicRejectRentalRequestBody,
+  PublicRejectRentalResponse,
 } from "./admin.type";
 import { apiClient } from "../core";
 
@@ -67,6 +72,29 @@ export const requestAdminOverdueRentalList = async (
 ): Promise<AdminOverdueRentalListResponse> => {
   const response = await apiClient.get<AdminOverdueRentalListResponse>(
     "/api/admin/v1/rentals/overdue",
+    { params },
+  );
+  return response.data;
+};
+
+// 대여중인 물품 검색
+// - 반납 관리 페이지 상단 검색 영역에서 사용
+// - keyword: 검색 키워드 (필수)
+// - cursorRentalId, cursorScore: 커서 페이징에 사용 (선택)
+// - size: 한 번에 조회할 개수
+// GET /api/admin/v1/rentals/search
+export interface AdminRentalSearchParams {
+  keyword: string;
+  cursorRentalId?: number;
+  cursorScore?: number;
+  size?: number;
+}
+
+export const requestAdminRentalSearch = async (
+  params: AdminRentalSearchParams,
+): Promise<AdminRentalSearchResponse> => {
+  const response = await apiClient.get<AdminRentalSearchResponse>(
+    "/api/admin/v1/rentals/search",
     { params },
   );
   return response.data;
@@ -195,6 +223,38 @@ export const approveAdminRental = async ({
   return response.data;
 };
 
+// 대여 요청 현장 승인
+// POST /api/public/v1/rentals/{rentalId}/approve
+export const approvePublicRental = async ({
+  rentalId,
+  body,
+}: {
+  rentalId: number;
+  body: PublicApproveRentalRequestBody;
+}): Promise<PublicApproveRentalResponse> => {
+  const response = await apiClient.post<PublicApproveRentalResponse>(
+    `/api/public/v1/rentals/${rentalId}/approve`,
+    body,
+  );
+  return response.data;
+};
+
+// 대여 요청 현장 거절
+// POST /api/public/v1/rentals/{rentalId}/reject
+export const rejectPublicRental = async ({
+  rentalId,
+  body,
+}: {
+  rentalId: number;
+  body: PublicRejectRentalRequestBody;
+}): Promise<PublicRejectRentalResponse> => {
+  const response = await apiClient.post<PublicRejectRentalResponse>(
+    `/api/public/v1/rentals/${rentalId}/reject`,
+    body,
+  );
+  return response.data;
+};
+
 // 대여 요청 거절
 // POST /api/admin/v1/rentals/{rentalId}/reject
 export interface AdminRejectRentalRequestBody {
@@ -217,13 +277,13 @@ export const rejectAdminRental = async ({
   return response.data;
 };
 
-// 관리자 코드 검증
-// POST /api/admin/v1/admin-code/verification
+// 관리자 코드 검증 (현장 승인용)
+// POST /api/public/v1/admin-code/verification
 export const verifyAdminCode = async (
   body: AdminVerifyCodeRequestBody,
 ): Promise<AdminVerifyCodeResponse> => {
   const response = await apiClient.post<AdminVerifyCodeResponse>(
-    "/api/admin/v1/admin-code/verification",
+    "/api/public/v1/admin-code/verification",
     body,
   );
   return response.data;

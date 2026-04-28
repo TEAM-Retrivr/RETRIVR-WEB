@@ -5,8 +5,9 @@ import ReturnConfirmCard from "../../components/cards/admin/return/ReturnConfirm
 import {
   useAdminRentalItemSummaryList,
   useAdminOverdueRentalList,
+  useAdminRentalSearch,
 } from "../../hooks/queries/useAdminQueries";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLoadHome } from "../../hooks/queries/useAuthQueries";
 
@@ -46,6 +47,39 @@ const ReturnManagementPage = () => {
 
   const { data: homeData } = useLoadHome();
   const organizationName = homeData?.organizationName;
+  const {
+    data: rentalSearchData,
+    isLoading: isRentalSearchLoading,
+    error: rentalSearchError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useAdminRentalSearch(keyword);
+  const searchedRentals =
+    rentalSearchData?.pages.flatMap((page) => page.rentals) ?? [];
+  const searchLoadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!keyword || !hasNextPage) return;
+    const target = searchLoadMoreRef.current;
+    if (!target) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          void fetchNextPage();
+        }
+      },
+      {
+        root: null,
+        threshold: 0.2,
+      },
+    );
+
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [keyword, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
     <Layout>
@@ -100,10 +134,50 @@ const ReturnManagementPage = () => {
                 </div>
               )}
               {keyword && (
-                <div className="flex flex-col gap-2.5">
-                  <p className="text-14px text-neutral-gray-3">
-                    검색 API 연동 예정입니다.
-                  </p>
+                <div className="flex flex-col">
+                  {isRentalSearchLoading && (
+                    <p className="text-14px text-neutral-gray-3 py-2">
+                      검색 중...
+                    </p>
+                  )}
+                  {rentalSearchError && (
+                    <p className="text-14px text-red py-2">
+                      검색 결과를 불러오지 못했습니다.
+                    </p>
+                  )}
+                  {!isRentalSearchLoading &&
+                    !rentalSearchError &&
+                    searchedRentals.length === 0 && (
+                      <p className="text-14px text-neutral-gray-3 py-2">
+                        검색 결과가 없습니다.
+                      </p>
+                    )}
+                  {!isRentalSearchLoading &&
+                    !rentalSearchError &&
+                    searchedRentals.map((rental) => (
+                      <div
+                        key={rental.rentalId}
+                        className="py-4 border-b border-neutral-gray-4/70 last:border-b-0"
+                      >
+                        <p className="text-20px text-neutral-gray-1 font-[700] leading-[130%]">
+                          {rental.contact}
+                        </p>
+                        <p className="mt-1 text-14px text-neutral-gray-3 font-[600] leading-[130%]">
+                          {rental.borrowerName}
+                        </p>
+                        <p className="mt-0.5 text-14px text-secondary-2 opacity-[0.85] font-[600] leading-[130%]">
+                          {rental.itemName}
+                        </p>
+                      </div>
+                    ))}
+                  {!isRentalSearchLoading && hasNextPage && (
+                    <div ref={searchLoadMoreRef} className="h-3" />
+                  )}
+                  {isFetchingNextPage && (
+                    <p className="text-14px text-neutral-gray-3 py-2">
+                      더 불러오는 중...
+                    </p>
+                  )}
                 </div>
               )}
             </div>

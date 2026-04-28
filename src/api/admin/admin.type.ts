@@ -66,6 +66,21 @@ export interface AdminOverdueRentalListResponse {
   nextCursor?: number;
 }
 
+// 대여중인 물품 검색 응답
+// GET /api/admin/v1/rentals/search
+export interface AdminRentalSearchItem {
+  rentalId: number;
+  borrowerName: string;
+  contact: string;
+  itemName: string;
+}
+
+export interface AdminRentalSearchResponse {
+  rentals: AdminRentalSearchItem[];
+  nextScoreCursor?: number;
+  nextRentalIdCursor?: number;
+}
+
 // 대여 요청 목록 조회 응답
 // GET /api/admin/v1/rentals/requests
 // 관리자 대여 요청 확인 페이지에서 사용
@@ -96,6 +111,28 @@ export interface AdminApproveRentalResponse {
   rentalDecisionStatus: "APPROVE" | "REJECT" | string;
   adminNameToDecide: string;
   decisionDate: string;
+}
+
+// 대여 요청 현장 승인 요청/응답
+// POST /api/public/v1/rentals/{rentalId}/approve
+export interface PublicApproveRentalRequestBody {
+  adminNameToApprove: string;
+  adminCodeVerificationToken: string;
+}
+
+export interface PublicApproveRentalResponse {
+  organizationId: number;
+}
+
+// 대여 요청 현장 거절 요청/응답
+// POST /api/public/v1/rentals/{rentalId}/reject
+export interface PublicRejectRentalRequestBody {
+  adminNameToReject: string;
+  adminCodeVerificationToken: string;
+}
+
+export interface PublicRejectRentalResponse {
+  organizationId: number;
 }
 
 // 대여 요청 거절 응답
@@ -266,12 +303,14 @@ export interface AdminSendOverdueReminderResponse {
 }
 
 // 관리자 코드 검증 요청/응답
-// POST /api/admin/v1/admin-code/verification
+// POST /api/public/v1/admin-code/verification
 export interface AdminVerifyCodeRequestBody {
   adminCode: string;
-  purpose: "ORGANIZATION_UPDATE" | string;
+  purpose: "ORGANIZATION_UPDATE" | "ITEM_UPDATE" | "IMMEDIATE_APPROVAL";
+  rentalId?: number;
 }
 
 export interface AdminVerifyCodeResponse {
-  rowToken: string;
+  rawToken: string;
+  rentalId: number;
 }

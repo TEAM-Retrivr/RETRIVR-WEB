@@ -6,7 +6,8 @@ import { useVerifyAdminCode } from "../../hooks/queries/useAdminQueries";
 interface AdminCodeInputModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: (rowToken: string) => void;
+  onSuccess: (rawToken: string) => void;
+  rentalId: number;
   codeLength?: number;
 }
 
@@ -14,6 +15,7 @@ const AdminCodeInputModal = ({
   isOpen,
   onClose,
   onSuccess,
+  rentalId,
   codeLength = 6,
 }: AdminCodeInputModalProps) => {
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
@@ -62,31 +64,78 @@ const AdminCodeInputModal = ({
     inputRefs.current[nextIndex]?.focus();
   };
 
+  const handlePaste = (
+    index: number,
+    e: React.ClipboardEvent<HTMLInputElement>,
+  ) => {
+    const pastedDigits = e.clipboardData.getData("text").replace(/\D/g, "");
+    if (!pastedDigits) return;
+    e.preventDefault();
+
+    setAdminCode((prev) => {
+      const next = [...prev];
+      for (
+        let i = 0;
+        i < pastedDigits.length && index + i < codeLength;
+        i += 1
+      ) {
+        next[index + i] = pastedDigits[i];
+      }
+      return next;
+    });
+
+    const focusIndex = Math.min(index + pastedDigits.length, codeLength - 1);
+    inputRefs.current[focusIndex]?.focus();
+  };
+
   const handleKeyDown = (
     index: number,
     e: React.KeyboardEvent<HTMLInputElement>,
   ) => {
     if (e.key === "Backspace" && !adminCode[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
+      return;
+    }
+
+    // 이미 값이 있는 칸에서 숫자를 입력하면 현재 칸 값을 교체하고 다음 칸으로 이동
+    if (/^\d$/.test(e.key) && adminCode[index]) {
+      e.preventDefault();
+      setAdminCode((prev) => {
+        const next = [...prev];
+        next[index] = e.key;
+        return next;
+      });
+      const nextIndex = Math.min(index + 1, codeLength - 1);
+      inputRefs.current[nextIndex]?.focus();
     }
   };
 
   const handleSubmit = () => {
     const enteredCode = adminCode.join("");
+    if (!Number.isFinite(rentalId) || rentalId <= 0) {
+      triggerErrorState("대여 정보가 올바르지 않아 검증할 수 없어요.");
+      return;
+    }
+
     if (enteredCode.length !== codeLength) {
       triggerErrorState(`관리자 코드를 ${codeLength}자리로 입력해주세요.`);
+      return;
+    }
+    if (!Number.isFinite(rentalId) || rentalId <= 0) {
+      triggerErrorState("대여 정보가 없어 관리자 코드를 검증할 수 없습니다.");
       return;
     }
 
     verifyCode(
       {
         adminCode: enteredCode,
-        purpose: "ORGANIZATION_UPDATE",
+        purpose: "IMMEDIATE_APPROVAL",
+        rentalId,
       },
       {
         onSuccess: (data) => {
           setAdminCodeError(null);
-          onSuccess(data.rowToken);
+          onSuccess(data.rawToken);
         },
         onError: () => {
           triggerErrorState(
@@ -136,11 +185,13 @@ const AdminCodeInputModal = ({
                 }}
                 type="text"
                 inputMode="numeric"
-                maxLength={codeLength}
+                maxLength={1}
                 value={digit}
                 onChange={(e) => handleAdminCodeChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
-                className={`h-10 w-9 rounded-[6px] border bg-[#F8F9F9] text-center text-18px text-secondary-1 font-bold ${
+                onFocus={(e) => e.currentTarget.select()}
+                onPaste={(e) => handlePaste(index, e)}
+                className={`h-10 w-9 rounded-[6px] border bg-[#F8F9F9] text-center text-18px text-secondary-1 font-bold caret-secondary-1 focus:border-secondary-1 focus:outline-none focus:ring-0 ${
                   isErrorHighlightActive
                     ? "border-red-500"
                     : "border-neutral-gray-5"

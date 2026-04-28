@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   requestAdminItemList,
   requestAdminRentalItemSummaryList,
@@ -14,6 +19,9 @@ import {
   sendAdminOverdueReminder,
   updateAdminRentalReturnDueDate,
   verifyAdminCode,
+  requestAdminRentalSearch,
+  approvePublicRental,
+  rejectPublicRental,
 } from "../../api/admin/admin.api";
 import type {
   AdminCreateItemRequest,
@@ -54,6 +62,46 @@ export const useAdminOverdueRentalList = () => {
   return useQuery({
     queryKey: ["adminOverdueRentals"],
     queryFn: () => requestAdminOverdueRentalList({ size: 20 }),
+    retry: false,
+  });
+};
+
+// 반납 관리 검색 결과 조회
+// - GET /api/admin/v1/rentals/search
+// - keyword가 비어있으면 요청하지 않음
+export const useAdminRentalSearch = (keyword: string) => {
+  const trimmedKeyword = keyword.trim();
+  return useInfiniteQuery({
+    queryKey: ["adminRentalSearch", trimmedKeyword],
+    initialPageParam: {
+      cursorRentalId: undefined,
+      cursorScore: undefined,
+    } as { cursorRentalId?: number; cursorScore?: number },
+    queryFn: ({ pageParam }) =>
+      requestAdminRentalSearch({
+        keyword: trimmedKeyword,
+        cursorRentalId: pageParam.cursorRentalId,
+        cursorScore: pageParam.cursorScore,
+        size: 15,
+      }),
+    getNextPageParam: (lastPage) => {
+      const nextRentalIdCursor = lastPage.nextRentalIdCursor;
+      const nextScoreCursor = lastPage.nextScoreCursor;
+
+      if (
+        typeof nextRentalIdCursor !== "number" ||
+        nextRentalIdCursor <= 0 ||
+        typeof nextScoreCursor !== "number"
+      ) {
+        return undefined;
+      }
+
+      return {
+        cursorRentalId: nextRentalIdCursor,
+        cursorScore: nextScoreCursor,
+      };
+    },
+    enabled: trimmedKeyword.length > 0,
     retry: false,
   });
 };
@@ -174,6 +222,46 @@ export const useApproveAdminRental = () => {
         queryKey: ["home"],
       });
     },
+  });
+};
+
+// 대여 요청 현장 승인 (public API)
+// - RentalConfirmationPage > LongRentalApprovalModal 에서 사용
+export const useApprovePublicRental = () => {
+  return useMutation({
+    mutationFn: ({
+      rentalId,
+      adminNameToApprove,
+      adminCodeVerificationToken,
+    }: {
+      rentalId: number;
+      adminNameToApprove: string;
+      adminCodeVerificationToken: string;
+    }) =>
+      approvePublicRental({
+        rentalId,
+        body: { adminNameToApprove, adminCodeVerificationToken },
+      }),
+  });
+};
+
+// 대여 요청 현장 거절 (public API)
+// - RentalConfirmationPage > LongRentalApprovalModal 에서 사용
+export const useRejectPublicRental = () => {
+  return useMutation({
+    mutationFn: ({
+      rentalId,
+      adminNameToReject,
+      adminCodeVerificationToken,
+    }: {
+      rentalId: number;
+      adminNameToReject: string;
+      adminCodeVerificationToken: string;
+    }) =>
+      rejectPublicRental({
+        rentalId,
+        body: { adminNameToReject, adminCodeVerificationToken },
+      }),
   });
 };
 

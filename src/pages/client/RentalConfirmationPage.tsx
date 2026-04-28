@@ -1,10 +1,9 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import LongRentalApprovalModal from "../../components/modals/admin/rentalApprovalModal/LongRentalApprovalModal";
 import AdminCodeInputModal from "../../components/modals/AdminCodeInputModal";
-import { useRentalDetail } from "../../hooks/queries/useClientQueries";
 
 const RentalConfirmationPage = () => {
   const navigate = useNavigate();
@@ -34,26 +33,11 @@ const RentalConfirmationPage = () => {
     setIsAdminCodeModalOpen(true);
   };
 
-  const handleAdminCodeSuccess = (rowToken: string) => {
-    setApprovalToken(rowToken);
+  const handleAdminCodeSuccess = (rawToken: string) => {
+    setApprovalToken(rawToken);
     setIsAdminCodeModalOpen(false);
     setIsLongApprovalModalOpen(true);
   };
-
-  const { data: rentalDetail } = useRentalDetail(
-    rentalId,
-    approvalToken,
-    isLongApprovalModalOpen,
-  );
-  const requestTime = useMemo(() => {
-    if (!rentalDetail?.requestedAt) return "";
-    return rentalDetail.requestedAt.replace("T", " ").replace("Z", "");
-  }, [rentalDetail?.requestedAt]);
-  const applicantSummary = useMemo(() => {
-    if (!rentalDetail?.borrowerField) return "대여자 정보";
-    const values = Object.values(rentalDetail.borrowerField).filter(Boolean);
-    return values.length > 0 ? values.join(" | ") : "대여자 정보";
-  }, [rentalDetail?.borrowerField]);
 
   return (
     <Layout>
@@ -105,16 +89,15 @@ const RentalConfirmationPage = () => {
         isOpen={isAdminCodeModalOpen}
         onClose={() => setIsAdminCodeModalOpen(false)}
         onSuccess={handleAdminCodeSuccess}
+        rentalId={Number.isFinite(rentalId) && rentalId > 0 ? rentalId : 0}
       />
 
       <LongRentalApprovalModal
         isOpen={isLongApprovalModalOpen}
         onClose={() => setIsLongApprovalModalOpen(false)}
         rentalId={Number.isFinite(rentalId) && rentalId > 0 ? rentalId : 0}
-        itemName={rentalDetail?.itemName ?? "대여 물품"}
-        count={rentalDetail?.itemUnitLabel ? `(${rentalDetail.itemUnitLabel})` : "(1/1)"}
-        applicant={applicantSummary}
-        time={requestTime || "요청 시각 정보 없음"}
+        approvalApiMode="public"
+        verificationToken={approvalToken}
       />
     </Layout>
   );
