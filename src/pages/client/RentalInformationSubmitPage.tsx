@@ -73,6 +73,15 @@ const RentalInformationSubmitPage = () => {
   const guaranteedGoods = state?.guaranteedGoods ?? "-";
   const description = state?.description ?? "-";
   const { data: itemDetail } = useItemDetail(itemId, itemId > 0);
+  const selectedItemUnitLabel = useMemo(() => {
+    if (itemDetail?.itemManagementType !== "UNIT") return "";
+    if (!Number.isFinite(itemUnitId) || (itemUnitId ?? 0) <= 0) return "";
+
+    return (
+      itemDetail.itemUnits?.find((unit) => unit.itemUnitId === itemUnitId)
+        ?.label ?? ""
+    );
+  }, [itemDetail?.itemManagementType, itemDetail?.itemUnits, itemUnitId]);
   const borrowerRequirements =
     itemDetail?.borrowerRequirements ?? state?.borrowerRequirements ?? [];
   const additionalBorrowerRequirements = useMemo(
@@ -82,6 +91,8 @@ const RentalInformationSubmitPage = () => {
           req.label !== "이름" &&
           req.label !== "연락처" &&
           req.label !== "전화번호" &&
+          req.label.toLowerCase() !== "email" &&
+          req.label !== "이메일" &&
           req.label !== "요청사항" &&
           arr.findIndex((item) => item.label === req.label) === index,
       ),
@@ -92,6 +103,7 @@ const RentalInformationSubmitPage = () => {
   const [name, setName] = useState("");
   // 대여자 전화번호 : string
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneVerificationCode, setPhoneVerificationCode] = useState("");
   const [requestment, setRequestment] = useState("");
   const [additionalFieldValues, setAdditionalFieldValues] = useState<
     Record<string, string>
@@ -104,6 +116,9 @@ const RentalInformationSubmitPage = () => {
   // 보증 물품이 필요할 때만 두 번째 동의를 요구
   const isGuaranteedGoodsRequired =
     guaranteedGoods !== "" && guaranteedGoods !== "-";
+  const isValidPhoneNumberForVerification = /^010\d{8}$/.test(
+    phoneNumber.trim(),
+  );
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -136,7 +151,8 @@ const RentalInformationSubmitPage = () => {
     borrowerRequirements.forEach(({ label }) => {
       // renterFields(additionalBorrowerInfo)에는 이름/전화번호를 넣지 않는다.
       // - 이름/전화번호는 top-level의 name, phone으로 분리 전송
-      if (label === "이름" || label === "전화번호" || label === "연락처") return;
+      if (label === "이름" || label === "전화번호" || label === "연락처")
+        return;
       const value = additionalFieldValues[label]?.trim();
       if (value) {
         renterFields[label] = value;
@@ -193,37 +209,35 @@ const RentalInformationSubmitPage = () => {
               ? `/client-home?organizationId=${organizationId}`
               : "/client-search"
           }
-        ></Header>
-        <div className="w-84.5 h-44 font-[Pretendard] bg-secondary-4 rounded-[16px] mt-6 mx-7.75">
+        />
+        <div className="w-84.5 h-44 font-[Pretendard] bg-secondary-4 border border-secondary-5 border-[0.5px] rounded-[16px] mt-6 mx-7.75">
           <div className="pt-7.25 pl-8 pb-7.75">
-            <div className="flex flex-col">
-              <p className="text-neutral-gray-1 text-24px font-[700]">
-                {itemName}
-              </p>
+            <div className="flex flex-col text-neutral-gray-1">
+              <p className=" text-24px font-bold">{itemName}</p>
               <p className="text-neutral-gray-2 text-16px font-[500] leading-none">
-                {itemName}(1)
+                {selectedItemUnitLabel}
               </p>
             </div>
-            <ul className="text-12px text-neutral-gray-3 font-[400] mt-4.25 leading-[130%]">
+            <ul className="text-12px opacity-[0.9] font-normal mt-4.25 px-0.5 leading-[130%]">
               <li>
-                대여 기간 :{" "}
+                • 대여 기간 :{" "}
                 <span className="text-primary">{rentalDuration}일</span>
               </li>
               <li>
-                보증 물품 :{" "}
+                • 보증 물품 :{" "}
                 <span className="text-primary">{guaranteedGoods}</span>
               </li>
               <li>
-                물품 설명 : <span>{description}</span>
+                • 물품 설명 : <span>{description}</span>
               </li>
             </ul>
           </div>
         </div>
         <div className="w-full flex flex-col font-[Pretendard] mt-7.5 px-8 gap-7.5">
           <div>
-            <div className="text-neutral-gray-2 text-14px font-[700] mb-2.5">
-              <p className="inline ">이름</p>
-              <p className="inline text-primary">*</p>
+            <div className="flex gap-0.5 text-neutral-gray-2 text-14px font-bold mb-2.5">
+              <p>이름</p>
+              <p className="text-primary">*</p>
             </div>
             <CommonInput
               type="text"
@@ -231,38 +245,60 @@ const RentalInformationSubmitPage = () => {
               onChange={(e) => setName(e.target.value)}
               placeholder="홍길동"
               inputSize="large"
-              className="placeholder:text-14px placeholder:font-[400] placeholder:leading-[120%]"
-            ></CommonInput>
+              className="text-14px placeholder:text-14px placeholder:font-normal placeholder:leading-[140%]"
+            />
           </div>
           <div>
-            <div className=" text-neutral-gray-2 text-14px font-[700] ">
-              <p className="inline">연락처</p>
-              <p className="inline text-primary">*</p>
-              <p className="text-neutral-gray-3 text-12px font-[400] mt-1.5 mb-2.5 leading-none">
-                숫자로만 적어주세요.
-              </p>
+            <div className="flex gap-0.5 text-neutral-gray-2 text-14px font-bold ">
+              <p>연락처</p>
+              <p className="text-primary">*</p>
             </div>
-            <CommonInput
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              maxLength={11}
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              placeholder="01012345678"
-              inputSize="large"
-              className="text-14px text-neutral-gray-1 placeholder:text-14px placeholder:font-[400] placeholder:leading-[120%]"
-            ></CommonInput>
+            <p className="text-neutral-gray-3 text-12px font-[400] mt-1.5 mb-2.5 leading-none">
+              숫자로만 적어주세요.
+            </p>
+            <div className="flex items-center justify-between gap-1.5">
+              <CommonInput
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={11}
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="01012345678"
+                inputSize="large"
+                className="w-54 text-14px text-neutral-gray-1 placeholder:text-14px placeholder:font-normal placeholder:leading-[140%]"
+              />
+              <Button
+                variant="primary"
+                size="sm"
+                className="w-29 h-12"
+                disabled={!isValidPhoneNumberForVerification}
+              >
+                인증번호 전송
+              </Button>
+            </div>
+            <div className="flex items-center justify-between gap-1.5 mt-2.5">
+              <CommonInput
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]{6}"
+                maxLength={6}
+                value={phoneVerificationCode}
+                onChange={(e) => setPhoneVerificationCode(e.target.value)}
+                placeholder="인증번호 입력"
+                inputSize="large"
+                className="w-51 text-14px text-neutral-gray-1 placeholder:text-14px placeholder:font-normal placeholder:leading-[140%]"
+              />
+              <Button variant="gray" size="sm" className="w-29 h-12">
+                인증번호 확인
+              </Button>
+            </div>
           </div>
           {additionalBorrowerRequirements.map((requirement) => (
             <div key={requirement.label}>
-              <div className="text-neutral-gray-2 text-14px font-[700] mb-2.5">
-                <p className="inline">
-                  {requirement.label === "email" ? "이메일" : requirement.label}
-                </p>
-                {requirement.required && (
-                  <p className="inline text-primary">*</p>
-                )}
+              <div className="flex gap-0.5 text-neutral-gray-2 text-14px font-[700] mb-2.5">
+                <p>{requirement.label}</p>
+                {requirement.required && <p className=" text-primary">*</p>}
               </div>
               <CommonInput
                 type="text"
@@ -273,17 +309,15 @@ const RentalInformationSubmitPage = () => {
                     [requirement.label]: e.target.value,
                   }))
                 }
-                placeholder={`${
-                  requirement.label === "email" ? "이메일" : requirement.label
-                }을(를) 입력하세요.`}
+                placeholder={`${requirement.label}을(를) 입력하세요.`}
                 inputSize="large"
                 className="placeholder:text-14px placeholder:font-[400] placeholder:leading-[120%]"
-              ></CommonInput>
+              />
             </div>
           ))}
           <div>
             <div className="text-neutral-gray-2 text-14px font-[700] mb-2.5">
-              <p className="inline">요청사항</p>
+              <p>요청사항</p>
             </div>
             <CommonInput
               type="text"
@@ -292,7 +326,7 @@ const RentalInformationSubmitPage = () => {
               placeholder="요청사항을 입력하세요. ex) 반납기한 연장"
               inputSize="large"
               className="placeholder:text-14px placeholder:font-[400] placeholder:leading-[120%]"
-            ></CommonInput>
+            />
           </div>
           {/* 개인 정보 동의 영역 */}
           <div>
@@ -304,13 +338,13 @@ const RentalInformationSubmitPage = () => {
                 label={label1}
                 checked={firstConsentChecked}
                 onCheckedChange={setFirstConsentChecked}
-              ></ConsentSectionCard>
+              />
               {guaranteedGoods != "" && guaranteedGoods != "-" && (
                 <ConsentSectionCard
                   label={label2 + guaranteedGoods + label3}
                   checked={secondConsentChecked}
                   onCheckedChange={setSecondConsentChecked}
-                ></ConsentSectionCard>
+                />
               )}
             </div>
           </div>
