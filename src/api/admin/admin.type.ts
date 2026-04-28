@@ -284,7 +284,8 @@ export interface AdminSendOverdueReminderResponse {
 // POST /api/admin/v1/admin-code/verification
 export interface AdminVerifyCodeRequestBody {
   adminCode: string;
-  purpose: "ORGANIZATION_UPDATE" | string;
+  purpose: "IMMEDIATE_APPROVAL";
+  rentalId: number;
 }
 
 export interface AdminVerifyCodeResponse {

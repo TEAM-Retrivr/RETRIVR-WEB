@@ -7,6 +7,7 @@ interface AdminCodeInputModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (rowToken: string) => void;
+  rentalId: number;
   codeLength?: number;
 }
 
@@ -14,6 +15,7 @@ const AdminCodeInputModal = ({
   isOpen,
   onClose,
   onSuccess,
+  rentalId,
   codeLength = 6,
 }: AdminCodeInputModalProps) => {
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
@@ -77,11 +79,16 @@ const AdminCodeInputModal = ({
       triggerErrorState(`관리자 코드를 ${codeLength}자리로 입력해주세요.`);
       return;
     }
+    if (!Number.isFinite(rentalId) || rentalId <= 0) {
+      triggerErrorState("대여 정보가 없어 관리자 코드를 검증할 수 없습니다.");
+      return;
+    }
 
     verifyCode(
       {
         adminCode: enteredCode,
-        purpose: "ORGANIZATION_UPDATE",
+        purpose: "IMMEDIATE_APPROVAL",
+        rentalId,
       },
       {
         onSuccess: (data) => {

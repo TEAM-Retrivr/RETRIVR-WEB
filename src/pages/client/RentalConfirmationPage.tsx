@@ -105,6 +105,7 @@ const RentalConfirmationPage = () => {
         isOpen={isAdminCodeModalOpen}
         onClose={() => setIsAdminCodeModalOpen(false)}
         onSuccess={handleAdminCodeSuccess}
+        rentalId={Number.isFinite(rentalId) && rentalId > 0 ? rentalId : 0}
       />
 
       <LongRentalApprovalModal
