@@ -246,7 +246,7 @@ const RentalInformationSubmitPage = () => {
               placeholder="홍길동"
               inputSize="large"
               className="text-14px placeholder:text-14px placeholder:font-normal placeholder:leading-[140%]"
-            ></CommonInput>
+            />
           </div>
           <div>
             <div className="flex gap-0.5 text-neutral-gray-2 text-14px font-bold ">
@@ -296,11 +296,9 @@ const RentalInformationSubmitPage = () => {
           </div>
           {additionalBorrowerRequirements.map((requirement) => (
             <div key={requirement.label}>
-              <div className="text-neutral-gray-2 text-14px font-[700] mb-2.5">
-                <p className="inline">{requirement.label}</p>
-                {requirement.required && (
-                  <p className="inline text-primary">*</p>
-                )}
+              <div className="flex gap-0.5 text-neutral-gray-2 text-14px font-[700] mb-2.5">
+                <p>{requirement.label}</p>
+                {requirement.required && <p className=" text-primary">*</p>}
               </div>
               <CommonInput
                 type="text"
@@ -314,7 +312,7 @@ const RentalInformationSubmitPage = () => {
                 placeholder={`${requirement.label}을(를) 입력하세요.`}
                 inputSize="large"
                 className="placeholder:text-14px placeholder:font-[400] placeholder:leading-[120%]"
-              ></CommonInput>
+              />
             </div>
           ))}
           <div>
@@ -328,7 +326,7 @@ const RentalInformationSubmitPage = () => {
               placeholder="요청사항을 입력하세요. ex) 반납기한 연장"
               inputSize="large"
               className="placeholder:text-14px placeholder:font-[400] placeholder:leading-[120%]"
-            ></CommonInput>
+            />
           </div>
           {/* 개인 정보 동의 영역 */}
           <div>
@@ -340,13 +338,13 @@ const RentalInformationSubmitPage = () => {
                 label={label1}
                 checked={firstConsentChecked}
                 onCheckedChange={setFirstConsentChecked}
-              ></ConsentSectionCard>
+              />
               {guaranteedGoods != "" && guaranteedGoods != "-" && (
                 <ConsentSectionCard
                   label={label2 + guaranteedGoods + label3}
                   checked={secondConsentChecked}
                   onCheckedChange={setSecondConsentChecked}
-                ></ConsentSectionCard>
+                />
               )}
             </div>
           </div>
