@@ -7,7 +7,7 @@ interface AdminCodeInputModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (rawToken: string) => void;
-  rentalId?: number;
+  rentalId: number;
   codeLength?: number;
 }
 
