@@ -283,7 +283,7 @@ const LongRentalApprovalModal = ({
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col">
                   <div className="flex gap-1">
-                    <p className="text-20px text-neutral-gray-1 font-[600] leading-[140%]">
+                    <p className="w-60 truncate text-20px text-neutral-gray-1 font-[600] leading-[140%]">
                       {itemName}
                     </p>
                     {approvalApiMode == "admin" && count ? (
@@ -293,7 +293,7 @@ const LongRentalApprovalModal = ({
                     ) : null}
                   </div>
                   {itemUnitLabelValue ? (
-                    <p className="text-14px text-neutral-gray-1 font-[600] leading-[20px]">
+                    <p className="w-60 truncate text-14px text-neutral-gray-1 font-[600] leading-[20px]">
                       {itemUnitLabelValue}
                     </p>
                   ) : null}

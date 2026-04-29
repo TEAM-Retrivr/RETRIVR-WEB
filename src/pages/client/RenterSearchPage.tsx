@@ -80,141 +80,142 @@ const RenterSearchPage = () => {
       {/* 헤더 영역 */}
       <Header pageName="대여지 찾기" backTo="/"></Header>
 
-      {/* 검색 영역 - 검색 바 + 검색 결과 목록 */}
-      <div className="flex flex-col pt-6.5 px-8 gap-3 pb-32">
-        {/* 검색 바 영역 */}
-        <form
-          onSubmit={handleSubmit}
-          className="w-84.5 h-11 flex items-center justify-between font-[Pretendard] rounded-small border border-primary"
-        >
-          <input
-            className="flex-1 border-none outline-none pl-3 py-3 text-14px text-neutral-gray-1 font-[600] placeholder:text-neutral-gray-3 placeholder:text-14px "
-            type="text"
-            value={inputValue}
-            onChange={(e) => {
-              const next = e.target.value;
-              setInputValue(next);
-              setKeyword(next.trim());
-              setSelectedOrg(null);
-            }}
-            placeholder="대여지 정보로 찾기"
-          />
-          <button type="submit" className="pr-3">
-            <img src="/icons/search.svg" alt="검색" />
-          </button>
-        </form>
-        {/* 검색 결과 영역 */}
-        <div className="w-full font-[Pretendard] rounded-[14px]">
-          {!keyword && (
-            <div className="w-full text-20px text-primary text-center font-[600] leading-[140%] py-20.5">
-              <p>안녕하세요, 대여자님!</p>
-              <p>대여지를 검색하여 입장하세요</p>
-            </div>
-          )}
-
-          <div className="flex flex-col px-0.25 gap-3.5 pt-6.5">
-            {keyword && (
-              <div className="flex flex-col justify-center gap-2.5">
-                {isLoading && (
-                  <p className="text-20px text-center text-neutral-gray-3">
-                    검색 중...
-                  </p>
-                )}
-                {error && (
-                  <p className="text-20px text-secondary-1 font-[600]">
-                    대여지를 검색하는 중 오류가 발생했습니다.
-                  </p>
-                )}
-                {!isLoading && !error && organizations.length === 0 && (
-                  <p className="text-20px text-center text-secondary-2 font-[600]">
-                    검색 결과가 없습니다.
-                  </p>
-                )}
-                {!isLoading &&
-                  !error &&
-                  organizations.map((org) => (
-                    <button
-                      key={org.organizationId}
-                      type="button"
-                      className={`group flex items-center h-21.5 px-4 border rounded-[16px] cursor-pointer shadow-search-profile transition-colors ${
-                        selectedOrg?.organizationId === org.organizationId
-                          ? "bg-secondary-4 border-secondary-4"
-                          : "bg-neutral-white border-secondary-4"
-                      }`}
-                      onClick={() => {
-                        setSelectedOrg({
-                          organizationId: org.organizationId,
-                          name: org.name,
-                          imageURL: org.imageURL,
-                        });
-                      }}
-                    >
-                      <div className="flex justify-start items-center gap-4.5">
-                        <UserIcon
-                          usage="search"
-                          imageURL={org.imageURL}
-                        ></UserIcon>
-                        <span className="text-16px font-[600]">
-                          <HighlightedText text={org.name} query={keyword} />
-                        </span>
-                      </div>
-                    </button>
-                  ))}
+      <div className="relative flex flex-1 flex-col overflow-hidden">
+        {/* 검색 영역 - 검색 바 + 검색 결과 목록 */}
+        <div className="flex flex-1 flex-col overflow-y-auto pt-6.5 px-8 gap-3 pb-32 no-scrollbar">
+          {/* 검색 바 영역 */}
+          <form
+            onSubmit={handleSubmit}
+            className="w-84.5 h-11 flex items-center justify-between font-[Pretendard] rounded-small border border-primary"
+          >
+            <input
+              className="flex-1 border-none outline-none pl-3 py-3 text-14px text-neutral-gray-1 font-[600] placeholder:text-neutral-gray-3 placeholder:text-14px "
+              type="text"
+              value={inputValue}
+              onChange={(e) => {
+                const next = e.target.value;
+                setInputValue(next);
+                setKeyword(next.trim());
+                setSelectedOrg(null);
+              }}
+              placeholder="대여지 정보로 찾기"
+            />
+            <button type="submit" className="pr-3">
+              <img src="/icons/search.svg" alt="검색" />
+            </button>
+          </form>
+          {/* 검색 결과 영역 */}
+          <div className="w-full font-[Pretendard] rounded-[14px]">
+            {!keyword && (
+              <div className="w-full text-20px text-primary text-center font-[600] leading-[140%] py-20.5">
+                <p>안녕하세요, 대여자님!</p>
+                <p>대여지를 검색하여 입장하세요</p>
               </div>
             )}
+
+            <div className="flex flex-col px-0.25 gap-3.5 pt-6.5">
+              {keyword && (
+                <div className="flex flex-col justify-center gap-2.5">
+                  {isLoading && (
+                    <p className="text-20px text-center text-neutral-gray-3">
+                      검색 중...
+                    </p>
+                  )}
+                  {error && (
+                    <p className="text-20px text-secondary-1 font-[600]">
+                      대여지를 검색하는 중 오류가 발생했습니다.
+                    </p>
+                  )}
+                  {!isLoading && !error && organizations.length === 0 && (
+                    <p className="text-20px text-center text-secondary-2 font-[600]">
+                      검색 결과가 없습니다.
+                    </p>
+                  )}
+                  {!isLoading &&
+                    !error &&
+                    organizations.map((org) => (
+                      <button
+                        key={org.organizationId}
+                        type="button"
+                        className={`group flex items-center h-21.5 px-4 border rounded-[16px] cursor-pointer shadow-search-profile transition-colors ${
+                          selectedOrg?.organizationId === org.organizationId
+                            ? "bg-secondary-4 border-secondary-4"
+                            : "bg-neutral-white border-secondary-4"
+                        }`}
+                        onClick={() => {
+                          setSelectedOrg({
+                            organizationId: org.organizationId,
+                            name: org.name,
+                            imageURL: org.imageURL,
+                          });
+                        }}
+                      >
+                        <div className="flex justify-start items-center gap-4.5">
+                          <UserIcon usage="search" imageURL={org.imageURL} />
+                          <span className="text-16px font-[600]">
+                            <HighlightedText text={org.name} query={keyword} />
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
+        {!(keyword && organizations.length !== 0) && (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center">
+            <img
+              className="h-auto w-full max-w-[402px] object-contain"
+              src="/icons/client/search-bg.svg"
+              alt="이미지"
+            />
+          </div>
+        )}
+        {organizations.length !== 0 && selectedOrg && (
+          <div className="absolute inset-x-0 bottom-12 z-20 flex justify-center px-8">
+            <div className="flex w-full max-w-[402px] flex-col items-center justify-center gap-1.5">
+              <p className="text-center text-10px text-primary font-normal leading-[130%]">
+                해당 대여지가 맞나요?
+              </p>
+              <Button
+                variant="primary"
+                size="lg"
+                disabled={!selectedOrg}
+                onClick={() => {
+                  if (!selectedOrg) return;
+                  queryClient.setQueryData(
+                    ["selectedOrganization", selectedOrg.organizationId],
+                    {
+                      name: selectedOrg.name,
+                      imageURL: selectedOrg.imageURL,
+                    },
+                  );
+                  sessionStorage.setItem(
+                    CLIENT_HOME_STATE_STORAGE_KEY,
+                    JSON.stringify({
+                      organizationId: selectedOrg.organizationId,
+                      name: selectedOrg.name,
+                      imageURL: selectedOrg.imageURL,
+                    }),
+                  );
+                  navigate(
+                    `/client-home?organizationId=${selectedOrg.organizationId}`,
+                    {
+                      state: {
+                        name: selectedOrg.name,
+                        imageURL: selectedOrg.imageURL,
+                      },
+                    },
+                  );
+                }}
+              >
+                확인
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
-      {!(keyword && organizations.length !== 0) && (
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center">
-          <img
-            className="h-auto w-full max-w-[402px] object-contain"
-            src="/icons/client/search-bg.svg"
-            alt="이미지"
-          />
-        </div>
-      )}
-      {organizations.length !== 0 && selectedOrg && (
-        <div className="fixed left-1/2 bottom-12 z-20 flex w-full max-w-[402px] -translate-x-1/2 flex-col items-center justify-center gap-1.5 px-8">
-          <p className="text-center text-10px text-primary font-normal leading-[130%]">
-            해당 대여지가 맞나요?
-          </p>
-          <Button
-            variant="primary"
-            size="lg"
-            disabled={!selectedOrg}
-            onClick={() => {
-              if (!selectedOrg) return;
-              queryClient.setQueryData(
-                ["selectedOrganization", selectedOrg.organizationId],
-                {
-                  name: selectedOrg.name,
-                  imageURL: selectedOrg.imageURL,
-                },
-              );
-              sessionStorage.setItem(
-                CLIENT_HOME_STATE_STORAGE_KEY,
-                JSON.stringify({
-                  organizationId: selectedOrg.organizationId,
-                  name: selectedOrg.name,
-                  imageURL: selectedOrg.imageURL,
-                }),
-              );
-              navigate(
-                `/client-home?organizationId=${selectedOrg.organizationId}`,
-                {
-                  state: {
-                    name: selectedOrg.name,
-                    imageURL: selectedOrg.imageURL,
-                  },
-                },
-              );
-            }}
-          >
-            확인
-          </Button>
-        </div>
-      )}
     </Layout>
   );
 };

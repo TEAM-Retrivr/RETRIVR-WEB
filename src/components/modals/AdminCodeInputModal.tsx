@@ -200,25 +200,31 @@ const AdminCodeInputModal = ({
 
           <div className="flex gap-1.5">
             {adminCode.map((digit, index) => (
-              <input
-                key={index}
-                ref={(el) => {
-                  inputRefs.current[index] = el;
-                }}
-                type="text"
-                inputMode="numeric"
-                maxLength={1}
-                value={digit}
-                onChange={(e) => handleAdminCodeChange(index, e.target.value)}
-                onKeyDown={(e) => handleKeyDown(index, e)}
-                onFocus={(e) => e.currentTarget.select()}
-                onPaste={(e) => handlePaste(index, e)}
-                className={`h-10 w-9 rounded-[6px] border bg-[#F8F9F9] text-center text-18px text-secondary-1 font-bold caret-secondary-1 focus:border-secondary-1 focus:outline-none focus:ring-0 ${
-                  isErrorHighlightActive
-                    ? "border-red-500"
-                    : "border-neutral-gray-5"
-                }`}
-              />
+              <div key={index} className="relative h-10 w-9">
+                <input
+                  ref={(el) => {
+                    inputRefs.current[index] = el;
+                  }}
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={1}
+                  value={digit}
+                  onChange={(e) => handleAdminCodeChange(index, e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(index, e)}
+                  onFocus={(e) => e.currentTarget.select()}
+                  onPaste={(e) => handlePaste(index, e)}
+                  className={`h-10 w-9 rounded-[6px] border bg-[#F8F9F9] text-center text-18px text-transparent font-bold caret-secondary-1 focus:border-secondary-1 focus:outline-none focus:ring-0 ${
+                    isErrorHighlightActive
+                      ? "border-red-500"
+                      : "border-neutral-gray-5"
+                  }`}
+                />
+                {digit && (
+                  <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-18px font-bold text-secondary-1">
+                    *
+                  </span>
+                )}
+              </div>
             ))}
           </div>
         </div>
