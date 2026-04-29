@@ -320,8 +320,8 @@ const RentalInformationSubmitPage = () => {
         <div className="w-84.5 h-44 font-[Pretendard] bg-secondary-4 border border-secondary-5 border-[0.5px] rounded-[16px] mt-6 mx-7.75">
           <div className="pt-7.25 pl-8 pb-7.75">
             <div className="flex flex-col text-neutral-gray-1">
-              <p className=" text-24px font-bold">{itemName}</p>
-              <p className="text-neutral-gray-2 text-16px font-[500] leading-none">
+              <p className="w-60 truncate text-24px font-bold">{itemName}</p>
+              <p className="w-60 truncate text-neutral-gray-2 text-16px font-[500] leading-none">
                 {selectedItemUnitLabel}
               </p>
             </div>
