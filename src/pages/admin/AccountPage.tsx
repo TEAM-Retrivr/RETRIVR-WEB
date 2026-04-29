@@ -166,7 +166,7 @@ const AccountPage = () => {
               canvasRef={qrCanvasRef}
               className="w-40 h-40"
               centerLogoSrc="/icons/symbol.svg"
-              centerLogoSize={48}
+              centerLogoSize={24}
             />
 
             <div className="flex w-full items-center justify-between gap-2 rounded-[14px] bg-[#F6F8FB] px-4 py-3">
