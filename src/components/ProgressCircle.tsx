@@ -34,11 +34,11 @@ export const ProgressCircle = ({
   const circumference = 2 * Math.PI * radius;
   return (
     <div
-      className="relative w-13 h-13"
+      className="relative w-13 h-13 rounded-full"
       style={{
-        boxShadow: isActive
-          ? "0 0 8.778px rgba(181, 244, 255, 0.5)"
-          : "0 0 8.778px rgba(230, 234, 237, 1)",
+        backgroundColor: isActive
+          ? "rgba(181, 244, 255, 0.18)"
+          : "rgba(230, 234, 237, 0.35)",
       }}
     >
       {/* 이미지에서 보이는 ‘원형 링(테두리)’ 전체를 그리는 SVG 캔버스 */}
