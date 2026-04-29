@@ -150,7 +150,7 @@ const PRIVACY_CONTENT_BY_USER_TYPE: Record<"admin" | "client", string> = {
 7. 개인정보 보호 책임자
 
 * 이름: 박다솔
-* 이메일: [pds2023@gmail.com]`,
+* 이메일: pds2023@gmail.com`,
   client: `1. 수집하는 개인정보 항목
    서비스는 다음과 같은 개인정보를 수집합니다.
 
@@ -190,7 +190,7 @@ const PRIVACY_CONTENT_BY_USER_TYPE: Record<"admin" | "client", string> = {
 7. 개인정보 보호 책임자
 
 * 이름: 박다솔
-* 이메일: [pds2023@gmail.com]
+* 이메일: pds2023@gmail.com
 `,
 };
 
