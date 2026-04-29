@@ -246,7 +246,7 @@ const ReturnManagementPage = () => {
           <p className="text-neutral-gray-3 text-12px mt-1.5 px-1 font-normal leading-[130%] ">
             물품별 잔여 수량을 확인하고 반납 관리를 해보세요.
           </p>
-          <div className="w-full flex flex-col pt-4 px-1 overflow-y-auto gap-3 no-scrollbar">
+          <div className="w-full flex flex-col pt-4 pb-8 px-1 overflow-y-auto gap-3 no-scrollbar">
             {isRentalItemsLoading && (
               <p className="text-neutral-gray-3 text-14px">로딩 중...</p>
             )}

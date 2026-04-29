@@ -128,7 +128,11 @@ const AccountPage = () => {
               src={userProfile.profileImageUrl}
               alt="프로필 이미지"
             />
-            <button className="absolute right-0 bottom-0 flex items-center bg-neutral-white justify-center w-7 h-7 rounded-[50%] shadow-camera cursor-pointer">
+            <button
+              type="button"
+              onClick={() => alert("개발 예정입니다.")}
+              className="absolute right-0 bottom-0 flex items-center bg-neutral-white justify-center w-7 h-7 rounded-[50%] shadow-camera cursor-pointer"
+            >
               <img src="/icons/camera.svg" alt="프로필 이미지 변경하기" />
             </button>
           </div>
@@ -142,6 +146,7 @@ const AccountPage = () => {
           </div>
           <button
             type="button"
+            onClick={() => alert("개발 예정입니다.")}
             className="w-45 h-9.75 border border-primary shadow-primary rounded-[23.164px] hover:bg-bg-pale cursor-pointer"
           >
             <p className="text-center text-14px text-primary font-bold">
