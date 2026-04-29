@@ -346,7 +346,7 @@ const RegisterPage = () => {
           ></CommonInput>
         </div>
       </div>
-      <div className="w-full flex flex-col items-center mt-auto mb-10">
+      <div className="w-full flex flex-col items-center mt-14.5 mb-10">
         <Button
           variant="primary"
           size="lg"
