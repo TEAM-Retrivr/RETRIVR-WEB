@@ -15,6 +15,7 @@ interface ShortRentalApproveModalProps {
     name: string;
     borrower: string;
     duration: string;
+    guaranteedGoods?: string;
   };
 }
 
@@ -22,7 +23,7 @@ export const ShortRentalApprovalModal = ({
   isOpen,
   onClose,
   rentalId,
-  // itemData,
+  itemData,
 }: ShortRentalApproveModalProps) => {
   const [adminName, setAdminName] = useState("");
   const [isGuaranteedChecked, setIsGuaranteedChecked] = useState(false);
@@ -68,7 +69,7 @@ export const ShortRentalApprovalModal = ({
     <Modal isOpen={isOpen} onClose={onClose} title="요청을 승인하시겠어요?">
       <div className="flex flex-col pt-7 gap-4 font-[Pretendard]">
         {/* 보증 물품을 확인했어요 체크 박스 */}
-        <div className="flex w-full h-16 justify-between items-center px-5 py-3.5  border border-neutral-gray-5 rounded-[10px]">
+        <div className="flex w-full h-16 justify-between items-center px-5 py-3.5  border border-neutral-gray-4/50 rounded-[10px]">
           <div className="">
             <div>
               <span className="text-14px text-neutral-gray-1 font-bold">
@@ -76,7 +77,9 @@ export const ShortRentalApprovalModal = ({
               </span>
               <span className="text-14px text-primary font-bold ml-1">*</span>
             </div>
-            <p className=""></p>
+            <p className="text-12px text-neutral-gray-3 font-normal leading-[140%]">
+              보증 물품: {itemData.guaranteedGoods?.trim() || "없음"}
+            </p>
           </div>
           <CustomCheckBox
             checked={isGuaranteedChecked}

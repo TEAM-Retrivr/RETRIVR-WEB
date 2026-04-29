@@ -12,5 +12,7 @@ export interface RentalRequest {
   itemName: string; // 대여 물품 이름
   itemId?: string; // 물품 고유 번호
   itemCount: string; // 대여 물품 수량 (남은 수량/ 총 수량)
+  rentalDuration?: number; // 대여 기간(일)
+  guaranteedGoods?: string; // 보증 물품
   applicantInfo: ApplicantInfo; // 대여자 정보
 }

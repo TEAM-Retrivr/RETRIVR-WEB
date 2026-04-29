@@ -8,6 +8,8 @@ interface RentRequestCardProps {
   count: string; // '남은 수량 / 전체 수량'
   applicant: string; // '대여 요청자 | 소속'
   time: string; // '대여 요청이 들어온 시각'
+  rentalDuration?: number;
+  guaranteedGoods?: string;
 }
 
 export const RentRequestCard = ({
@@ -16,6 +18,8 @@ export const RentRequestCard = ({
   count,
   applicant,
   time,
+  rentalDuration,
+  guaranteedGoods,
 }: RentRequestCardProps) => {
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
   return (
@@ -44,6 +48,8 @@ export const RentRequestCard = ({
         count={count}
         applicant={applicant}
         time={time}
+        rentalDurationDays={rentalDuration}
+        guaranteedGoods={guaranteedGoods}
       />
     </>
   );

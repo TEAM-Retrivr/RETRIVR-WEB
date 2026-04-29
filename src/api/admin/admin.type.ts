@@ -58,6 +58,7 @@ export interface AdminOverdueRental {
   dueDate: string; // ISO date string
   overdueDays: number;
   sendOverdueSmsDates: string[];
+  canSendOverdueSms?: boolean;
 }
 
 export interface AdminOverdueRentalListResponse {

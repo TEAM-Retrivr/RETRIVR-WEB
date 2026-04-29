@@ -121,7 +121,7 @@ const Home = () => {
           </div>
         </div>
         {/* 대여 요청 섹션 */}
-        <div className="mt-7 mx-4 bg-rental-gradient w-full max-w-[350px] h-80 rounded-[33px] overflow-y-auto">
+        <div className="mt-7 mx-4 bg-rental-gradient w-87.5 h-80 rounded-[33px]">
           <div className="flex justify-between pt-8">
             <div className="w-full flex text-28px font-bold pl-7.5 leading-none">
               <p className="text-neutral-gray-1 pr-1">대여 요청</p>
@@ -139,16 +139,16 @@ const Home = () => {
           </div>
           <div>
             {rentRequests.length === 0 ? (
-              <div className="relative flex items-center justify-between w-full h-full ">
+              <div className="relative flex items-center justify-between w-full ">
                 <img
-                  className="w-full mt-0"
+                  className="absolute top-0 "
                   src="/icons/home/no-rental-icon.svg"
                   alt=""
                 />
               </div>
             ) : (
               /* 대여 요청 있는 경우 - 수직으로 가장 오래된 요청부터 하단으로 나열 */
-              <div className="flex flex-col gap-3 items-center  mt-[9.034%]">
+              <div className="flex flex-col gap-3 items-center  mt-[9.034%] overflow-y-auto">
                 {rentRequests.map((items) => (
                   <RentRequestCard
                     key={items.id}

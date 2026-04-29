@@ -8,8 +8,16 @@ interface RentalConfirmCardProps {
 }
 
 const RentalConfirmCard = ({ rental }: RentalConfirmCardProps) => {
-  const { rentalId, requestedAt, itemName, itemId, itemCount, applicantInfo } =
-    rental;
+  const {
+    rentalId,
+    requestedAt,
+    itemName,
+    itemId,
+    itemCount,
+    rentalDuration,
+    guaranteedGoods,
+    applicantInfo,
+  } = rental;
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleOpenModal = () => {
@@ -49,16 +57,15 @@ const RentalConfirmCard = ({ rental }: RentalConfirmCardProps) => {
             {/* 대여 기간 / 보증 물품 (하드코딩) */}
             <div className="mt-2.5 pl-2.5">
               <ul className="list-disc pl-5 text-14px font-normal leading-[140%] text-neutral-gray-1">
-                <li>대여 기간 : 3일</li>
-                <li>보증 물품 O : 신분증 or 학생증</li>
+                <li>대여 기간 : {rentalDuration ?? "-"}일</li>
+                <li>보증 물품 : {guaranteedGoods?.trim() || "없음"}</li>
               </ul>
             </div>
 
             {/* 대여자 정보 영역 */}
             <div className="mt-5 border-t border-neutral-gray-4/50 pt-4.5 pl-2.5 text-14px font-normal leading-[140%] text-secondary-1">
               <p>이름: {applicantInfo.name}</p>
-              <p>학과: {applicantInfo.major}</p>
-              <p>학번: {applicantInfo.id}</p>
+              {/*<p>연락처: {applicantInfo.phone}</p>*/}
             </div>
 
             {/* 버튼 영역 */}
@@ -79,7 +86,8 @@ const RentalConfirmCard = ({ rental }: RentalConfirmCardProps) => {
         itemData={{
           name: itemName,
           borrower: applicantInfo.name,
-          duration: "3일",
+          duration: `${rentalDuration ?? "-"}일`,
+          guaranteedGoods: guaranteedGoods?.trim() || "없음",
         }}
       />
     </>

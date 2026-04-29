@@ -29,7 +29,7 @@ const ReturnConfirmCard = ({
   const [isOverdueMessageOpen, setIsOverdueMessageOpen] = useState(false);
 
   return (
-    <div className="flex flex-col w-46.5 h-39.5 box-border px-3 py-3.5 rounded-[24px] shadow-consent-card">
+    <div className="flex flex-col w-46.5 h-39.5 box-border px-3 py-3.5 rounded-[24px] shadow-16-gray">
       {/* */}
       <div className="flex flex-col mt-2.5 px-1">
         {/* 반납 연체일 + 연체 문자 발송된 시각 */}

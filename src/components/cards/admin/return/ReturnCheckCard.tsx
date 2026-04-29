@@ -83,6 +83,8 @@ const ReturnCheckCard = ({
               {/* 대여자 정보 영역 - 이름, 학과, 학번  */}
               <div className="text-12px text-neutral-gray-1 font-normal leading-[140%]">
                 <p>이름: {rental.borrowerName}</p>
+                <p>연락처: {rental.borrowerPhone}</p>
+
                 {rental.borrowerFields?.additionalProp1 && (
                   <p>학과: {rental.borrowerFields?.additionalProp1}</p>
                 )}
