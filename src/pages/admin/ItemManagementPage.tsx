@@ -39,11 +39,7 @@ const ItemManagementPage = () => {
   if (!hasItems) {
     return (
       <Layout>
-        <Header
-          name={organizationName}
-          pageName="물품 관리"
-          backTo="/home"
-        ></Header>
+        <Header name={organizationName} pageName="물품 관리" backTo="/home" />
         <div className="flex flex-col w-full mt-48 items-center font-[Pretendard] font-normal">
           <img className="w-42" src="/icons/symbol.svg" alt="심볼 로고" />
           <p className="text-[#000] opacity-[0.39] text-16px ">
