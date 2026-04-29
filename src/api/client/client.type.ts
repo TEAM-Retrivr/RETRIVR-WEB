@@ -41,6 +41,9 @@ export interface BorrowerInformationRequest {
   itemUnitId?: number | null; // Long, nullable. 개별 코드형 물품일 경우에만 사용
   name: string; // String, 필수. 대여자 이름
   phone: string; // String, 필수. 대여자 전화번호 (예: 010-1234-5678)
+  // 연락처 인증 검증 성공 시 발급되는 토큰들
+  rawToken: string;
+  tokenId: string;
   renterFields: {
     // JSON Object, 필수. 추가 대여자 정보 (자유 key-value, 입력값 그대로 전달)
     [key: string]: string; // 요청사항/학과/학번 등 자유 필드

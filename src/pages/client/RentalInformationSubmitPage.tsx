@@ -113,7 +113,8 @@ const RentalInformationSubmitPage = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [phoneVerificationCode, setPhoneVerificationCode] = useState("");
   const [phoneVerificationId, setPhoneVerificationId] = useState("");
-  const [, setPhoneVerificationToken] = useState("");
+  const [phoneVerificationToken, setPhoneVerificationToken] = useState("");
+  const [phoneVerificationTokenId, setPhoneVerificationTokenId] = useState("");
   const [isPhoneVerificationComplete, setIsPhoneVerificationComplete] =
     useState(false);
   const [requestment, setRequestment] = useState("");
@@ -189,7 +190,19 @@ const RentalInformationSubmitPage = () => {
       },
       {
         onSuccess: (data) => {
-          setPhoneVerificationToken(data.verificationToken);
+          const verificationToken =
+            data.verificationToken ?? data.rawToken ?? "";
+          const verificationTokenId =
+            data.verificationTokenId ?? data.tokenId ?? "";
+
+          // 토큰이 없으면 인증 완료 처리하지 않음
+          if (!verificationToken.trim() || !verificationTokenId.trim()) {
+            alert("인증이 완료되지 않았습니다. 다시 시도해주세요.");
+            return;
+          }
+
+          setPhoneVerificationToken(verificationToken);
+          setPhoneVerificationTokenId(verificationTokenId);
           setIsPhoneVerificationComplete(true);
           alert("인증이 완료되었습니다.");
         },
@@ -257,6 +270,8 @@ const RentalInformationSubmitPage = () => {
       name: normalizedName,
       phone: normalizedPhone,
       renterFields,
+      rawToken: phoneVerificationToken,
+      tokenId: phoneVerificationTokenId,
     };
 
     sendRentalRequest(

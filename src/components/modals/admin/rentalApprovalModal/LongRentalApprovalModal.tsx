@@ -255,8 +255,21 @@ const LongRentalApprovalModal = ({
     );
   };
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="요청을 승인하시겠어요?">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="요청을 승인하시겠어요?"
+      showTitle={approvalApiMode !== "public"}
+    >
       {/* 전체 영역 */}
+      {approvalApiMode === "public" && (
+        <div className="flex flex-col items-center gap-2 mt-1 font-[Pretendard]">
+          <p className="text-16px font-[600] text-primary">현장 즉시 승인</p>
+          <p className="text-24px font-bold text-secondary-1 text-center leading-[140%]">
+            요청을 승인하시겠어요?
+          </p>
+        </div>
+      )}
       <div className="flex flex-col w-full gap-8">
         {/* 대여정보 & 체크 & 승인 관리자 영역 */}
         <div className="flex flex-col pt-6.5 gap-5 font-[Pretendard]">

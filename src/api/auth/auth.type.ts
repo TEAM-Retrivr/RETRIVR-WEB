@@ -53,8 +53,12 @@ export interface VerifyPhoneVerificationCodeRequest {
 }
 
 export interface VerifyPhoneVerificationCodeResponse {
-  verificationToken: string;
-  verificationTokenId: string;
+  // 서버 응답 스펙이 버전/구현에 따라 달라질 수 있어 둘 다 optional로 지원
+  // (UI에서는 Borrow 요청 생성 API로 verificationToken/verificationTokenId가 필요)
+  verificationToken?: string;
+  verificationTokenId?: string;
+  rawToken?: string;
+  tokenId?: string;
 }
 
 // 3. 회원가입 요청
