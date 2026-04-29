@@ -21,7 +21,7 @@ const ItemStatusCard = ({ status, itemName }: CardProps) => {
   };
 
   // 기본 물품 텍스트 스타일
-  const baseItemTextStyle = "text-14px font-normal leading-[140%]";
+  const baseItemTextStyle = "truncate text-14px font-normal leading-[140%]";
 
   // 상태에 따른 물품 텍스트 스타일
   const itemTextStyleByStatus: Record<CardProps["status"], string> = {
@@ -65,7 +65,7 @@ const ItemStatusCard = ({ status, itemName }: CardProps) => {
   return (
     <div className={`${baseBoxStyle} ${boxStyleByStatus[status]}`}>
       <div className="min-w-0 flex-1">
-        <p className={`${baseItemTextStyle} ${itemTextStyleByStatus[status]}`}>
+        <p className={` ${baseItemTextStyle} ${itemTextStyleByStatus[status]}`}>
           {itemName}
         </p>
       </div>

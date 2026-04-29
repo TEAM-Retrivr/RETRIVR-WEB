@@ -118,7 +118,7 @@ const RentalAvailableItemCard = ({
       {/* 상단 영역 - 대여 물품 이름, 수량 표시 */}
       <div className="h-22.5 px-7 flex justify-between items-center">
         <p
-          className={`text-20px font-[600] ${
+          className={`truncate text-20px font-[600] ${
             canRent ? "text-neutral-gray-1" : "text-neutral-gray-3"
           }`}
         >
@@ -189,13 +189,13 @@ const RentalAvailableItemCard = ({
                                 : "bg-neutral-gray-5"
                             } cursor-pointer`}
                           >
-                            <span className="text-14px text-neutral-gray-2 font-normal leading-[140%] ">
+                            <span className="truncate w-50 text-14px text-neutral-gray-2 font-normal leading-[140%] ">
                               {unit.label}
                             </span>
                             {isAvailable ? (
                               <CustomCheckBox checked={isSelected} />
                             ) : (
-                              <span className="text-neutral-gray-3 text-12px font-normal leading-[140%]">
+                              <span className=" text-neutral-gray-3 text-12px font-normal leading-[140%]">
                                 대여 불가
                               </span>
                             )}
