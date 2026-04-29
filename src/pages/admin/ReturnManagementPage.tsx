@@ -126,9 +126,9 @@ const ReturnManagementPage = () => {
                   <p className="text-neutral-gray-3">이름</p>
                   <p className="text-[#444]">이리버</p>
                   <p className="text-neutral-gray-3 mt-3">학번</p>
-                  <p className="text-[#444]">202410384</p>
+                  <p className="text-[#444]">20260430</p>
                   <p className="text-neutral-gray-3 mt-3">학과</p>
-                  <p className="text-[#444]">동물자원과학과</p>
+                  <p className="text-[#444]">컴퓨터공학과</p>
                   <p className="text-neutral-gray-3 mt-3">대여 물품</p>
                   <p className="text-[#444]">c타입 충전기</p>
                 </div>
