@@ -263,10 +263,8 @@ const LongRentalApprovalModal = ({
     >
       {/* 전체 영역 */}
       {approvalApiMode === "public" && (
-        <div className="flex flex-col items-center gap-2 -mt-1 mb-4 font-[Pretendard]">
-          <p className="text-18px font-bold text-secondary-1 leading-[140%]">
-            현장 즉시 승인
-          </p>
+        <div className="flex flex-col items-center gap-2 mt-1 font-[Pretendard]">
+          <p className="text-16px font-[600] text-primary">현장 즉시 승인</p>
           <p className="text-24px font-bold text-secondary-1 text-center leading-[140%]">
             요청을 승인하시겠어요?
           </p>

@@ -175,7 +175,7 @@ const RenterSearchPage = () => {
         </div>
       )}
       {organizations.length !== 0 && selectedOrg && (
-        <div className="fixed left-1/2 bottom-24 z-20 flex w-full max-w-[402px] -translate-x-1/2 flex-col items-center justify-center gap-1.5 px-8">
+        <div className="fixed left-1/2 bottom-12 z-20 flex w-full max-w-[402px] -translate-x-1/2 flex-col items-center justify-center gap-1.5 px-8">
           <p className="text-center text-10px text-primary font-normal leading-[130%]">
             해당 대여지가 맞나요?
           </p>

@@ -274,11 +274,6 @@ const RentalInformationSubmitPage = () => {
       tokenId: phoneVerificationTokenId,
     };
 
-    if (import.meta.env.DEV) {
-      // 디버깅: 인증 토큰들이 rentals 요청 바디에 실리는지 확인
-      console.log("[RentalInformationSubmitPage] rentals request body", body);
-    }
-
     sendRentalRequest(
       {
         itemId,
