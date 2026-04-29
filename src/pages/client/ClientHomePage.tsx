@@ -144,7 +144,6 @@ const ClientHome = () => {
               <span className="text-neutral-white text-start text-16px font-[600]">
                 {displayOrganizationName}
               </span>
-              <img src="/icons/client/search-white.svg" alt="" />
             </div>
           </div>
         </div>

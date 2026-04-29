@@ -11,7 +11,9 @@ export const ProgressCircle = ({
   total,
   isActive,
 }: ProgressCircleProps) => {
-  const gradientId = useId();
+  const rawGradientId = useId();
+  // iOS WebKit 호환을 위해 useId 결과의 특수문자(: 등) 제거
+  const gradientId = `progress-gradient-${rawGradientId.replace(/[^a-zA-Z0-9_-]/g, "")}`;
   // NaN 방지용: available/total이 undefined, 0, 비수치인 경우를 안전하게 처리
   const safeAvailable =
     typeof available === "number" && Number.isFinite(available) ? available : 0;
@@ -34,9 +36,9 @@ export const ProgressCircle = ({
     <div
       className="relative w-13 h-13"
       style={{
-        filter: isActive
-          ? "var(--drop-shadow-progress-circle-on)"
-          : "var(--drop-shadow-progress-circle-off)",
+        boxShadow: isActive
+          ? "0 0 8.778px rgba(181, 244, 255, 0.5)"
+          : "0 0 8.778px rgba(230, 234, 237, 1)",
       }}
     >
       {/* 이미지에서 보이는 ‘원형 링(테두리)’ 전체를 그리는 SVG 캔버스 */}
@@ -77,7 +79,7 @@ export const ProgressCircle = ({
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
-          strokeDashoffset={String(-circumference * (1 - ratio))}
+          strokeDashoffset={String(circumference * (1 - ratio))}
           // 12시 방향에서 시작, 시계 방향으로 진행
           transform={`rotate(-90 ${center} ${center})`}
           className="transition-[stroke-dashoffset] duration-300 ease-out"
