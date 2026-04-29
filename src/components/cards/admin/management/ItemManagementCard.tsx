@@ -81,7 +81,7 @@ const ItemManagementCard = ({
   name,
   totalQuantity,
   availableQuantity,
-  isActive,
+  // isActive,
   itemManagementType,
   rentalDuration,
   description,
@@ -91,7 +91,8 @@ const ItemManagementCard = ({
 }: ItemManagementCardProps) => {
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isToggledOn, setIsToggledOn] = useState(isActive);
+  // TODO: 토글 기능은 추후 도입 예정
+  // const [isToggledOn, setIsToggledOn] = useState(isActive);
   const [isAdminCodeModalOpen, setIsAdminCodeModalOpen] = useState(false);
 
   // 목록 응답의 itemManagementType으로 사전 분기 (접힌 상태에서는 상세 GET이 없거나 실패할 수 있음)
@@ -115,7 +116,7 @@ const ItemManagementCard = ({
 
   return (
     <div className="w-87.5 min-h-25 overflow-hidden rounded-[16px] bg-neutral-white font-[Pretendard] shadow-item-card">
-      {/* 상단 영역 - 물품명, 토글, 총 개수, 화살표 */}
+      {/* 상단 영역 - 물품명, 총 개수, 화살표 */}
       <div className="flex h-25 items-center justify-between gap-3 px-7.5">
         <div className="flex flex-col min-w-0 gap-0.5">
           <div className="flex items-center gap-2.5">
@@ -123,29 +124,7 @@ const ItemManagementCard = ({
             <h3 className="truncate text-24px font-bold text-neutral-gray-1">
               {name}
             </h3>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={isToggledOn}
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsToggledOn((prev) => !prev);
-              }}
-              className="relative flex h-4.25 w-8 shrink-0 items-center rounded-full bg-neutral-gray-4"
-            >
-              {/* 배경을 직접 교체하지 않고, 그라데이션 레이어를 opacity로만 전환해서 깜빡임 방지 */}
-              <span
-                aria-hidden="true"
-                className={`absolute inset-0 rounded-full bg-logo-gradient transition-opacity duration-200 ${
-                  isToggledOn ? "opacity-100" : "opacity-0"
-                }`}
-              />
-              <span
-                className={`absolute left-0.5 top-1/2 h-[10px] w-[10px] -translate-y-1/2 rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                  isToggledOn ? "translate-x-4" : "translate-x-0"
-                }`}
-              />
-            </button>
+            {/* TODO: 토글 기능은 추후 도입 예정 */}
           </div>
           <p className="text-12px text-[#000000] opacity-[0.4] font-normal leading-[140%]">
             총 개수: {totalQuantity}개
