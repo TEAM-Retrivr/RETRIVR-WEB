@@ -29,7 +29,14 @@ const LandingPage = () => {
         <Button
           variant="primary"
           size="lg"
-          onClick={() => navigate("/client-search")}
+          onClick={() =>
+            navigate("/terms", {
+              state: {
+                userType: "client",
+                nextPath: "/client-search",
+              },
+            })
+          }
         >
           대여하기
         </Button>
