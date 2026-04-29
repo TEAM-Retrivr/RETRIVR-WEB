@@ -24,6 +24,7 @@ import type {
   PublicRejectRentalResponse,
 } from "./admin.type";
 import { apiClient } from "../core";
+import type { AxiosResponse } from "axios";
 
 // 관리자 물품 목록 조회 (기존 물품 관리 페이지용)
 // - 물품 관리 페이지에서 사용하는 기본 아이템 목록 조회
@@ -342,3 +343,17 @@ export const updateAdminItem = async ({
   );
   return response.data;
 };
+
+// 장부 엑셀 다운로드
+// GET /api/admin/v1/ledgers/excel
+// - Blob(.xlsx)과 응답 헤더(Content-Disposition)를 함께 사용하기 위해 전체 응답 반환
+export const requestAdminLedgerExcelDownload =
+  async (): Promise<AxiosResponse<Blob>> => {
+    return apiClient.get("/api/admin/v1/ledgers/excel", {
+      responseType: "blob",
+      headers: {
+        Accept:
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      },
+    });
+  };
