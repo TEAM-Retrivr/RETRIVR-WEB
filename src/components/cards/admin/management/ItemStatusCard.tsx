@@ -21,7 +21,8 @@ const ItemStatusCard = ({ status, itemName }: CardProps) => {
   };
 
   // 기본 물품 텍스트 스타일
-  const baseItemTextStyle = "truncate text-14px font-normal leading-[140%]";
+  const baseItemTextStyle =
+    "w-40 truncate text-14px font-normal leading-[140%]";
 
   // 상태에 따른 물품 텍스트 스타일
   const itemTextStyleByStatus: Record<CardProps["status"], string> = {
@@ -42,7 +43,7 @@ const ItemStatusCard = ({ status, itemName }: CardProps) => {
 
   // 기본 물품 상태 스타일
   const baseItemStatus =
-    "w-50 text-14px font-[Pretendard] font-bold leading-none";
+    "w-40 text-14px font-[Pretendard] font-bold leading-none";
   // 상태에 따른 물품 상태 스타일
   const itemStatusText: Record<CardProps["status"], string> = {
     rentalAvailable: "text-neutral-white",

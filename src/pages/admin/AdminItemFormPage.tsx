@@ -300,7 +300,9 @@ const AdminItemFormPage = ({
       mode === "edit" &&
       (!adminCodeVerificationToken || !adminCodeVerificationToken.trim())
     ) {
-      alert("관리자 코드 검증 토큰이 없어 수정할 수 없습니다. 다시 시도해주세요.");
+      alert(
+        "관리자 코드 검증 토큰이 없어 수정할 수 없습니다. 다시 시도해주세요.",
+      );
       return;
     }
 
@@ -712,7 +714,7 @@ const AdminItemFormPage = ({
             </p>
           </div>
 
-          <div className="h-13 flex items-center justify-start rounded-small bg-neutral-white shadow-item-card px-5 py-3.5 mb-2.5 gap-3">
+          {/* <div className="h-13 flex items-center justify-start rounded-small bg-neutral-white shadow-item-card px-5 py-3.5 mb-2.5 gap-3">
             <CustomCheckBox
               checked={sendOverdueMessageEnabled}
               onCheckedChange={setSendOverdueMessageEnabled}
@@ -720,7 +722,7 @@ const AdminItemFormPage = ({
             <span className="text-14px text-neutral-gray-2 font-[600]">
               독촉 문자 발송하기
             </span>
-          </div>
+          </div> */}
 
           <div className="rounded-small bg-neutral-white shadow-item-card px-5 py-4.25">
             <div className="flex items-center justify-start gap-3">
