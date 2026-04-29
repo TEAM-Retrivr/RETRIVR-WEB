@@ -50,7 +50,8 @@ const ClientHome = () => {
   }, [organizationId]);
 
   useEffect(() => {
-    if (!state || !Number.isFinite(organizationId) || organizationId <= 0) return;
+    if (!state || !Number.isFinite(organizationId) || organizationId <= 0)
+      return;
     sessionStorage.setItem(
       CLIENT_HOME_STATE_STORAGE_KEY,
       JSON.stringify({
@@ -68,7 +69,10 @@ const ClientHome = () => {
   const organizationName =
     state?.name ?? restoredState?.name ?? cachedOrganization?.name ?? "";
   const imageURL =
-    state?.imageURL ?? restoredState?.imageURL ?? cachedOrganization?.imageURL ?? "";
+    state?.imageURL ??
+    restoredState?.imageURL ??
+    cachedOrganization?.imageURL ??
+    "";
 
   const { data, isLoading, error } = useItemList({
     organizationId,
@@ -76,7 +80,8 @@ const ClientHome = () => {
     enabled: Number.isFinite(organizationId) && organizationId > 0,
   });
   const organizationNameFromItemsApi = data?.organizationName ?? "";
-  const displayOrganizationName = organizationNameFromItemsApi || organizationName;
+  const displayOrganizationName =
+    organizationNameFromItemsApi || organizationName;
 
   const itemRequests: ItemRequest[] =
     data?.items?.map((item) => ({
@@ -112,8 +117,8 @@ const ClientHome = () => {
     <Layout>
       {/* 화면 상단 영역 - 대여지 프로필 사진, 대여지명 */}
       <div
-        className="w-full max-w-[402px] h-[20%] max-h-[180px] pt-[12.66%]
-      px-[7.464%] bg-home-gradient rounded-bl-[45px]"
+        className="w-100.5 h-45 pt-12.5
+      px-7.5 bg-home-gradient rounded-bl-[45px]"
       >
         {/* 상단 뒤로가기 버튼 & 로고 텍스트 */}
         <div className="w-full flex justify-between">
@@ -122,7 +127,7 @@ const ClientHome = () => {
           </button>
           <img src="/icons/home/retrivr_text_outline.svg" alt="로고 텍스트" />
         </div>
-        <div className="flex w-full max-h-[72px] mt-[50.64px]">
+        <div className="flex w-full h-18 mt-13">
           {/* 프로필 사진 */}
           <UserIcon
             usage="home"
@@ -131,13 +136,16 @@ const ClientHome = () => {
           />
           <div />
           {/* 주소 및 단체 이름 */}
-          <div className="pl-[12px] pt-[12.68px] gap-[4px] font-[Pretendard] leading-none flex flex-col">
-            <span className="text-neutral-dark text-start text-[12px] font-[400]">
-              {/* 주소 영역 - 아직 구현 X */}
+          <div className="flex-1 pl-3 pt-3.25 gap-1 font-[Pretendard] leading-none flex flex-col">
+            <span className="text-neutral-gray-2 text-start text-12px font-normal">
+              대여지
             </span>
-            <span className="text-neutral-white text-start text-[16px] font-[600]">
-              {displayOrganizationName}
-            </span>
+            <div className="flex w-full gap-2">
+              <span className="text-neutral-white text-start text-16px font-[600]">
+                {displayOrganizationName}
+              </span>
+              <img src="/icons/client/search-white.svg" alt="" />
+            </div>
           </div>
         </div>
       </div>

@@ -107,6 +107,7 @@
   --shadow-account-profile: 0 0 5.144px 0 rgba(0, 0, 0, 0.14);
   --shadow-camera: 0 0 3.43px 0 rgba(0, 0, 0, 0.14);
   --shadow-consent-card: 0 0 16px -6px rgba(0, 0, 0, 0.08);
+  --shadow-consent-all-agreed: 0 0 2px -6px rgba(118, 173, 255, 0.5);
   --shadow-count-box: 0 0 18.7px -6px rgba(0, 0, 0, 0.17);
   --shadow-qr-box: 0 0 15.312px -5.742px rgba(0, 0, 0, 0.2);
   --shadow-16-gray: 0 0 18.922px -3.942px rgba(0, 0, 0, 0.1);

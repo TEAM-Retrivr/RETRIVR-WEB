@@ -159,7 +159,7 @@ const TermsConsentPage = () => {
             </p>
           </div>
           {/* 개인정보 처리방침 내용 박스 - 내부 스크롤 가능 */}
-          <div className="h-30 w-full overflow-y-auto rounded-[12px] border border-neutral-gray-4/50 bg-neutral-gray-6 p-4 text-12px text-neutral-gray-3 leading-[140%] [scrollbar-width:thin] [scrollbar-color:#d9d9d9_transparent] [&::-webkit-scrollbar]:w-px [&::-webkit-scrollbar-track]:my-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-track]:border-none [&::-webkit-scrollbar-thumb]:min-h-[20px] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#d9d9d9]">
+          <div className="h-30 w-full overflow-y-auto rounded-[12px] border border-neutral-gray-4/50 bg-neutral-gray-5 p-4 text-12px text-neutral-gray-3 leading-[140%] [scrollbar-width:thin] [scrollbar-color:#d9d9d9_transparent] [&::-webkit-scrollbar]:w-px [&::-webkit-scrollbar-track]:my-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-track]:border-none [&::-webkit-scrollbar-thumb]:min-h-[20px] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#d9d9d9]">
             <div className="pb-3">
               <p className="font-bold ">1. 수집하는 개인정보</p>
               <p>
@@ -189,7 +189,11 @@ const TermsConsentPage = () => {
       {/* 하단 CTA 영역 - 필수 약관 동의 완료 시 활성화 */}
       <div className="mt-auto mb-12 flex flex-col w-full items-center gap-5">
         {/* 모두 동의 체크 영역 */}
-        <div className="w-84.5 flex gap-2.5 px-4 py-3.5 bg-neutral-gray-5 border border-neutral-gray-4/50 rounded-[12px]">
+        <div
+          className={`w-84.5 flex gap-2.5 px-4 py-3.5 border border-neutral-gray-4/50 rounded-[12px] ${
+            isAllRequiredChecked ? "bg-secondary-4" : "bg-neutral-gray-5"
+          }`}
+        >
           <CustomCheckBox
             checked={isAllRequiredChecked}
             onCheckedChange={handleAllCheckedChange}
