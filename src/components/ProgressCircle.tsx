@@ -1,3 +1,5 @@
+import { useId } from "react";
+
 interface ProgressCircleProps {
   available: number;
   total: number;
@@ -9,6 +11,7 @@ export const ProgressCircle = ({
   total,
   isActive,
 }: ProgressCircleProps) => {
+  const gradientId = useId();
   // NaN 방지용: available/total이 undefined, 0, 비수치인 경우를 안전하게 처리
   const safeAvailable =
     typeof available === "number" && Number.isFinite(available) ? available : 0;
@@ -45,13 +48,7 @@ export const ProgressCircle = ({
       >
         <defs>
           {/* 진행 링에 쓰는 그라데이션(파랑 -> 회색) 정의 */}
-          <linearGradient
-            id="progress-gradient"
-            x1="0%"
-            y1="0%"
-            x2="100%"
-            y2="100%"
-          >
+          <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="var(--color-grad-blue)" />
             <stop offset="100%" stopColor="var(--color-neutral-gray-5)" />
           </linearGradient>
@@ -76,7 +73,7 @@ export const ProgressCircle = ({
           cy={center}
           r={radius}
           fill="#FFF"
-          stroke="url(#progress-gradient)"
+          stroke={`url(#${gradientId})`}
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
