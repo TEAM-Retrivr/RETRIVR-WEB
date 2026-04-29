@@ -127,7 +127,7 @@ const QRcodeModal = ({
           canvasRef={qrCanvasRef}
           className="w-50 h-50"
           centerLogoSrc="/icons/symbol.svg"
-          centerLogoSize={24}
+          centerLogoSize={36}
         />
 
         <div className="flex flex-col items-center gap-1">
