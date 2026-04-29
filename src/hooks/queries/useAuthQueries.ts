@@ -2,6 +2,8 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   sendEmailCode,
   verifyEmailCode,
+  sendPhoneVerificationCode,
+  verifyPhoneVerificationCode,
   requestRegisteration,
   requestLogin,
   requestLoadHome,
@@ -45,6 +47,36 @@ export const useVerifyEmailCode = () => {
     },
     onError: (error: any) => {
       console.log("인증 실패", error);
+    },
+  });
+};
+
+//
+// 2-1. 휴대폰 인증 코드 발송
+//
+export const useSendPhoneVerificationCode = () => {
+  return useMutation({
+    mutationFn: sendPhoneVerificationCode,
+    onSuccess: () => {
+      console.log("휴대폰 인증 코드 발송 성공");
+    },
+    onError: (error: any) => {
+      console.log("휴대폰 인증 코드 발송 실패", error);
+    },
+  });
+};
+
+//
+// 2-2. 휴대폰 인증 코드 검증
+//
+export const useVerifyPhoneVerificationCode = () => {
+  return useMutation({
+    mutationFn: verifyPhoneVerificationCode,
+    onSuccess: () => {
+      console.log("휴대폰 인증 코드 검증 성공");
+    },
+    onError: (error: any) => {
+      console.log("휴대폰 인증 코드 검증 실패", error);
     },
   });
 };
