@@ -2,6 +2,16 @@
   "rewrites": [
     {
       "source": "/api/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "retrivr-web.vercel.app"
+        }
+      ],
+      "destination": "https://dev-api.retrivr-server.kr/api/:path*"
+    },
+    {
+      "source": "/api/:path*",
       "destination": "https://retrivr-server.kr/api/:path*"
     },
     {

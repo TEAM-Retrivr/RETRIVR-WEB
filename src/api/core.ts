@@ -1,12 +1,9 @@
 import axios from "axios";
 
 export const apiClient = axios.create({
-  // 프록시를 타야 하므로 baseURL을 비워두기
-  // 배포 이후에 확인 필요
-  baseURL:
-    import.meta.env.MODE === "development"
-      ? import.meta.env.VITE_API_BASE_URL
-      : "",
+  // 모든 환경에서 상대 경로(/api)로 요청하고
+  // 환경별 라우팅은 Vite proxy/Vercel rewrite가 담당합니다.
+  baseURL: "",
   headers: {
     "Content-Type": "application/json",
   },
