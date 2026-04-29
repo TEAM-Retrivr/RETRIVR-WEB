@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface HeaderProps {
@@ -7,6 +8,7 @@ interface HeaderProps {
   pageIconAlt?: string; // 아이콘 대체 텍스트
   backTo?: string; // 특정 경로로 이동
   onBackClick?: () => void; // 완전 커스텀 핸들러
+  rightAction?: ReactNode; // 우측 상단 액션 버튼(선택적)
 }
 
 const Header = ({
@@ -16,6 +18,7 @@ const Header = ({
   pageIconAlt,
   backTo,
   onBackClick,
+  rightAction,
 }: HeaderProps) => {
   const navigate = useNavigate();
 
@@ -45,6 +48,11 @@ const Header = ({
           alt="뒤로가기 버튼"
         />
       </button>
+      {rightAction && (
+        <div className="absolute right-8 bottom-4 h-10 w-10 flex items-center justify-center">
+          {rightAction}
+        </div>
+      )}
 
       {/* 텍스트 영역 - 관리자 이름(선택적), 페이지 이름 */}
       <div className="flex flex-col gap-1">
