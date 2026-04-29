@@ -10,7 +10,7 @@ interface ReturnConfirmCardProps {
   lastSmsSentDateLabel: string;
   itemNameWithCount: string;
   borrowerName: string;
-  borrowerStudentNumber: string;
+  contact: string;
   canSendOverdueSms: boolean;
   organizationName?: string;
 }
@@ -22,7 +22,7 @@ const ReturnConfirmCard = ({
   lastSmsSentDateLabel,
   itemNameWithCount,
   borrowerName,
-  borrowerStudentNumber,
+  contact,
   canSendOverdueSms,
   organizationName,
 }: ReturnConfirmCardProps) => {
@@ -45,9 +45,9 @@ const ReturnConfirmCard = ({
         <p className="text-18px text-neutral-gray-1 mt-1.5 font-bold">
           {itemNameWithCount}
         </p>
-        {/* 대여자 이름 | 학번 */}
+        {/* 대여자 이름 | 연락처 */}
         <p className="text-12px text-neutral-gray-3 font-normal leading-[130%]">
-          {borrowerName} | {borrowerStudentNumber}
+          {borrowerName} | {contact}
         </p>
       </div>
       {/* */}
@@ -70,7 +70,7 @@ const ReturnConfirmCard = ({
         organizationName={organizationName}
         itemNameWithCount={itemNameWithCount}
         borrowerName={borrowerName}
-        borrowerStudentNumber={borrowerStudentNumber}
+        borrowerStudentNumber={contact}
         overdueDays={overdueDays}
         lastSmsSentDateLabel={lastSmsSentDateLabel}
         canSendOverdueSms={canSendOverdueSms}

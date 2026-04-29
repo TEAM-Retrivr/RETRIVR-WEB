@@ -226,7 +226,7 @@ const ReturnManagementPage = () => {
                     lastSmsSentDateLabel={lastSmsSentDateLabel}
                     itemNameWithCount={itemNameWithCount}
                     borrowerName={rental.borrowerName}
-                    borrowerStudentNumber={rental.borrowerStudentNumber}
+                    contact={rental.contact ?? rental.borrowerStudentNumber}
                     organizationName={organizationName}
                     canSendOverdueSms={
                       rental.canSendOverdueSms ??

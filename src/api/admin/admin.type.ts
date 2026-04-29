@@ -52,6 +52,7 @@ export interface AdminOverdueRental {
   itemLimitId: number;
   itemLimitCode: string;
   borrowerName: string;
+  contact?: string;
   borrowerStudentNumber: string;
   borrowerMajor: string;
   rentalDate: string; // ISO date string
