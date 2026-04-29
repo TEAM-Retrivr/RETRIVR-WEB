@@ -206,23 +206,39 @@ const AccountPage = () => {
           </div>
           {/* 이용약관, 개인정보 처리 방침 */}
           <div className="flex flex-col w-full h-26.5 text-14px font-bold shadow-16-gray rounded-2xl">
-            <button className="flex items-center justify-between h-13.25 px-7.5 rounded-t-2xl cursor-pointer hover:bg-neutral-gray-4/50">
+            <button
+              type="button"
+              onClick={() => alert("개발 예정입니다.")}
+              className="flex items-center justify-between h-13.25 px-7.5 rounded-t-2xl cursor-pointer hover:bg-neutral-gray-4/50"
+            >
               <p className="text-start">이용약관</p>
               <img src="/icons/right-arrow2.svg" alt="" />
             </button>
             <p className="mx-2.5 border border-neutral-gray-4 opacity-[0.3]"></p>
-            <button className="flex items-center justify-between h-13.25 px-7.5 rounded-b-2xl cursor-pointer hover:bg-neutral-gray-4/50">
+            <button
+              type="button"
+              onClick={() => alert("개발 예정입니다.")}
+              className="flex items-center justify-between h-13.25 px-7.5 rounded-b-2xl cursor-pointer hover:bg-neutral-gray-4/50"
+            >
               <p className="text-start">개인정보 처리방침</p>
               <img src="/icons/right-arrow2.svg" alt="" />
             </button>
           </div>
           {/* 로그아웃, 탈퇴하기 */}
           <div className="flex flex-col w-full h-26.5 text-14px font-bold shadow-16-gray rounded-2xl">
-            <button className="h-13.25 px-7.5 rounded-t-2xl cursor-pointer hover:bg-neutral-gray-4/50">
+            <button
+              type="button"
+              onClick={() => alert("개발 예정입니다.")}
+              className="h-13.25 px-7.5 rounded-t-2xl cursor-pointer hover:bg-neutral-gray-4/50"
+            >
               <p className="text-start">로그아웃</p>
             </button>
             <p className="mx-2.5 border border-neutral-gray-4 opacity-[0.3]"></p>
-            <button className="h-13.25 px-7.5 rounded-b-2xl cursor-pointer hover:bg-neutral-gray-4/50">
+            <button
+              type="button"
+              onClick={() => alert("개발 예정입니다.")}
+              className="h-13.25 px-7.5 rounded-b-2xl cursor-pointer hover:bg-neutral-gray-4/50"
+            >
               <p className="text-start">탈퇴하기</p>
             </button>
           </div>
