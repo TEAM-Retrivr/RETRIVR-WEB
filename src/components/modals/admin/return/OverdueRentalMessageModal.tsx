@@ -38,7 +38,6 @@ const OverdueRentalMessageModal = ({
   rentalDurationDays,
   rentalDateLabel,
   returnDueDateLabel,
-  overdueDays,
   canSendOverdueSms = true,
 }: OverdueRentalMessageModalProps) => {
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -97,8 +96,8 @@ const OverdueRentalMessageModal = ({
             <br />
             <p>[연체 안내]</p>
             <p>
-              {organizationName ?? "해당 단체"}에서 빌려가신 물품의 반납 기한이
-              지났어요.
+              {organizationName?.trim() || "해당 단체"}에서 빌려가신 물품의 반납
+              기한이 지났어요.
             </p>
             <p>빠른 반납 부탁드릴게요.</p>
             <br />

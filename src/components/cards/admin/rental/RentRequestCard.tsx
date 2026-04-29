@@ -6,10 +6,11 @@ interface RentRequestCardProps {
   rentalId: number;
   itemName: string; // '대여 요청한 기자재명'
   count: string; // '남은 수량 / 전체 수량'
-  applicant: string; // '대여 요청자 | 소속'
+  applicant: string; // '대여 요청자 | 요청자 전화번호'
   time: string; // '대여 요청이 들어온 시각'
   rentalDuration?: number;
   guaranteedGoods?: string;
+  itemUnitLabel?: string;
 }
 
 export const RentRequestCard = ({
@@ -20,6 +21,7 @@ export const RentRequestCard = ({
   time,
   rentalDuration,
   guaranteedGoods,
+  itemUnitLabel,
 }: RentRequestCardProps) => {
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
   return (
@@ -50,6 +52,7 @@ export const RentRequestCard = ({
         time={time}
         rentalDurationDays={rentalDuration}
         guaranteedGoods={guaranteedGoods}
+        itemUnitLabel={itemUnitLabel}
       />
     </>
   );

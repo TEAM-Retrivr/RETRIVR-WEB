@@ -1,8 +1,7 @@
 // 대여자 정보
 export interface ApplicantInfo {
   name: string; // 대여자 이름
-  major: string; // 대여자 전공
-  id: string; // 대여자 학번
+  phone: string; // 대여자 전화번호
 }
 
 // 대여 전체 정보

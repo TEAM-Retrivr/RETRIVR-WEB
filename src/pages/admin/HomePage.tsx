@@ -4,6 +4,7 @@ import { MenuCard } from "../../components/cards/home/MenuCard";
 import { RentRequestCard } from "../../components/cards/admin/rental/RentRequestCard";
 import { HOME_MENUS } from "../../types/menu";
 import { useLoadHome } from "../../hooks/queries/useAuthQueries";
+import { useAdminRentalRequestList } from "../../hooks/queries/useAdminQueries";
 import BlueButton from "../../components/BlueButton";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
@@ -15,6 +16,9 @@ interface RentRequestCardData {
   count: string;
   applicant: string;
   time: string;
+  rentalDuration?: number;
+  guaranteedGoods?: string;
+  itemUnitLabel?: string;
 }
 
 const PRODUCTION_WEB_ORIGIN = "https://www.retrivr.kr";
@@ -32,8 +36,10 @@ const getPublicWebOrigin = () => {
 const Home = () => {
   const navigate = useNavigate();
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
-  // 대여 요청
+  // 홈 데이터
   const { data, isLoading, error } = useLoadHome();
+  // 대여 요청 목록 (전화번호/대여기간/보증물품 포함)
+  const { data: rentalRequestData } = useAdminRentalRequestList();
   // 최근 대여 요청 개수
   // 임시: API 연동 전까지 빈 배열과 0 사용
 
@@ -45,14 +51,16 @@ const Home = () => {
   };
 
   const rentRequests: RentRequestCardData[] =
-    data?.recentRequests?.map((req) => ({
+    rentalRequestData?.requests?.map((req) => ({
       id: req.rentalId,
       itemName: req.itemName,
       count: `(${req.availableQuantity}/${req.totalQuantity})`,
-      applicant: req.borrowerMajor?.trim()
-        ? `${req.borrowerName} | ${req.borrowerMajor}`
-        : req.borrowerName,
+      // '대여 요청자 | 요청자 전화번호'
+      applicant: `${req.borrowerName} | ${req.contact}`,
       time: req.requestedAt,
+      rentalDuration: req.rentalDuration,
+      guaranteedGoods: req.guaranteedGoods,
+      itemUnitLabel: req.itemUnitLabel,
     })) ?? [];
 
   const rentalPageUrl = useMemo(() => {
@@ -157,6 +165,9 @@ const Home = () => {
                     count={items.count}
                     applicant={items.applicant}
                     time={items.time}
+                    rentalDuration={items.rentalDuration}
+                    guaranteedGoods={items.guaranteedGoods}
+                    itemUnitLabel={items.itemUnitLabel}
                   />
                 ))}
               </div>

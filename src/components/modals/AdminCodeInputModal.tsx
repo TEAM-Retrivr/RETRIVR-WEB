@@ -145,32 +145,27 @@ const AdminCodeInputModal = ({
           rentalId: rentalId as number,
         }
       : {
-        adminCode: enteredCode,
-        purpose,
-      };
+          adminCode: enteredCode,
+          purpose,
+        };
 
     const verifyCode =
       verificationApiMode === "admin" ? verifyCodeAdmin : verifyCodePublic;
 
-    verifyCode(
-      payload,
-      {
-        onSuccess: (data) => {
-          const verificationToken = data.rowToken ?? data.rawToken;
-          if (!verificationToken) {
-            triggerErrorState("검증 토큰이 없어 다시 시도해주세요.");
-            return;
-          }
-          setAdminCodeError(null);
-          onSuccess(verificationToken);
-        },
-        onError: () => {
-          triggerErrorState(
-            "관리자 코드가 올바르지 않아요. 다시 입력해주세요.",
-          );
-        },
+    verifyCode(payload, {
+      onSuccess: (data) => {
+        const verificationToken = data.rawToken;
+        if (!verificationToken) {
+          triggerErrorState("검증 토큰이 없어 다시 시도해주세요.");
+          return;
+        }
+        setAdminCodeError(null);
+        onSuccess(verificationToken);
       },
-    );
+      onError: () => {
+        triggerErrorState("관리자 코드가 올바르지 않아요. 다시 입력해주세요.");
+      },
+    });
   };
 
   const triggerErrorState = (message: string) => {

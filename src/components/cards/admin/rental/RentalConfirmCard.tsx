@@ -65,7 +65,7 @@ const RentalConfirmCard = ({ rental }: RentalConfirmCardProps) => {
             {/* 대여자 정보 영역 */}
             <div className="mt-5 border-t border-neutral-gray-4/50 pt-4.5 pl-2.5 text-14px font-normal leading-[140%] text-secondary-1">
               <p>이름: {applicantInfo.name}</p>
-              {/*<p>연락처: {applicantInfo.phone}</p>*/}
+              <p>연락처: {applicantInfo.phone}</p>
             </div>
 
             {/* 버튼 영역 */}

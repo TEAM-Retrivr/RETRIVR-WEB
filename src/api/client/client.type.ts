@@ -62,6 +62,8 @@ export interface RentalDetailResponse {
   itemName: string;
   itemUnitLabel?: string;
   borrowerField?: Record<string, string>;
+  // 일부 응답에서는 borrowerField와 별도로 연락처가 루트에 포함되기도 함
+  contact?: string;
   requestedAt: string;
 }
 

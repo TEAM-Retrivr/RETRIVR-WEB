@@ -207,10 +207,9 @@ const ReturnManagementPage = () => {
             {!isOverdueLoading &&
               !overdueError &&
               overdueRentals.map((rental) => {
+                const sendOverdueSmsDates = rental.sendOverdueSmsDates ?? [];
                 const lastSent =
-                  rental.sendOverdueSmsDates[
-                    rental.sendOverdueSmsDates.length - 1
-                  ];
+                  sendOverdueSmsDates[sendOverdueSmsDates.length - 1];
                 const lastSmsSentDateLabel = lastSent
                   ? `${lastSent} 문자 발송됨`
                   : "문자 발송 이력이 없습니다.";

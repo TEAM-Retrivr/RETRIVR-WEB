@@ -91,11 +91,12 @@ export interface AdminRentalRequestItem {
   itemName: string;
   itemUnitId: number;
   itemUnitCode: string;
+  itemUnitLabel?: string; // UNIT일 때만 존재하는 세부 물품명
+  rentalDuration: number;
   totalQuantity: number;
   availableQuantity: number;
   borrowerName: string;
-  borrowerMajor: string;
-  borrowerStudentNumber: string;
+  contact: string;
   guaranteedGoods: string;
   requestedAt: string;
 }
@@ -314,6 +315,5 @@ export interface AdminVerifyCodeRequestBody {
 
 export interface AdminVerifyCodeResponse {
   rawToken?: string;
-  rowToken?: string;
   rentalId?: number;
 }
