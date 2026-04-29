@@ -1,5 +1,9 @@
 export type EmailVerificationPurpose = "SIGNUP" | "PASSWORD_RESET" | "LOGIN";
 
+// 휴대폰 인증 코드 발송/검증 목적
+// (현재 클라이언트 대여 요청에만 사용)
+export type PhoneVerificationPurpose = "BORROW" | string;
+
 // 1. 회원가입용 이메일 인증 코드 전송
 // 1-1. 이메일 인증 코드 전송 요청 바디
 export interface SendEmailCodeRequest {
@@ -28,6 +32,29 @@ export interface VerifyEmailCodeResponse {
   tokenType: "SIGNUP"; // 토큰 용도 (회원가입용)
   token: string; // 인증 성공 시 발급되는 토큰 (일회성/단기만료)
   expiresInSeconds: number; // 인증 코드 유효 시간 (코드가 일치하더라도 유효 시간 이후에 인증 받으면 실패)
+}
+
+// 2. 휴대폰 인증 코드 발송
+
+export interface SendPhoneVerificationCodeRequest {
+  phoneNumber: string; // 예: 010-1234-5678
+  purpose: PhoneVerificationPurpose; // 인증 코드 발송 목적
+}
+
+export interface SendPhoneVerificationCodeResponse {
+  verificationId: string;
+}
+
+// 2-2. 휴대폰 인증 코드 검증
+export interface VerifyPhoneVerificationCodeRequest {
+  verificationId: string; // send-code 응답의 verificationId
+  purpose: PhoneVerificationPurpose; // 예: BORROW
+  rawCode: string; // 입력한 인증번호 (숫자 6자리)
+}
+
+export interface VerifyPhoneVerificationCodeResponse {
+  verificationToken: string;
+  verificationTokenId: string;
 }
 
 // 3. 회원가입 요청

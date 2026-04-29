@@ -4,6 +4,10 @@ import type {
   VerifyEmailCodeRequest,
   SendEmailCodeResponse,
   VerifyEmailCodeResponse,
+  SendPhoneVerificationCodeRequest,
+  SendPhoneVerificationCodeResponse,
+  VerifyPhoneVerificationCodeRequest,
+  VerifyPhoneVerificationCodeResponse,
   RegisterRequest,
   RegisterResponse,
   LoginRequest,
@@ -33,6 +37,30 @@ export const verifyEmailCode = async (
 ): Promise<VerifyEmailCodeResponse> => {
   const response = await apiClient.post<VerifyEmailCodeResponse>(
     "/api/public/v1/email/verification/verify",
+    data,
+  );
+  return response.data;
+};
+
+// 2-1. 휴대폰 인증 코드 발송
+// 엔드포인트: "/api/public/v1/auth/phone-verification/send-code"
+export const sendPhoneVerificationCode = async (
+  data: SendPhoneVerificationCodeRequest,
+): Promise<SendPhoneVerificationCodeResponse> => {
+  const response = await apiClient.post<SendPhoneVerificationCodeResponse>(
+    "/api/public/v1/auth/phone-verification/send-code",
+    data,
+  );
+  return response.data;
+};
+
+// 2-2. 휴대폰 인증 코드 검증
+// 엔드포인트: "/api/public/v1/auth/phone-verification/verify-code"
+export const verifyPhoneVerificationCode = async (
+  data: VerifyPhoneVerificationCodeRequest,
+): Promise<VerifyPhoneVerificationCodeResponse> => {
+  const response = await apiClient.post<VerifyPhoneVerificationCodeResponse>(
+    "/api/public/v1/auth/phone-verification/verify-code",
     data,
   );
   return response.data;

@@ -6,10 +6,15 @@ import Header from "../../components/Header";
 import CommonInput from "../../components/CommonInput";
 import { ConsentSectionCard } from "../../components/cards/client/ConsentSectionCard";
 import Button from "../../components/Button";
+import ErrorModal from "../../components/modals/ErrorModal";
 import {
   useItemDetail,
   useSendRentalRequest,
 } from "../../hooks/queries/useClientQueries";
+import {
+  useSendPhoneVerificationCode,
+  useVerifyPhoneVerificationCode,
+} from "../../hooks/queries/useAuthQueries";
 import { useQueryClient } from "@tanstack/react-query";
 
 const label1 =
@@ -75,7 +80,7 @@ const RentalInformationSubmitPage = () => {
     state?.organizationName ?? cachedOrganization?.name ?? "대여지명";
   const itemName = state?.name ?? "대여 물품";
   const rentalDuration = state?.rentalDuration ?? 0;
-  const guaranteedGoods = state?.guaranteedGoods ?? "-";
+  const guaranteedGoods = state?.guaranteedGoods ?? "없음";
   const description = state?.description ?? "-";
   const { data: itemDetail } = useItemDetail(itemId, itemId > 0);
   const selectedItemUnitLabel = useMemo(() => {
@@ -107,6 +112,10 @@ const RentalInformationSubmitPage = () => {
   // 대여자 전화번호 : string
   const [phoneNumber, setPhoneNumber] = useState("");
   const [phoneVerificationCode, setPhoneVerificationCode] = useState("");
+  const [phoneVerificationId, setPhoneVerificationId] = useState("");
+  const [, setPhoneVerificationToken] = useState("");
+  const [isPhoneVerificationComplete, setIsPhoneVerificationComplete] =
+    useState(false);
   const [requestment, setRequestment] = useState("");
   const [additionalFieldValues, setAdditionalFieldValues] = useState<
     Record<string, string>
@@ -115,6 +124,8 @@ const RentalInformationSubmitPage = () => {
   // 개인 정보 활용 동의 체크 여부 : boolean
   const [firstConsentChecked, setFirstConsentChecked] = useState(false);
   const [secondConsentChecked, setSecondConsentChecked] = useState(false);
+  const [isPhoneVerificationErrorOpen, setIsPhoneVerificationErrorOpen] =
+    useState(false);
 
   // 보증 물품이 필요할 때만 두 번째 동의를 요구
   const isGuaranteedGoodsRequired =
@@ -122,6 +133,74 @@ const RentalInformationSubmitPage = () => {
   const isValidPhoneNumberForVerification = /^010\d{8}$/.test(
     phoneNumber.trim(),
   );
+  const isValidPhoneVerificationCode = /^\d{6}$/.test(
+    phoneVerificationCode.trim(),
+  );
+
+  const { mutate: sendPhoneVerificationCode, isPending: isSendingPhoneCode } =
+    useSendPhoneVerificationCode();
+  const {
+    mutate: verifyPhoneVerificationCode,
+    isPending: isVerifyingPhoneCode,
+  } = useVerifyPhoneVerificationCode();
+
+  const isPhoneVerificationButtonEnabled =
+    !isPhoneVerificationComplete &&
+    isValidPhoneVerificationCode &&
+    !!phoneVerificationId.trim() &&
+    !isVerifyingPhoneCode;
+
+  const handleSendPhoneVerificationCode = () => {
+    if (isPhoneVerificationComplete) return;
+    if (!isValidPhoneNumberForVerification) return;
+
+    const normalizedPhoneNumber = formatPhoneNumber(phoneNumber.trim());
+
+    sendPhoneVerificationCode(
+      {
+        phoneNumber: normalizedPhoneNumber,
+        purpose: "BORROW",
+      },
+      {
+        onSuccess: (data) => {
+          setPhoneVerificationId(data.verificationId);
+          setPhoneVerificationCode("");
+          alert("인증번호가 전송되었습니다.");
+        },
+        onError: (error: any) => {
+          const message =
+            error?.response?.data?.message ?? "인증번호 전송에 실패했습니다.";
+          alert(message);
+        },
+      },
+    );
+  };
+
+  const handleVerifyPhoneVerificationCode = () => {
+    if (isPhoneVerificationComplete) return;
+    if (!isValidPhoneVerificationCode) return;
+    if (!phoneVerificationId.trim()) return;
+
+    verifyPhoneVerificationCode(
+      {
+        verificationId: phoneVerificationId.trim(),
+        purpose: "BORROW",
+        rawCode: phoneVerificationCode.trim(),
+      },
+      {
+        onSuccess: (data) => {
+          setPhoneVerificationToken(data.verificationToken);
+          setIsPhoneVerificationComplete(true);
+          alert("인증이 완료되었습니다.");
+        },
+        onError: (error: any) => {
+          const message =
+            error?.response?.data?.message ?? "인증번호 검증에 실패했습니다.";
+          alert(message);
+        },
+      },
+    );
+  };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -140,6 +219,12 @@ const RentalInformationSubmitPage = () => {
       alert("필수 항목을 모두 입력해주세요.");
       return;
     }
+
+    if (!isPhoneVerificationComplete) {
+      setIsPhoneVerificationErrorOpen(true);
+      return;
+    }
+
     handleSendRentalRequest();
   };
 
@@ -256,6 +341,7 @@ const RentalInformationSubmitPage = () => {
             />
           </div>
           <div>
+            {/* 연락처 인증 필드 - 연락처 입력 및 인증번호 입력 */}
             <div className="flex gap-0.5 text-neutral-gray-2 text-14px font-bold ">
               <p>연락처</p>
               <p className="text-primary">*</p>
@@ -270,6 +356,7 @@ const RentalInformationSubmitPage = () => {
                 pattern="[0-9]*"
                 maxLength={11}
                 value={phoneNumber}
+                disabled={isPhoneVerificationComplete}
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 placeholder="01012345678"
                 inputSize="large"
@@ -279,7 +366,12 @@ const RentalInformationSubmitPage = () => {
                 variant="primary"
                 size="sm"
                 className="w-29 h-12"
-                disabled={!isValidPhoneNumberForVerification}
+                disabled={
+                  !isValidPhoneNumberForVerification ||
+                  isSendingPhoneCode ||
+                  isPhoneVerificationComplete
+                }
+                onClick={handleSendPhoneVerificationCode}
               >
                 인증번호 전송
               </Button>
@@ -291,12 +383,24 @@ const RentalInformationSubmitPage = () => {
                 pattern="[0-9]{6}"
                 maxLength={6}
                 value={phoneVerificationCode}
+                disabled={isPhoneVerificationComplete}
                 onChange={(e) => setPhoneVerificationCode(e.target.value)}
                 placeholder="인증번호 입력"
                 inputSize="large"
                 className="w-51 text-14px text-neutral-gray-1 placeholder:text-14px placeholder:font-normal placeholder:leading-[140%]"
               />
-              <Button variant="gray" size="sm" className="w-29 h-12">
+              <Button
+                variant={
+                  isPhoneVerificationComplete ||
+                  isPhoneVerificationButtonEnabled
+                    ? "primary"
+                    : "gray"
+                }
+                size="sm"
+                className="w-29 h-12"
+                disabled={!isPhoneVerificationButtonEnabled}
+                onClick={handleVerifyPhoneVerificationCode}
+              >
                 인증번호 확인
               </Button>
             </div>
@@ -375,6 +479,11 @@ const RentalInformationSubmitPage = () => {
           </Button>
         </div>
       </form>
+      <ErrorModal
+        isOpen={isPhoneVerificationErrorOpen}
+        onClose={() => setIsPhoneVerificationErrorOpen(false)}
+        message1="연락처 인증을 진행해주세요."
+      />
     </Layout>
   );
 };
