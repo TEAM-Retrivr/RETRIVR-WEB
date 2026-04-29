@@ -85,7 +85,7 @@ const ItemManagementCard = ({
   itemManagementType,
   rentalDuration,
   description,
-  useMessageAlarmService,
+
   guaranteedGoods,
   borrowerRequirements,
 }: ItemManagementCardProps) => {
@@ -159,13 +159,6 @@ const ItemManagementCard = ({
             <div className="mb-4 flex flex-col w-full gap-4">
               <ul className="min-w-0 text-12px text-secondary-1 font-normal leading-[140%]">
                 {description && <li>• 설명: {description}</li>}
-
-                <li>
-                  • 독촉 문자 발송 :{" "}
-                  <span className="text-primary">
-                    {useMessageAlarmService ? "O" : "X"}
-                  </span>
-                </li>
 
                 <li>
                   • 보증 물품:{" "}

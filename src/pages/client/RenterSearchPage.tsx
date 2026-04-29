@@ -78,7 +78,7 @@ const RenterSearchPage = () => {
   return (
     <Layout>
       {/* 헤더 영역 */}
-      <Header pageName="대여자 찾기" backTo="/"></Header>
+      <Header pageName="대여지 찾기" backTo="/"></Header>
 
       {/* 검색 영역 - 검색 바 + 검색 결과 목록 */}
       <div className="flex flex-col pt-6.5 px-8 gap-3 pb-32">
