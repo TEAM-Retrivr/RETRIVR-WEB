@@ -188,7 +188,7 @@ const ReturnManagementPage = () => {
           <p className="text-neutral-gray-1 text-16px font-bold px-1">
             반납 연체 확인
           </p>
-          <div className="flex mt-4 overflow-x-auto no-scrollbar gap-3">
+          <div className="flex px-1 pt-4 pb-3 overflow-x-auto no-scrollbar gap-3">
             {isOverdueLoading && (
               <p className="text-neutral-gray-3 text-14px">로딩 중...</p>
             )}
@@ -207,10 +207,9 @@ const ReturnManagementPage = () => {
             {!isOverdueLoading &&
               !overdueError &&
               overdueRentals.map((rental) => {
+                const sendOverdueSmsDates = rental.sendOverdueSmsDates ?? [];
                 const lastSent =
-                  rental.sendOverdueSmsDates[
-                    rental.sendOverdueSmsDates.length - 1
-                  ];
+                  sendOverdueSmsDates[sendOverdueSmsDates.length - 1];
                 const lastSmsSentDateLabel = lastSent
                   ? `${lastSent} 문자 발송됨`
                   : "문자 발송 이력이 없습니다.";
@@ -230,7 +229,9 @@ const ReturnManagementPage = () => {
                     borrowerStudentNumber={rental.borrowerStudentNumber}
                     organizationName={organizationName}
                     canSendOverdueSms={
-                      overdueRentalData?.canSendOverdueSms ?? false
+                      rental.canSendOverdueSms ??
+                      overdueRentalData?.canSendOverdueSms ??
+                      false
                     }
                   />
                 );
@@ -239,7 +240,7 @@ const ReturnManagementPage = () => {
         </div>
         {/* 물품별 관리 영역 - 세로로 스크롤 */}
         <div className="flex flex-col w-full">
-          <p className="text-neutral-gray-1 text-16px font-bold px-1">
+          <p className="text-neutral-gray-1 text-16px font-bold pt-0 pb-1">
             물품별 관리
           </p>
           <p className="text-neutral-gray-3 text-12px mt-1.5 px-1 font-normal leading-[130%] ">

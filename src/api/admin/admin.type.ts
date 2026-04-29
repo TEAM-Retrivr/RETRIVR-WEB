@@ -58,6 +58,7 @@ export interface AdminOverdueRental {
   dueDate: string; // ISO date string
   overdueDays: number;
   sendOverdueSmsDates: string[];
+  canSendOverdueSms?: boolean;
 }
 
 export interface AdminOverdueRentalListResponse {
@@ -90,11 +91,12 @@ export interface AdminRentalRequestItem {
   itemName: string;
   itemUnitId: number;
   itemUnitCode: string;
+  itemUnitLabel?: string; // UNIT일 때만 존재하는 세부 물품명
+  rentalDuration: number;
   totalQuantity: number;
   availableQuantity: number;
   borrowerName: string;
-  borrowerMajor: string;
-  borrowerStudentNumber: string;
+  contact: string;
   guaranteedGoods: string;
   requestedAt: string;
 }
@@ -220,6 +222,7 @@ export interface AdminItemUnitChangeEntry {
 export interface AdminUpdateItemRequest extends Partial<AdminItemBaseRequest> {
   unitChanges?: AdminItemUnitChangeEntry[];
   isActive?: boolean;
+  adminCodeVerificationToken: string;
 }
 
 // 관리자 물품 수정 응답 바디
@@ -311,6 +314,6 @@ export interface AdminVerifyCodeRequestBody {
 }
 
 export interface AdminVerifyCodeResponse {
-  rawToken: string;
-  rentalId: number;
+  rawToken?: string;
+  rentalId?: number;
 }

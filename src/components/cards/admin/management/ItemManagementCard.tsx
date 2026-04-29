@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ItemStatusCard from "./ItemStatusCard";
+import AdminCodeInputModal from "../../../modals/AdminCodeInputModal";
 import type {
   AdminBorrowerRequirementResponse,
   AdminItemDetailResponse,
@@ -91,6 +92,7 @@ const ItemManagementCard = ({
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isToggledOn, setIsToggledOn] = useState(isActive);
+  const [isAdminCodeModalOpen, setIsAdminCodeModalOpen] = useState(false);
 
   // 목록 응답의 itemManagementType으로 사전 분기 (접힌 상태에서는 상세 GET이 없거나 실패할 수 있음)
   const isUnitItem = itemManagementType === "UNIT";
@@ -262,7 +264,7 @@ const ItemManagementCard = ({
               <div className="flex justify-end">
                 <button
                   type="button"
-                  onClick={() => navigate(`/item-edit/${itemId}`)}
+                  onClick={() => setIsAdminCodeModalOpen(true)}
                   className="w-22.5 h-8.5 shrink-0 rounded-[10px] text-center bg-neutral-white text-14px font-[600] leading-[20px] text-primary border border-primary cursor-pointer hover:bg-bg-pale"
                 >
                   수정하기
@@ -301,6 +303,18 @@ const ItemManagementCard = ({
           </div>
         </div>
       </div>
+      <AdminCodeInputModal
+        isOpen={isAdminCodeModalOpen}
+        onClose={() => setIsAdminCodeModalOpen(false)}
+        onSuccess={(verificationToken) => {
+          setIsAdminCodeModalOpen(false);
+          navigate(`/item-edit/${itemId}`, {
+            state: { adminCodeVerificationToken: verificationToken },
+          });
+        }}
+        purpose="ITEM_UPDATE"
+        verificationApiMode="admin"
+      />
     </div>
   );
 };

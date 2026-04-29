@@ -47,8 +47,7 @@ const RentalRequestPage = () => {
               itemCount: `(${request.availableQuantity}/${request.totalQuantity})`,
               applicantInfo: {
                 name: request.borrowerName,
-                major: request.borrowerMajor,
-                id: request.borrowerStudentNumber,
+                phone: request.contact,
               },
             };
 

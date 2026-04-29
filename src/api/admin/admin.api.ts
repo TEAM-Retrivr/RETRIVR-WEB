@@ -289,6 +289,18 @@ export const verifyAdminCode = async (
   return response.data;
 };
 
+// 관리자 코드 검증 (관리자 기능 접근용)
+// POST /api/admin/v1/admin-code/verification
+export const verifyAdminCodeByAdmin = async (
+  body: AdminVerifyCodeRequestBody,
+): Promise<AdminVerifyCodeResponse> => {
+  const response = await apiClient.post<AdminVerifyCodeResponse>(
+    "/api/admin/v1/admin-code/verification",
+    body,
+  );
+  return response.data;
+};
+
 // 관리자 물품 등록 (POST)
 // - 물품과 대여자 요구 정보(JSONB)를 함께 저장
 // - 요청 바디: AdminCreateItemRequest

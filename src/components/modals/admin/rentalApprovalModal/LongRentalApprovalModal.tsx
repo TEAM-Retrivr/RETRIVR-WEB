@@ -18,9 +18,13 @@ interface LongRentalApproveModalProps {
   approvalApiMode?: "admin" | "public";
   verificationToken?: string;
   itemName?: string;
+  itemUnitLabel?: string;
   count?: string;
   applicant?: string;
+  contact?: string;
   time?: string;
+  rentalDurationDays?: number;
+  guaranteedGoods?: string;
 }
 
 const LongRentalApprovalModal = ({
@@ -30,9 +34,13 @@ const LongRentalApprovalModal = ({
   approvalApiMode = "admin",
   verificationToken,
   itemName: itemNameProp,
+  itemUnitLabel: itemUnitLabelProp,
   count: countProp,
   applicant: applicantProp,
+  contact: contactProp,
   time: timeProp,
+  rentalDurationDays,
+  guaranteedGoods,
 }: LongRentalApproveModalProps) => {
   const navigate = useNavigate();
   const [isGuaranteedChecked, setIsGuaranteedChecked] = useState(false);
@@ -54,11 +62,8 @@ const LongRentalApprovalModal = ({
     isApproving || isPublicApproving || isRejecting || isPublicRejecting;
   const shouldFetchRentalDetail =
     isOpen && isPublicApprovalFlow && verificationTokenValue.length > 0;
-  const { data: rentalDetail, isLoading: isRentalDetailLoading } = useRentalDetail(
-    rentalId,
-    verificationToken ?? "",
-    shouldFetchRentalDetail,
-  );
+  const { data: rentalDetail, isLoading: isRentalDetailLoading } =
+    useRentalDetail(rentalId, verificationToken ?? "", shouldFetchRentalDetail);
   const requestTime = useMemo(() => {
     if (rentalDetail?.requestedAt) {
       return rentalDetail.requestedAt.replace("T", " ").replace("Z", "");
@@ -66,16 +71,85 @@ const LongRentalApprovalModal = ({
     return timeProp ?? "요청 시각 정보 없음";
   }, [rentalDetail?.requestedAt, timeProp]);
   const itemName = rentalDetail?.itemName ?? itemNameProp ?? "대여 물품";
+  const itemUnitLabelValue = rentalDetail?.itemUnitLabel ?? itemUnitLabelProp;
+  // itemUnitLabel은 UNIT에서만 내려오는 값이므로,
+  // 없으면 이 영역을 아예 숨긴다(특히 public approval 흐름에서는 countProp가 undefined인 케이스가 있음).
   const count = rentalDetail?.itemUnitLabel
     ? `(${rentalDetail.itemUnitLabel})`
-    : countProp ?? "(1/1)";
+    : countProp;
+
+  const contactFromBorrowerField = useMemo(() => {
+    const field = rentalDetail?.borrowerField;
+    if (!field) return { key: undefined as string | undefined, value: "" };
+
+    const entries = Object.entries(field)
+      .filter(([, v]) => typeof v === "string" && v.trim().length > 0)
+      // normalize key for matching
+      .map(([k, v]) => [String(k), v] as const);
+
+    const keyPatterns: RegExp[] = [
+      /연락처/i,
+      /전화번호/i,
+      /phone/i,
+      /contact/i,
+    ];
+
+    const matched = entries.find(([k]) =>
+      keyPatterns.some((pattern) => pattern.test(k)),
+    );
+    return { key: matched?.[0], value: matched?.[1] ?? "" };
+  }, [rentalDetail?.borrowerField]);
+
+  // admin(HomePage) 흐름에서는 `applicant`에 "이름 | 연락처"가 함께 들어오는 경우가 있어,
+  // 여기서 분리해 이름/연락처를 각각 화면에 표시한다.
+  const applicantPropParsed = useMemo(() => {
+    const safeApplicant = applicantProp?.trim();
+    if (!safeApplicant) return { name: "", contact: "" };
+
+    // "a | b" 형태만 파싱 대상으로 보고, b가 전화번호(010... )처럼 보일 때만 분리한다.
+    const parts = safeApplicant
+      .split("|")
+      .map((p) => p.trim())
+      .filter(Boolean);
+
+    if (parts.length < 2) return { name: safeApplicant, contact: "" };
+
+    const nameCandidate = parts[0];
+    const contactCandidate = parts[parts.length - 1];
+    const digits = contactCandidate.replace(/\D/g, "");
+    const is010Phone = /^010\d{8}$/.test(digits);
+
+    return is010Phone
+      ? { name: nameCandidate, contact: contactCandidate }
+      : { name: safeApplicant, contact: "" };
+  }, [applicantProp]);
+
+  const contactValue =
+    (rentalDetail?.contact ?? "") ||
+    contactFromBorrowerField.value ||
+    contactProp ||
+    applicantPropParsed.contact ||
+    "";
+
   const applicant = useMemo(() => {
     if (rentalDetail?.borrowerField) {
-      const values = Object.values(rentalDetail.borrowerField).filter(Boolean);
+      const entries = Object.entries(rentalDetail.borrowerField).filter(
+        ([, v]) => typeof v === "string" && v.trim().length > 0,
+      );
+      const filteredEntries = contactFromBorrowerField.key
+        ? entries.filter(([k]) => k !== contactFromBorrowerField.key)
+        : entries;
+
+      const values = filteredEntries.map(([, v]) => v);
       return values.length > 0 ? values.join(" | ") : "대여자 정보";
     }
-    return applicantProp ?? "대여자 정보";
-  }, [rentalDetail?.borrowerField, applicantProp]);
+    return applicantPropParsed.name || (applicantProp ?? "대여자 정보");
+  }, [
+    rentalDetail?.borrowerField,
+    applicantProp,
+    applicantPropParsed.name,
+    contactFromBorrowerField.key,
+  ]);
   const isDetailReady = shouldFetchRentalDetail ? !!rentalDetail : true;
   const canSubmit = useMemo(
     () =>
@@ -199,22 +273,30 @@ const LongRentalApprovalModal = ({
                     <p className="text-20px text-neutral-gray-1 font-[600] leading-[140%]">
                       {itemName}
                     </p>
-                    <p className="text-12px text-neutral-gray-3 font-normal leading-[140%] mt-auto mb-1">
-                      {count}
-                    </p>
+                    {approvalApiMode == "admin" && count ? (
+                      <p className="text-12px text-neutral-gray-3 font-normal leading-[140%] mt-auto mb-1">
+                        {count}
+                      </p>
+                    ) : null}
                   </div>
-                  <p className="text-14px text-neutral-gray-1 font-[600] leading-[20px]">
-                    {itemName}
-                  </p>
+                  {itemUnitLabelValue ? (
+                    <p className="text-14px text-neutral-gray-1 font-[600] leading-[20px]">
+                      {itemUnitLabelValue}
+                    </p>
+                  ) : null}
                 </div>
                 {/* 대여 기간 및 보증물품 영역 */}
-                {/*TODO : 대여기간과 보증물품을 현재 API로부터는 받을 수 없는 상태이므로 해당 Props도 응답 바디에 넣어달라고 백엔드에 요청 */}
                 <div className="flex flex-col px-1.75 pb-4.25">
                   <p className="text-14px text-neutral-gray-1 opacity-[0.9] leading-[140%]">
-                    • 대여 기간: 3일
+                    • 대여 기간:{" "}
+                    {Number.isFinite(rentalDurationDays) &&
+                    (rentalDurationDays ?? 0) > 0
+                      ? `${rentalDurationDays}일`
+                      : "정보 없음"}
                   </p>
                   <p className="text-14px text-neutral-gray-1 opacity-[0.9] leading-[140%]">
-                    • 보증 물품 O: 신분증 or 학생증
+                    • 보증 물품:{" "}
+                    {guaranteedGoods?.trim() ? guaranteedGoods.trim() : "없음"}
                   </p>
                 </div>
               </div>
@@ -222,22 +304,27 @@ const LongRentalApprovalModal = ({
             {/* 대여자 정보 */}
             <div className="flex flex-col w-full text-12px text-secondary-1 font-normal leading-[140%] px-4.5 pt-3">
               <p>
+                이름:{" "}
                 {isRentalDetailLoading
                   ? "대여 정보를 불러오는 중입니다..."
                   : applicant}
               </p>
+              {!isRentalDetailLoading && (
+                <p className="mt-1">
+                  연락처: {contactValue?.trim() ? contactValue : "정보 없음"}
+                </p>
+              )}
             </div>
           </div>
           {/* 체크박스 영역 - 보증물품 확인 여부 체크 */}
-          <div className="flex w-full h-13 justify-between items-center px-5 py-3.5  border border-neutral-gray-5 rounded-[10px]">
-            <div className="">
-              <div>
-                <span className="text-14px text-neutral-gray-1 font-bold">
-                  보증 물품을 확인했어요.
-                </span>
-                <span className="text-14px text-primary font-bold ml-1">*</span>
-              </div>
+          <div className="flex w-full h-13 justify-between items-center px-5 py-3.5  border border-neutral-gray-4/50 rounded-[10px]">
+            <div>
+              <span className="text-14px text-neutral-gray-1 font-bold">
+                보증 물품을 확인했어요.
+              </span>
+              <span className="text-14px text-primary font-bold ml-1">*</span>
             </div>
+
             <CustomCheckBox
               checked={isGuaranteedChecked}
               onCheckedChange={(checked) => setIsGuaranteedChecked(checked)}
