@@ -20,7 +20,7 @@ const StockCheckCard = ({
   const availableBoxStyle = "bg-neutral-white ";
   const unavailableBoxStyle = "bg-[#F8F9F9]";
 
-  const baseTextStyle = "min-w-0 truncate text-20px font-[600] leading-[140%]";
+  const baseTextStyle = "w-50 truncate text-20px font-[600] leading-[140%]";
   const availableTextStyle = "text-neutral-gray-1 ";
   const unavailableTextStyle = "text-neutral-gray-3";
   return (
@@ -41,7 +41,7 @@ const StockCheckCard = ({
         available={availableQuantity}
         total={totalQuantity}
         isActive={isRentalAvailable}
-      ></ProgressCircle>
+      />
     </div>
   );
 };
