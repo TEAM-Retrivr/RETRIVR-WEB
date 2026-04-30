@@ -207,11 +207,10 @@ const ReturnManagementPage = () => {
             {!isOverdueLoading &&
               !overdueError &&
               overdueRentals.map((rental) => {
-                const sendOverdueSmsDates = rental.sendOverdueSmsDates ?? [];
-                const lastSent =
-                  sendOverdueSmsDates[sendOverdueSmsDates.length - 1];
-                const lastSmsSentDateLabel = lastSent
-                  ? `${lastSent} 문자 발송됨`
+                const sendOverdueSmsDates = rental.lastSentOverdueReminderDate;
+
+                const lastSmsSentDateLabel = sendOverdueSmsDates
+                  ? `${sendOverdueSmsDates} 문자 발송됨`
                   : "문자 발송 이력이 없습니다.";
 
                 // TODO: itemName 뒤 괄호 안 수량은 백엔드 명세에 맞게 수정 필요
