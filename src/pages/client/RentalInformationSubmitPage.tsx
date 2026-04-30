@@ -465,13 +465,15 @@ const RentalInformationSubmitPage = () => {
                 checked={firstConsentChecked}
                 onCheckedChange={setFirstConsentChecked}
               />
-              {guaranteedGoods != "" && guaranteedGoods != "-" && (
-                <ConsentSectionCard
-                  label={label2 + guaranteedGoods + label3}
-                  checked={secondConsentChecked}
-                  onCheckedChange={setSecondConsentChecked}
-                />
-              )}
+              {guaranteedGoods != "" &&
+                guaranteedGoods != "없음" &&
+                guaranteedGoods != "-" && (
+                  <ConsentSectionCard
+                    label={label2 + guaranteedGoods + label3}
+                    checked={secondConsentChecked}
+                    onCheckedChange={setSecondConsentChecked}
+                  />
+                )}
             </div>
           </div>
         </div>
