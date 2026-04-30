@@ -175,7 +175,7 @@ const RentalAvailableItemCard = ({
                                 : "bg-neutral-gray-5"
                             } cursor-pointer`}
                           >
-                            <span className="truncate w-50 text-14px text-neutral-gray-2 font-normal leading-[140%] ">
+                            <span className="truncate w-50 text-start text-14px text-neutral-gray-2 font-normal leading-[140%] ">
                               {unit.label}
                             </span>
                             {isAvailable ? (
