@@ -130,7 +130,9 @@ const RentalInformationSubmitPage = () => {
 
   // 보증 물품이 필요할 때만 두 번째 동의를 요구
   const isGuaranteedGoodsRequired =
-    guaranteedGoods !== "" && guaranteedGoods !== "-";
+    guaranteedGoods !== "" &&
+    guaranteedGoods !== "없음" &&
+    guaranteedGoods !== "-";
   const isValidPhoneNumberForVerification = /^010\d{8}$/.test(
     phoneNumber.trim(),
   );
@@ -150,6 +152,14 @@ const RentalInformationSubmitPage = () => {
     isValidPhoneVerificationCode &&
     !!phoneVerificationId.trim() &&
     !isVerifyingPhoneCode;
+
+  useEffect(() => {
+    if (!isGuaranteedGoodsRequired) {
+      setSecondConsentChecked(true);
+      return;
+    }
+    setSecondConsentChecked(false);
+  }, [isGuaranteedGoodsRequired]);
 
   const handleSendPhoneVerificationCode = () => {
     if (isPhoneVerificationComplete) return;
@@ -465,15 +475,13 @@ const RentalInformationSubmitPage = () => {
                 checked={firstConsentChecked}
                 onCheckedChange={setFirstConsentChecked}
               />
-              {guaranteedGoods != "" &&
-                guaranteedGoods != "없음" &&
-                guaranteedGoods != "-" && (
-                  <ConsentSectionCard
-                    label={label2 + guaranteedGoods + label3}
-                    checked={secondConsentChecked}
-                    onCheckedChange={setSecondConsentChecked}
-                  />
-                )}
+              {isGuaranteedGoodsRequired && (
+                <ConsentSectionCard
+                  label={label2 + guaranteedGoods + label3}
+                  checked={secondConsentChecked}
+                  onCheckedChange={setSecondConsentChecked}
+                />
+              )}
             </div>
           </div>
         </div>
