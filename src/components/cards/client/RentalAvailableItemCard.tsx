@@ -6,8 +6,6 @@ import Button from "../../Button";
 import { requestItemDetail } from "../../../api/client/client.api";
 import CustomCheckBox from "../../CustomCheckbox";
 
-const CLIENT_TERMS_REDIRECT_STORAGE_KEY = "clientTermsRedirectPayload";
-
 interface RentalAvailableItemCardProps {
   itemInfo: ItemRequest;
   organizationId: number;
@@ -76,19 +74,7 @@ const RentalAvailableItemCard = ({
       description: item.description,
       borrowerRequirements,
     };
-
-    const termsRedirectPayload = {
-      userType: "client" as const,
-      nextPath: "/client-rental-information-submit",
-      nextState: rentalFormState,
-    };
-
-    sessionStorage.setItem(
-      CLIENT_TERMS_REDIRECT_STORAGE_KEY,
-      JSON.stringify(termsRedirectPayload),
-    );
-
-    navigate("/terms", { state: termsRedirectPayload });
+    navigate("/client-rental-information-submit", { state: rentalFormState });
   };
 
   return (
