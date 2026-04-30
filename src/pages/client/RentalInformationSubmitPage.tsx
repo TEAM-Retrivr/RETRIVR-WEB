@@ -18,7 +18,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 
 const label1 =
-  "대여 물품 연체 시 독촉 문자가 카카오톡으로\n발송됩니다. 이에 동의하시나요?";
+  "대여 물품 연체 시 안내 문자가 카카오톡으로\n발송됩니다. 이에 동의하시나요?";
 
 const label2 = "대여 시 ";
 const label3 =
