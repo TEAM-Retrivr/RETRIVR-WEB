@@ -19,6 +19,11 @@ type TermsRouteState = {
   nextState?: unknown;
 };
 
+const PAGE_DESTINATION_BY_USER_TYPE: Record<"admin" | "client", string> = {
+  admin: "/login",
+  client: "/",
+};
+
 const TERMS_CONTENT_BY_USER_TYPE: Record<"admin" | "client", string> = {
   admin: `제1조 (목적)
 본 약관은 Retrivr가 제공하는 관리자용 서비스 이용과 관련된 조건 및 절차를 규정함을 목적으로 합니다.
@@ -283,7 +288,10 @@ const TermsConsentPage = () => {
   return (
     <Layout>
       {/* 헤더 영역 - 페이지 제목 + 뒤로가기 */}
-      <Header pageName="이용 약관 동의" backTo="/login" />
+      <Header
+        pageName="이용 약관 동의"
+        backTo={PAGE_DESTINATION_BY_USER_TYPE[userType]}
+      />
 
       {/* 본문 영역 - 필수 약관 동의 2개 + 모두 동의 체크 */}
       <div className="flex w-full flex-col gap-7.5 px-8 pt-10 font-[Pretendard]">
