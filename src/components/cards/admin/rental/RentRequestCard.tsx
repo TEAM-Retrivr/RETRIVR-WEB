@@ -29,7 +29,7 @@ export const RentRequestCard = ({
       <div className="w-79.5 h-23.5 font-[Pretendard] bg-neutral-white rounded-[24px] px-7 py-4.43 shadow-16-gray flex justify-between items-center">
         <div>
           <div className="flex items-center gap-1 leading-none">
-            <h3 className="font-[600] text-16px">{itemName}</h3>
+            <h3 className="w-30 truncate font-[600] text-16px">{itemName}</h3>
             <span className="text-secondary-2 text-12px">{count}</span>
           </div>
           <p className="text-12px text-neutral-gray-2 mt-1">{applicant}</p>

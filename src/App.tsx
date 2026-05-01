@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import {
   BrowserRouter as Router,
+  Navigate,
+  Outlet,
   Routes,
   Route,
   useLocation,
@@ -24,7 +26,14 @@ import ClientHomePage from "./pages/client/ClientHomePage";
 import RentalInformationSubmitPage from "./pages/client/RentalInformationSubmitPage";
 import RenterSearchPage from "./pages/client/RenterSearchPage";
 import RentalConfirmationPage from "./pages/client/RentalConfirmationPage";
-import { trackPageView } from "./lib/analytics";
+import { GA_CONSENT_STORAGE_KEY, trackPageView } from "./lib/analytics";
+
+const hasTermsConsent = () =>
+  typeof window !== "undefined" &&
+  localStorage.getItem(GA_CONSENT_STORAGE_KEY) === "true";
+
+const isAuthenticated = () =>
+  typeof window !== "undefined" && Boolean(localStorage.getItem("accessToken"));
 
 const RouteChangeTracker = () => {
   const location = useLocation();
@@ -36,65 +45,76 @@ const RouteChangeTracker = () => {
   return null;
 };
 
+const TermsGate = () => {
+  const location = useLocation();
+
+  if (hasTermsConsent()) return <Outlet />;
+
+  const nextPath = `${location.pathname}${location.search}`;
+  const userType = location.pathname.startsWith("/client") ? "client" : "admin";
+
+  return (
+    <Navigate
+      to="/terms"
+      replace
+      state={{
+        userType,
+        nextPath,
+      }}
+    />
+  );
+};
+
+const AuthGate = () => {
+  const location = useLocation();
+
+  if (isAuthenticated()) return <Outlet />;
+
+  const nextPath = `${location.pathname}${location.search}`;
+  return <Navigate to="/login" replace state={{ nextPath }} />;
+};
+
 function App() {
   return (
     <Router>
       <RouteChangeTracker />
       <Routes>
-        {/* 랜딩 페이지 */}
+        {/* Public */}
         <Route path="/" element={<LandingPage />} />
-
-        {/* 로그인 페이지 */}
         <Route path="/login" element={<LoginPage />} />
-
-        {/* 이용 약관 동의 페이지 & 회원가입 페이지 */}
         <Route path="/terms" element={<TermsConsentPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-
-        {/* 관리자 홈 페이지 */}
-        <Route path="/home" element={<HomePage />} />
-        <Route path="/account" element={<AccountPage />} />
-        <Route path="/profile" element={<ProfileEditPage />} />
-
-        {/* 대여자 물품 관리 페이지 */}
-        <Route path="/item-manage" element={<ItemManagementPage />} />
-
-        {/* 대여자 물품 신규 등록 페이지 */}
-        <Route path="/item-register" element={<ItemRegisterationPage />} />
-
-        {/* 대여자 물품 수정 페이지 */}
-        <Route path="/item-edit/:itemId" element={<ItemEditPage />} />
-
-        {/* 대여자 반납 관리 페이지 */}
-        <Route path="/return-manage" element={<ReturnManagementPage />} />
-
-        {/* 대여자 물품별 관리 페이지 */}
-        <Route path="/return-check/:itemId" element={<ReturnCheckPage />} />
-
-        {/* 대여 요청 확인 페이지 */}
-        <Route path="/rental-request" element={<RentalRequestPage />} />
-
-        {/* 대여자 대여지 검색 페이지 */}
-        <Route path="/client-search" element={<RenterSearchPage />} />
-
-        {/* 대여자 홈 페이지 */}
-        <Route path="/client-home" element={<ClientHomePage />} />
-
-        {/* 대여자 대여 신청 페이지 */}
-        <Route
-          path="/client-rental-information-submit"
-          element={<RentalInformationSubmitPage />}
-        />
-        {/* 대여요청 완료 페이지 */}
-        <Route
-          path="/client-rental-confirmation"
-          element={<RentalConfirmationPage />}
-        />
-        {/* 테스트 페이지 */}
         <Route path="/test" element={<TestPage />} />
-
-        {/* 테스트 페이지 */}
         <Route path="/modal-test" element={<ModalTestPage />} />
+
+        {/* Post-terms */}
+        <Route element={<TermsGate />}>
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/client-search" element={<RenterSearchPage />} />
+          <Route path="/client-home" element={<ClientHomePage />} />
+          <Route
+            path="/client-rental-information-submit"
+            element={<RentalInformationSubmitPage />}
+          />
+          <Route
+            path="/client-rental-confirmation"
+            element={<RentalConfirmationPage />}
+          />
+
+          {/* Auth-required */}
+          <Route element={<AuthGate />}>
+            <Route path="/home" element={<HomePage />} />
+            <Route path="/account" element={<AccountPage />} />
+            <Route path="/profile" element={<ProfileEditPage />} />
+            <Route path="/item-manage" element={<ItemManagementPage />} />
+            <Route path="/item-register" element={<ItemRegisterationPage />} />
+            <Route path="/item-edit/:itemId" element={<ItemEditPage />} />
+            <Route path="/return-manage" element={<ReturnManagementPage />} />
+            <Route path="/return-check/:itemId" element={<ReturnCheckPage />} />
+            <Route path="/rental-request" element={<RentalRequestPage />} />
+          </Route>
+        </Route>
+
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
