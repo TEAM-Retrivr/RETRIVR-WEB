@@ -259,11 +259,15 @@ const TermsConsentPage = () => {
 
   // 약관 동의 완료 후 진입 목적(관리자/대여자)에 맞는 다음 화면으로 이동
   const handleNextStep = () => {
-    if (isAllRequiredChecked && !hasGrantedAnalyticsRef.current) {
+    if (isAllRequiredChecked) {
       grantAnalyticsConsent();
-      trackPageView(`${location.pathname}${location.search}`);
-      localStorage.setItem(GA_CONSENT_STORAGE_KEY, "true");
-      hasGrantedAnalyticsRef.current = true;
+
+      // 첫 동의 시점에만 page_view와 영구 동의 상태를 기록한다.
+      if (!hasGrantedAnalyticsRef.current) {
+        trackPageView(`${location.pathname}${location.search}`);
+        localStorage.setItem(GA_CONSENT_STORAGE_KEY, "true");
+        hasGrantedAnalyticsRef.current = true;
+      }
     }
 
     if (userType === "client") {
