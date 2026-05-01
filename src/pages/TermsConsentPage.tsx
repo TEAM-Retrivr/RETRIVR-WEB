@@ -286,7 +286,9 @@ const TermsConsentPage = () => {
       sessionStorage.removeItem(CLIENT_TERMS_REDIRECT_STORAGE_KEY);
       return;
     }
-    navigate("/register");
+    navigate(effectiveState?.nextPath ?? "/login", {
+      state: effectiveState?.nextState,
+    });
   };
 
   return (

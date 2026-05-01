@@ -744,7 +744,7 @@ const AdminItemFormPage = ({
               <input
                 value={guaranteedGoodsLabel}
                 onChange={(e) => setGuaranteedGoodsLabel(e.target.value)}
-                placeholder="추가 정보 입력"
+                placeholder="담보 물품 종류 입력"
                 className="w-59.25 border-b-[0.859px] border-neutral-gray-3 placeholder:text-14px placeholder:text-[#000] placeholder:opacity-[0.39] placeholder:leading-[130%] pb-1 focus:outline-none"
               />
             </div>
@@ -778,7 +778,9 @@ const AdminItemFormPage = ({
                 : "물품 정보가 수정되었습니다."
             }
             confirmText="확인하기"
-            onConfirm={() => navigate("/item-manage")}
+            onConfirm={() =>
+              navigate("/item-manage", { replace: mode === "create" })
+            }
           />
         )}
 
