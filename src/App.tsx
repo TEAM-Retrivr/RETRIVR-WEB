@@ -48,7 +48,8 @@ const RouteChangeTracker = () => {
 const TermsGate = () => {
   const location = useLocation();
 
-  if (hasTermsConsent()) return <Outlet />;
+  // 이미 로그인된 세션은 `/home` 등으로 진입할 때 `/terms`로 되돌리지 않음.
+  if (hasTermsConsent() || isAuthenticated()) return <Outlet />;
 
   const nextPath = `${location.pathname}${location.search}`;
   const userType = location.pathname.startsWith("/client") ? "client" : "admin";
