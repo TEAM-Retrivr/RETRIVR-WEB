@@ -270,15 +270,12 @@ const RentalInformationSubmitPage = () => {
         renterFields[label] = value;
       }
     });
-    if (normalizedRequestment) {
-      renterFields["요청사항"] = normalizedRequestment;
-    }
-
     // POST /api/public/v1/items/{itemId}/rentals 의 Request Body
     const body = {
       itemUnitId: itemUnitId ?? null,
       name: normalizedName,
       phone: normalizedPhone,
+      requestNote: normalizedRequestment || undefined,
       renterFields,
       rawToken: phoneVerificationToken,
       tokenId: phoneVerificationTokenId,

@@ -48,10 +48,12 @@ const RouteChangeTracker = () => {
 const TermsGate = () => {
   const location = useLocation();
 
-  if (hasTermsConsent()) return <Outlet />;
+  // 이미 로그인된 세션은 `/home` 등으로 진입할 때 `/terms`로 되돌리지 않음.
+  if (hasTermsConsent() || isAuthenticated()) return <Outlet />;
 
   const nextPath = `${location.pathname}${location.search}`;
   const userType = location.pathname.startsWith("/client") ? "client" : "admin";
+  const nextState = location.state;
 
   return (
     <Navigate
@@ -60,6 +62,7 @@ const TermsGate = () => {
       state={{
         userType,
         nextPath,
+        nextState,
       }}
     />
   );
@@ -85,19 +88,19 @@ function App() {
         <Route path="/terms" element={<TermsConsentPage />} />
         <Route path="/test" element={<TestPage />} />
         <Route path="/modal-test" element={<ModalTestPage />} />
+        <Route path="/client-search" element={<RenterSearchPage />} />
+        <Route path="/client-home" element={<ClientHomePage />} />
+        <Route
+          path="/client-rental-confirmation"
+          element={<RentalConfirmationPage />}
+        />
 
         {/* Post-terms */}
         <Route element={<TermsGate />}>
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/client-search" element={<RenterSearchPage />} />
-          <Route path="/client-home" element={<ClientHomePage />} />
           <Route
             path="/client-rental-information-submit"
             element={<RentalInformationSubmitPage />}
-          />
-          <Route
-            path="/client-rental-confirmation"
-            element={<RentalConfirmationPage />}
           />
 
           {/* Auth-required */}
