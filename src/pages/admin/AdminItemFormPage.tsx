@@ -778,9 +778,7 @@ const AdminItemFormPage = ({
                 : "물품 정보가 수정되었습니다."
             }
             confirmText="확인하기"
-            onConfirm={() =>
-              navigate("/item-manage", { replace: mode === "create" })
-            }
+            onConfirm={() => navigate("/item-manage", { replace: true })}
           />
         )}
 

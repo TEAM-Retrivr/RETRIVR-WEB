@@ -297,6 +297,7 @@ const RentalInformationSubmitPage = () => {
           if (organizationId && organizationId > 0) {
             navigate(
               `/client-rental-confirmation?organizationId=${organizationId}${rentalIdQuery}`,
+              { replace: true },
             );
             return;
           }
@@ -304,6 +305,7 @@ const RentalInformationSubmitPage = () => {
             rentalIdQuery
               ? `/client-rental-confirmation?${rentalIdQuery.slice(1)}`
               : "/client-rental-confirmation",
+            { replace: true },
           );
         },
         onError: () => {
