@@ -23,10 +23,12 @@ const RentalConfirmationPage = () => {
   // organizationId가 유효하면 해당 대여지 홈으로, 없으면 검색 페이지로 이동함
   const handleConfirmClick = () => {
     if (Number.isFinite(organizationId) && organizationId > 0) {
-      navigate(`/client-home?organizationId=${organizationId}`);
+      navigate(`/client-home?organizationId=${organizationId}`, {
+        replace: true,
+      });
       return;
     }
-    navigate("/client-search");
+    navigate("/client-search", { replace: true });
   };
 
   const handleOpenAdminCodeModal = () => {

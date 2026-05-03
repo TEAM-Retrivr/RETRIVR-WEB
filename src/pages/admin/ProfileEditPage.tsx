@@ -3,6 +3,8 @@ import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import CommonInput from "../../components/CommonInput";
 import Button from "../../components/Button";
+import { getPasswordValidationError } from "../../utils/passwordValidation";
+import AdminAccountCommonFields from "../../components/admin/AdminAccountCommonFields";
 
 const ProfileEditPage = () => {
   const [organizationName, setOrganizationName] = useState("");
@@ -11,6 +13,26 @@ const ProfileEditPage = () => {
   const [password, setPassword] = useState("");
   const [passwordCheck, setPasswordCheck] = useState("");
   const [adminCode, setAdminCode] = useState("");
+
+  const handleSubmit = () => {
+    if (!organizationName.trim()) return alert("이름(단체명)을 입력해주세요.");
+    if (!email.trim()) return alert("이메일을 입력해주세요.");
+
+    const passwordError = getPasswordValidationError(password);
+    if (passwordError) return alert(passwordError);
+
+    if (!passwordCheck) return alert("비밀번호 확인 입력을 진행해주세요.");
+    if (password !== passwordCheck) {
+      return alert("비밀번호가 일치하지 않습니다. 다시 입력해주세요.");
+    }
+
+    if (!adminCode.trim()) return alert("관리자 코드를 입력해주세요.");
+    if (!/^\d{6}$/.test(adminCode)) {
+      return alert("관리자 코드는 6자리 숫자여야 합니다.");
+    }
+
+    alert("입력값 검증이 완료되었습니다.");
+  };
 
   return (
     <Layout>
@@ -67,62 +89,23 @@ const ProfileEditPage = () => {
           </div>
         </div>
 
-        {/* 3. 비밀번호/비밀번호 확인 입력 필드 */}
-        <div className="flex flex-col w-full gap-1.5">
-          <div className="flex gap-0.5">
-            <p className="text-14px font-bold">비밀번호</p>
-            <p className="text-14px text-primary font-bold">*</p>
-          </div>
-          <p className="pb-1 text-neutral-gray-3 text-12px font-normal leading-[130%]">
-            영문자, 숫자, 특수문자를 포함한 8자 이상으로 설정해주세요.
-          </p>
-          <CommonInput
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="비밀번호 입력"
-            className="placeholder:text-14px placeholder:font-normal placeholder:leading-[140%] "
-          />
-        </div>
-
-        <div className="flex flex-col w-full gap-2.5">
-          <div className="flex gap-0.5">
-            <p className="text-14px font-bold">비밀번호 확인</p>
-            <p className="text-14px text-primary">*</p>
-          </div>
-          <CommonInput
-            type="password"
-            value={passwordCheck}
-            onChange={(e) => setPasswordCheck(e.target.value)}
-            placeholder="비밀번호 재입력"
-            className="placeholder:text-14px placeholder:font-normal placeholder:leading-[140%] "
-          />
-        </div>
-
-        {/* 4. 관리자 코드 입력 필드 */}
-        <div className="flex flex-col w-full gap-1.5">
-          <div className="flex gap-0.5">
-            <p className=" text-14px font-bold">관리자 코드</p>
-            <p className=" text-14px text-primary">*</p>
-          </div>
-          <p className="pb-1 text-neutral-gray-3 text-12px font-normal leading-[140%]">
-            물품 관리 등 중요할 때 쓰이는 코드로, 숫자만 입력 가능해요.
-          </p>
-          <CommonInput
-            value={adminCode}
-            onChange={(e) => setAdminCode(e.target.value)}
-            placeholder="관리자 코드 입력"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            maxLength={6}
-            className="placeholder:text-14px placeholder:font-normal placeholder:leading-[140%] "
-          />
-        </div>
+        <AdminAccountCommonFields
+          variant="profileEdit"
+          includeOrganizationName={false}
+          organizationName={organizationName}
+          onOrganizationNameChange={setOrganizationName}
+          password={password}
+          onPasswordChange={setPassword}
+          passwordCheck={passwordCheck}
+          onPasswordCheckChange={setPasswordCheck}
+          adminCode={adminCode}
+          onAdminCodeChange={setAdminCode}
+        />
       </div>
 
       {/* 5. 확인 버튼 */}
       <div className="w-full flex flex-col items-center mt-auto mb-10">
-        <Button variant="primary" size="lg">
+        <Button variant="primary" size="lg" onClick={handleSubmit}>
           확인
         </Button>
       </div>
