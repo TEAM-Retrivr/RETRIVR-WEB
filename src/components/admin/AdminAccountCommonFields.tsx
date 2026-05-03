@@ -68,12 +68,12 @@ const AdminAccountCommonFields = ({
           <p className="text-14px font-bold">비밀번호</p>
           <p className="text-14px text-primary font-bold">*</p>
         </div>
-        {!isRegister && (
-          <p className="pb-1 text-neutral-gray-3 text-12px font-normal leading-[130%]">
-            영문자(대문자/소문자), 숫자, 특수문자를 포함한 8자 이상으로
-            설정해주세요. 특수문자는 !@#$%^&*만 사용할 수 있어요.
-          </p>
-        )}
+
+        <p className="pb-1 text-neutral-gray-3 text-12px font-normal leading-[130%]">
+          영문자(대문자/소문자), 숫자, 특수문자를 포함한 8자 이상으로
+          설정해주세요. 특수문자는 !@#$%^&*만 사용할 수 있어요.
+        </p>
+
         <CommonInput
           value={password}
           onChange={(e) => onPasswordChange(e.target.value)}
