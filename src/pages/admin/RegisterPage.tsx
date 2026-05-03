@@ -11,14 +11,8 @@ import CommonInput from "../../components/CommonInput";
 import Button from "../../components/Button";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import ErrorModal from "../../components/modals/ErrorModal";
-
-// 비밀번호 입력규칙 : 소문자 + 숫자 + 특수문자 각 1개씩 포함하여 8자 이상
-const PASSWORD_MIN_LENGTH = 8;
-const PASSWORD_ALLOWED_SPECIALS = "!@#$%^&*";
-const PASSWORD_ALLOWED_PATTERN = /^[a-z0-9!@#$%^&*]+$/;
-const PASSWORD_LOWERCASE_PATTERN = /[a-z]/;
-const PASSWORD_NUMBER_PATTERN = /\d/;
-const PASSWORD_SPECIAL_PATTERN = /[!@#$%^&*]/;
+import { getPasswordValidationError } from "../../utils/passwordValidation";
+import AdminAccountCommonFields from "../../components/admin/AdminAccountCommonFields";
 
 // 관리자 회원가입 페이지
 const RegisterPage = () => {
@@ -140,26 +134,8 @@ const RegisterPage = () => {
   const handleRequestRegisteration = () => {
     if (!organizationName.trim()) return alert("이름(단체명)을 입력해주세요.");
     if (!isVerified) return alert("이메일 인증을 진행해주세요.");
-    if (!password) return alert("비밀번호를 입력해주세요.");
-    if (password.length < PASSWORD_MIN_LENGTH) {
-      return alert("비밀번호는 8자 이상이어야 합니다.");
-    }
-    if (!PASSWORD_LOWERCASE_PATTERN.test(password)) {
-      return alert("비밀번호에 소문자를 최소 1개 이상 포함해주세요.");
-    }
-    if (!PASSWORD_NUMBER_PATTERN.test(password)) {
-      return alert("비밀번호에 숫자를 최소 1개 이상 포함해주세요.");
-    }
-    if (!PASSWORD_SPECIAL_PATTERN.test(password)) {
-      return alert(
-        `비밀번호에 특수문자를 최소 1개 이상 포함해주세요. (${PASSWORD_ALLOWED_SPECIALS})`,
-      );
-    }
-    if (!PASSWORD_ALLOWED_PATTERN.test(password)) {
-      return alert(
-        `비밀번호는 소문자, 숫자, 특수문자 ${PASSWORD_ALLOWED_SPECIALS}만 사용할 수 있습니다.`,
-      );
-    }
+    const passwordError = getPasswordValidationError(password);
+    if (passwordError) return alert(passwordError);
     if (!passwordChecked) return alert("비밀번호 확인 입력을 진행해주세요.");
     if (!isPasswordSame)
       return alert("비밀번호가 일치하지 않습니다. 다시 입력해주세요.");
@@ -296,55 +272,18 @@ const RegisterPage = () => {
             </Button>
           </div>
         </div>
-        {/* 비밀번호 영역 */}
-        <div className="flex flex-col w-full gap-2">
-          <div>
-            <p className="inline text-[0.875rem] font-bold leading-none">
-              비밀번호
-            </p>
-            <p className="inline text-primary leading-none">*</p>
-          </div>
-          <CommonInput
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            type="password"
-            placeholder="비밀번호 입력"
-          ></CommonInput>
-        </div>
-        {/* 비밀번호 확인 영역 */}
-        <div className="flex flex-col w-full gap-2">
-          <div>
-            <p className="inline text-[0.875rem] font-bold leading-none">
-              비밀번호 확인
-            </p>
-            <p className="inline text-primary leading-none">*</p>
-          </div>
-          <CommonInput
-            value={passwordChecked}
-            onChange={(e) => setPasswordChecked(e.target.value)}
-            type="password"
-            placeholder="비밀번호 재입력"
-          ></CommonInput>
-        </div>
-        {/* 관리자 코드 영역*/}
-        <div className="flex flex-col w-full gap-2">
-          <div>
-            <p className="inline text-[0.875rem] font-bold leading-none">
-              관리자 코드
-            </p>
-            <p className="inline text-primary leading-none">*</p>
-          </div>
-          <p className="text-neutral-3 text-[0.75rem] font-normal leading-none">
-            물품 관리 등 중요할 때 쓰이는 코드로, 숫자만 입력 가능해요.
-          </p>
-          <CommonInput
-            value={adminCode}
-            onChange={(e) => setAdminCode(e.target.value)}
-            placeholder="010101"
-            pattern="[0-9]*"
-            maxLength={6}
-          ></CommonInput>
-        </div>
+        <AdminAccountCommonFields
+          variant="register"
+          includeOrganizationName={false}
+          organizationName={organizationName}
+          onOrganizationNameChange={setOrganizationName}
+          password={password}
+          onPasswordChange={setPassword}
+          passwordCheck={passwordChecked}
+          onPasswordCheckChange={setPasswordChecked}
+          adminCode={adminCode}
+          onAdminCodeChange={setAdminCode}
+        />
       </div>
       <div className="w-full flex flex-col items-center mt-14.5 mb-10">
         <Button
