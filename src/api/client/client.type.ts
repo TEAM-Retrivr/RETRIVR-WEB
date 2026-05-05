@@ -64,11 +64,14 @@ export interface BorrowerInformationResponse {
 export interface RentalDetailResponse {
   rentalId: number;
   itemName: string;
+  rentalDuration: number; // 대여 일수
   itemUnitLabel?: string;
+  contact?: string; // 대여자 연락처
+  guaranteedGoods?: string; // 보증 물품
   borrowerField?: Record<string, string>;
   // 일부 응답에서는 borrowerField와 별도로 연락처가 루트에 포함되기도 함
-  contact?: string;
-  requestedAt: string;
+  requestNote?: string; // 대여자 요청사항
+  requestedAt: string; // 대여자 요청 시각
 }
 
 // 3. 대여지 검색

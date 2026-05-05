@@ -1,4 +1,5 @@
-export const GA_CONSENT_STORAGE_KEY = "ga4ConsentGranted";
+export const ADMIN_GA_CONSENT_STORAGE_KEY = "adminGa4ConsentGranted";
+export const CLIENT_GA_CONSENT_STORAGE_KEY = "clientGa4ConsentGranted";
 
 declare global {
   interface Window {
@@ -42,7 +43,11 @@ export const initializeGA4 = () => {
     send_page_view: false,
   });
 
-  if (localStorage.getItem(GA_CONSENT_STORAGE_KEY) === "true") {
+  const hasConsent =
+    localStorage.getItem(ADMIN_GA_CONSENT_STORAGE_KEY) === "true" ||
+    localStorage.getItem(CLIENT_GA_CONSENT_STORAGE_KEY) === "true";
+
+  if (hasConsent) {
     grantAnalyticsConsent();
   }
 };

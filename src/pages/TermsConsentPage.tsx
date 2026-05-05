@@ -5,7 +5,8 @@ import { Layout } from "../components/Layout";
 import Button from "../components/Button";
 import CustomCheckBox from "../components/CustomCheckbox";
 import {
-  GA_CONSENT_STORAGE_KEY,
+  ADMIN_GA_CONSENT_STORAGE_KEY,
+  CLIENT_GA_CONSENT_STORAGE_KEY,
   grantAnalyticsConsent,
   trackPageView,
 } from "../lib/analytics";
@@ -22,6 +23,11 @@ type TermsRouteState = {
 const PAGE_DESTINATION_BY_USER_TYPE: Record<"admin" | "client", string> = {
   admin: "/login",
   client: "/",
+};
+
+const CONSENT_STORAGE_KEY_BY_USER_TYPE: Record<"admin" | "client", string> = {
+  admin: ADMIN_GA_CONSENT_STORAGE_KEY,
+  client: CLIENT_GA_CONSENT_STORAGE_KEY,
 };
 
 const TERMS_CONTENT_BY_USER_TYPE: Record<"admin" | "client", string> = {
@@ -224,11 +230,12 @@ const TermsConsentPage = () => {
 
   const [isTermsChecked, setIsTermsChecked] = useState(false);
   const [isPrivacyChecked, setIsPrivacyChecked] = useState(false);
+  const userType = effectiveState?.userType ?? "admin";
+  const consentStorageKey = CONSENT_STORAGE_KEY_BY_USER_TYPE[userType];
   const hasGrantedAnalyticsRef = useRef(
     typeof window !== "undefined" &&
-      localStorage.getItem(GA_CONSENT_STORAGE_KEY) === "true",
+      localStorage.getItem(consentStorageKey) === "true",
   );
-  const userType = effectiveState?.userType ?? "admin";
   const termsContent = TERMS_CONTENT_BY_USER_TYPE[userType];
   const privacyContent = PRIVACY_CONTENT_BY_USER_TYPE[userType];
 
@@ -265,7 +272,7 @@ const TermsConsentPage = () => {
       // 첫 동의 시점에만 page_view와 영구 동의 상태를 기록한다.
       if (!hasGrantedAnalyticsRef.current) {
         trackPageView(`${location.pathname}${location.search}`);
-        localStorage.setItem(GA_CONSENT_STORAGE_KEY, "true");
+        localStorage.setItem(consentStorageKey, "true");
         hasGrantedAnalyticsRef.current = true;
       }
     }

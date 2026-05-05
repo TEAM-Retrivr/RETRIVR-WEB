@@ -24,7 +24,7 @@ interface LongRentalApproveModalProps {
   contact?: string;
   time?: string;
   rentalDurationDays?: number;
-  guaranteedGoods?: string;
+  guaranteedGoodsProp?: string;
 }
 
 const LongRentalApprovalModal = ({
@@ -40,7 +40,7 @@ const LongRentalApprovalModal = ({
   contact: contactProp,
   time: timeProp,
   rentalDurationDays,
-  guaranteedGoods,
+  guaranteedGoodsProp,
 }: LongRentalApproveModalProps) => {
   const navigate = useNavigate();
   const [isGuaranteedChecked, setIsGuaranteedChecked] = useState(false);
@@ -77,7 +77,8 @@ const LongRentalApprovalModal = ({
   const count = rentalDetail?.itemUnitLabel
     ? `(${rentalDetail.itemUnitLabel})`
     : countProp;
-
+  const rentalDuration = rentalDetail?.rentalDuration ?? rentalDurationDays;
+  const guaranteedGoods = rentalDetail?.guaranteedGoods ?? guaranteedGoodsProp;
   const contactFromBorrowerField = useMemo(() => {
     const field = rentalDetail?.borrowerField;
     if (!field) return { key: undefined as string | undefined, value: "" };
@@ -98,6 +99,22 @@ const LongRentalApprovalModal = ({
       keyPatterns.some((pattern) => pattern.test(k)),
     );
     return { key: matched?.[0], value: matched?.[1] ?? "" };
+  }, [rentalDetail?.borrowerField]);
+
+  const borrowerFieldNameOnly = useMemo(() => {
+    const field = rentalDetail?.borrowerField;
+    if (!field) return "";
+
+    const entries = Object.entries(field)
+      .filter(([, v]) => typeof v === "string" && v.trim().length > 0)
+      .map(([k, v]) => [String(k), v] as const);
+
+    const keyPatterns: RegExp[] = [/이름/i, /^name$/i];
+
+    const matched = entries.find(([k]) =>
+      keyPatterns.some((pattern) => pattern.test(k)),
+    );
+    return (matched?.[1] ?? "").trim();
   }, [rentalDetail?.borrowerField]);
 
   // admin(HomePage) 흐름에서는 `applicant`에 "이름 | 연락처"가 함께 들어오는 경우가 있어,
@@ -133,22 +150,15 @@ const LongRentalApprovalModal = ({
 
   const applicant = useMemo(() => {
     if (rentalDetail?.borrowerField) {
-      const entries = Object.entries(rentalDetail.borrowerField).filter(
-        ([, v]) => typeof v === "string" && v.trim().length > 0,
-      );
-      const filteredEntries = contactFromBorrowerField.key
-        ? entries.filter(([k]) => k !== contactFromBorrowerField.key)
-        : entries;
-
-      const values = filteredEntries.map(([, v]) => v);
-      return values.length > 0 ? values.join(" | ") : "대여자 정보";
+      if (borrowerFieldNameOnly) return borrowerFieldNameOnly;
+      return applicantPropParsed.name || applicantProp?.trim() || "대여자 정보";
     }
     return applicantPropParsed.name || (applicantProp ?? "대여자 정보");
   }, [
     rentalDetail?.borrowerField,
     applicantProp,
     applicantPropParsed.name,
-    contactFromBorrowerField.key,
+    borrowerFieldNameOnly,
   ]);
   const isDetailReady = shouldFetchRentalDetail ? !!rentalDetail : true;
   const canSubmit = useMemo(
@@ -302,14 +312,16 @@ const LongRentalApprovalModal = ({
                 <div className="flex flex-col px-1.75 pb-4.25">
                   <p className="text-14px text-neutral-gray-1 opacity-[0.9] leading-[140%]">
                     • 대여 기간:{" "}
-                    {Number.isFinite(rentalDurationDays) &&
-                    (rentalDurationDays ?? 0) > 0
-                      ? `${rentalDurationDays}일`
+                    {Number.isFinite(rentalDuration) &&
+                    (rentalDuration ?? 0) > 0
+                      ? `${rentalDuration}일`
                       : "정보 없음"}
                   </p>
                   <p className="text-14px text-neutral-gray-1 opacity-[0.9] leading-[140%]">
                     • 보증 물품:{" "}
-                    {guaranteedGoods?.trim() ? guaranteedGoods.trim() : "없음"}
+                    {guaranteedGoods?.trim()
+                      ? guaranteedGoods.trim() == null
+                      : "없음"}
                   </p>
                 </div>
               </div>
