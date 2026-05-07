@@ -26,11 +26,22 @@ import ClientHomePage from "./pages/client/ClientHomePage";
 import RentalInformationSubmitPage from "./pages/client/RentalInformationSubmitPage";
 import RenterSearchPage from "./pages/client/RenterSearchPage";
 import RentalConfirmationPage from "./pages/client/RentalConfirmationPage";
-import { GA_CONSENT_STORAGE_KEY, trackPageView } from "./lib/analytics";
+import {
+  ADMIN_GA_CONSENT_STORAGE_KEY,
+  CLIENT_GA_CONSENT_STORAGE_KEY,
+  trackPageView,
+} from "./lib/analytics";
 
-const hasTermsConsent = () =>
-  typeof window !== "undefined" &&
-  localStorage.getItem(GA_CONSENT_STORAGE_KEY) === "true";
+type UserType = "admin" | "client";
+
+const hasTermsConsent = (userType: UserType) => {
+  if (typeof window === "undefined") return false;
+  const consentKey =
+    userType === "client"
+      ? CLIENT_GA_CONSENT_STORAGE_KEY
+      : ADMIN_GA_CONSENT_STORAGE_KEY;
+  return localStorage.getItem(consentKey) === "true";
+};
 
 const isAuthenticated = () =>
   typeof window !== "undefined" && Boolean(localStorage.getItem("accessToken"));
@@ -47,12 +58,22 @@ const RouteChangeTracker = () => {
 
 const TermsGate = () => {
   const location = useLocation();
+  const userType: UserType = location.pathname.startsWith("/client")
+    ? "client"
+    : "admin";
 
-  // 이미 로그인된 세션은 `/home` 등으로 진입할 때 `/terms`로 되돌리지 않음.
-  if (hasTermsConsent() || isAuthenticated()) return <Outlet />;
+  // client 플로우는 accessToken과 무관하게 client 약관 동의 여부로만 판단.
+  if (userType === "client" && hasTermsConsent("client")) return <Outlet />;
+
+  // admin 플로우는 관리자 약관 동의 또는 로그인 세션이 있으면 통과.
+  if (
+    userType === "admin" &&
+    (hasTermsConsent("admin") || isAuthenticated())
+  ) {
+    return <Outlet />;
+  }
 
   const nextPath = `${location.pathname}${location.search}`;
-  const userType = location.pathname.startsWith("/client") ? "client" : "admin";
   const nextState = location.state;
 
   return (
@@ -102,19 +123,19 @@ function App() {
             path="/client-rental-information-submit"
             element={<RentalInformationSubmitPage />}
           />
+        </Route>
 
-          {/* Auth-required */}
-          <Route element={<AuthGate />}>
-            <Route path="/home" element={<HomePage />} />
-            <Route path="/account" element={<AccountPage />} />
-            <Route path="/profile" element={<ProfileEditPage />} />
-            <Route path="/item-manage" element={<ItemManagementPage />} />
-            <Route path="/item-register" element={<ItemRegisterationPage />} />
-            <Route path="/item-edit/:itemId" element={<ItemEditPage />} />
-            <Route path="/return-manage" element={<ReturnManagementPage />} />
-            <Route path="/return-check/:itemId" element={<ReturnCheckPage />} />
-            <Route path="/rental-request" element={<RentalRequestPage />} />
-          </Route>
+        {/* Auth-required */}
+        <Route element={<AuthGate />}>
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/account" element={<AccountPage />} />
+          <Route path="/profile" element={<ProfileEditPage />} />
+          <Route path="/item-manage" element={<ItemManagementPage />} />
+          <Route path="/item-register" element={<ItemRegisterationPage />} />
+          <Route path="/item-edit/:itemId" element={<ItemEditPage />} />
+          <Route path="/return-manage" element={<ReturnManagementPage />} />
+          <Route path="/return-check/:itemId" element={<ReturnCheckPage />} />
+          <Route path="/rental-request" element={<RentalRequestPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

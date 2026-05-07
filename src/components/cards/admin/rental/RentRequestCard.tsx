@@ -51,7 +51,7 @@ export const RentRequestCard = ({
         applicant={applicant}
         time={time}
         rentalDurationDays={rentalDuration}
-        guaranteedGoods={guaranteedGoods}
+        guaranteedGoodsProp={guaranteedGoods}
         itemUnitLabel={itemUnitLabel}
       />
     </>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import type { FormEvent } from "react";
 import { Layout } from "../../components/Layout";
@@ -117,6 +117,10 @@ const RentalInformationSubmitPage = () => {
   const [phoneVerificationTokenId, setPhoneVerificationTokenId] = useState("");
   const [isPhoneVerificationComplete, setIsPhoneVerificationComplete] =
     useState(false);
+  /** 인증번호 전송: 한 번 시도한 뒤(성공/실패 무관) 새로고침 전까지 재전송 불가 */
+  const [isPhoneVerificationSendPermanentlyDisabled, setIsPhoneVerificationSendPermanentlyDisabled] =
+    useState(false);
+  const phoneVerificationSendLockRef = useRef(false);
   const [requestment, setRequestment] = useState("");
   const [additionalFieldValues, setAdditionalFieldValues] = useState<
     Record<string, string>
@@ -164,6 +168,9 @@ const RentalInformationSubmitPage = () => {
   const handleSendPhoneVerificationCode = () => {
     if (isPhoneVerificationComplete) return;
     if (!isValidPhoneNumberForVerification) return;
+    if (phoneVerificationSendLockRef.current) return;
+    phoneVerificationSendLockRef.current = true;
+    setIsPhoneVerificationSendPermanentlyDisabled(true);
 
     const normalizedPhoneNumber = formatPhoneNumber(phoneNumber.trim());
 
@@ -393,7 +400,8 @@ const RentalInformationSubmitPage = () => {
                 disabled={
                   !isValidPhoneNumberForVerification ||
                   isSendingPhoneCode ||
-                  isPhoneVerificationComplete
+                  isPhoneVerificationComplete ||
+                  isPhoneVerificationSendPermanentlyDisabled
                 }
                 onClick={handleSendPhoneVerificationCode}
               >
