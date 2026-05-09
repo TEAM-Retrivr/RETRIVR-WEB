@@ -496,13 +496,15 @@ const RentalInformationSubmitPage = () => {
           </div>
         </div>
         {/* 요청하기 영역 */}
-        <div className="flex flex-col w-full items-center mt-13 mb-11 gap-1.5">
-          <p className="text-primary text-10px font-[400] leading-[130%]">
-            관리자 승인 후 대여가 완료됩니다.
-          </p>
-          <p className="text-primary text-10px font-[400] leading-[130%]">
-            대여 요청은 15분 간 유지돼요!
-          </p>
+        <div className="flex flex-col w-full items-center mt-5.5 mb-12 gap-3.5">
+          <div>
+            <p className="text-primary text-10px font-[400] leading-[130%]">
+              관리자 승인 후 대여가 완료됩니다.
+            </p>
+            <p className="text-primary text-10px font-[400] leading-[130%]">
+              대여 요청은 15분 간 유지돼요!
+            </p>
+          </div>
           <Button
             variant="primary"
             size="lg"
