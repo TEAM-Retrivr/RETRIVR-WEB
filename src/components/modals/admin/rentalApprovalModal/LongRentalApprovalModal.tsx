@@ -319,9 +319,7 @@ const LongRentalApprovalModal = ({
                   </p>
                   <p className="text-14px text-neutral-gray-1 opacity-[0.9] leading-[140%]">
                     • 보증 물품:{" "}
-                    {guaranteedGoods?.trim()
-                      ? guaranteedGoods.trim() == null
-                      : "없음"}
+                    {guaranteedGoods?.trim() ? guaranteedGoods.trim() : "없음"}
                   </p>
                 </div>
               </div>
