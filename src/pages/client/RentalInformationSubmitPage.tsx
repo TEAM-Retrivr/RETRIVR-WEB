@@ -118,8 +118,10 @@ const RentalInformationSubmitPage = () => {
   const [isPhoneVerificationComplete, setIsPhoneVerificationComplete] =
     useState(false);
   /** 인증번호 전송: 한 번 시도한 뒤(성공/실패 무관) 새로고침 전까지 재전송 불가 */
-  const [isPhoneVerificationSendPermanentlyDisabled, setIsPhoneVerificationSendPermanentlyDisabled] =
-    useState(false);
+  const [
+    isPhoneVerificationSendPermanentlyDisabled,
+    setIsPhoneVerificationSendPermanentlyDisabled,
+  ] = useState(false);
   const phoneVerificationSendLockRef = useRef(false);
   const [requestment, setRequestment] = useState("");
   const [additionalFieldValues, setAdditionalFieldValues] = useState<
@@ -169,8 +171,6 @@ const RentalInformationSubmitPage = () => {
     if (isPhoneVerificationComplete) return;
     if (!isValidPhoneNumberForVerification) return;
     if (phoneVerificationSendLockRef.current) return;
-    phoneVerificationSendLockRef.current = true;
-    setIsPhoneVerificationSendPermanentlyDisabled(true);
 
     const normalizedPhoneNumber = formatPhoneNumber(phoneNumber.trim());
 
@@ -181,11 +181,14 @@ const RentalInformationSubmitPage = () => {
       },
       {
         onSuccess: (data) => {
+          phoneVerificationSendLockRef.current = true;
+          setIsPhoneVerificationSendPermanentlyDisabled(true);
           setPhoneVerificationId(data.verificationId);
           setPhoneVerificationCode("");
           alert("인증번호가 전송되었습니다.");
         },
         onError: (error: any) => {
+          phoneVerificationSendLockRef.current = false;
           const message =
             error?.response?.data?.message ?? "인증번호 전송에 실패했습니다.";
           alert(message);
@@ -493,10 +496,15 @@ const RentalInformationSubmitPage = () => {
           </div>
         </div>
         {/* 요청하기 영역 */}
-        <div className="flex flex-col w-full items-center mt-13 mb-11 gap-1.5">
-          <p className="text-primary text-10px font-[400] leading-[130%]">
-            관리자 승인 후 대여가 완료됩니다.
-          </p>
+        <div className="flex flex-col w-full items-center mt-5.5 mb-12 gap-3.5">
+          <div className="flex flex-col items-center">
+            <p className="text-center text-primary text-10px font-[400] leading-[130%]">
+              관리자 승인 후 대여가 완료됩니다.
+            </p>
+            <p className="text-center text-primary text-10px font-[400] leading-[130%]">
+              대여 요청은 15분 간 유지돼요!
+            </p>
+          </div>
           <Button
             variant="primary"
             size="lg"
