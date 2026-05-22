@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import ConfirmModal from "../../components/modals/ConfirmModal";
@@ -18,6 +19,7 @@ const getPublicWebOrigin = () => {
 };
 
 const AccountPage = () => {
+  const navigate = useNavigate();
   const { data } = useAdminProfile();
   const qrCanvasRef = useRef<HTMLCanvasElement>(null);
   const [confirmModalMessage, setConfirmModalMessage] = useState<string | null>(
@@ -208,6 +210,17 @@ const AccountPage = () => {
                 사진 다운로드
               </button>
             </div>
+          </div>
+          {/* Retrivr 프로 - 멤버십 페이지 */}
+          <div className="flex flex-col w-full h-13.25 text-14px font-bold shadow-16-gray rounded-2xl">
+            <button
+              type="button"
+              onClick={() => navigate("/membership")}
+              className="flex items-center justify-between h-13.25 px-7.5 rounded-2xl cursor-pointer hover:bg-neutral-gray-4/50"
+            >
+              <p className="text-start text-primary">Retrivr 프로</p>
+              <img src="/icons/right-arrow2.svg" alt="" />
+            </button>
           </div>
           {/* 이용약관, 개인정보 처리 방침 */}
           <div className="flex flex-col w-full h-26.5 text-14px font-bold shadow-16-gray rounded-2xl">

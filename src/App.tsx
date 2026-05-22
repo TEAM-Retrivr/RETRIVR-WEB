@@ -12,6 +12,7 @@ import { ModalTestPage } from "./pages/ModalTestPage";
 import LoginPage from "./pages/admin/LoginPage";
 import HomePage from "./pages/admin/HomePage";
 import AccountPage from "./pages/admin/AccountPage";
+import MembershipPage from "./pages/admin/MembershipPage";
 import ProfileEditPage from "./pages/admin/ProfileEditPage";
 import LandingPage from "./pages/LandingPage";
 import RegisterPage from "./pages/admin/RegisterPage";
@@ -129,6 +130,7 @@ function App() {
         <Route element={<AuthGate />}>
           <Route path="/home" element={<HomePage />} />
           <Route path="/account" element={<AccountPage />} />
+          <Route path="/membership" element={<MembershipPage />} />
           <Route path="/profile" element={<ProfileEditPage />} />
           <Route path="/item-manage" element={<ItemManagementPage />} />
           <Route path="/item-register" element={<ItemRegisterationPage />} />
