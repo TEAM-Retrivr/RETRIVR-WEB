@@ -19,7 +19,7 @@ const getPublicWebOrigin = () => {
 };
 
 const AccountPage = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const { data } = useAdminProfile();
   const qrCanvasRef = useRef<HTMLCanvasElement>(null);
   const [confirmModalMessage, setConfirmModalMessage] = useState<string | null>(
