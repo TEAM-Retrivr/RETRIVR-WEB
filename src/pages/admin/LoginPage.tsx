@@ -116,11 +116,15 @@ const LoginPage = () => {
           <p className="text-center text-primary text-14px font-normal leading-none">
             회원이 아니신가요?
           </p>
-          {/* 회원가입 버튼 : /register 로 이동 */}
+          {/* 회원가입 버튼 : 약관 동의 후 /register 로 이동 */}
           <Button
             variant="outline"
             size="lg"
-            onClick={() => navigate("/terms", { state: { userType: "admin" } })}
+            onClick={() =>
+              navigate("/terms", {
+                state: { userType: "admin", nextPath: "/register" },
+              })
+            }
           >
             회원가입
           </Button>
