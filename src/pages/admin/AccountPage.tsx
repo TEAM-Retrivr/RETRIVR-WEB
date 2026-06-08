@@ -215,7 +215,7 @@ const AccountPage = () => {
           <div className="flex flex-col w-full h-13.25 text-14px font-bold shadow-16-gray rounded-2xl">
             <button
               type="button"
-              onClick={() => navigate("/membership")}
+              onClick={() => alert("개발 예정입니다.")}
               className="flex items-center justify-between h-13.25 px-7.5 rounded-2xl cursor-pointer hover:bg-neutral-gray-4/50"
             >
               <p className="text-start text-primary">Retrivr 프로</p>
