@@ -11,14 +11,29 @@ declare global {
 const GA_SCRIPT_ID = "ga4-script";
 const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_ID;
 
+let analyticsConsentGranted = false;
+
 const canUseGA = () =>
   typeof window !== "undefined" &&
   typeof document !== "undefined" &&
   typeof GA_MEASUREMENT_ID === "string" &&
   GA_MEASUREMENT_ID.length > 0;
 
+export const hasAnalyticsConsent = () => {
+  if (analyticsConsentGranted) return true;
+
+  if (typeof window === "undefined") return false;
+
+  return (
+    localStorage.getItem(ADMIN_GA_CONSENT_STORAGE_KEY) === "true" ||
+    localStorage.getItem(CLIENT_GA_CONSENT_STORAGE_KEY) === "true"
+  );
+};
+
 export const initializeGA4 = () => {
   if (!canUseGA()) return;
+
+  analyticsConsentGranted = hasAnalyticsConsent();
 
   if (!document.getElementById(GA_SCRIPT_ID)) {
     const script = document.createElement("script");
@@ -31,30 +46,24 @@ export const initializeGA4 = () => {
   window.dataLayer = window.dataLayer || [];
   window.gtag =
     window.gtag ||
-    function gtag(...args: unknown[]) {
-      window.dataLayer.push(args);
+    function gtag() {
+      window.dataLayer.push(arguments);
     };
 
   window.gtag("js", new Date());
   window.gtag("consent", "default", {
-    analytics_storage: "denied",
+    analytics_storage: analyticsConsentGranted ? "granted" : "denied",
+    ...(analyticsConsentGranted ? {} : { wait_for_update: 500 }),
   });
   window.gtag("config", GA_MEASUREMENT_ID, {
     send_page_view: false,
   });
-
-  const hasConsent =
-    localStorage.getItem(ADMIN_GA_CONSENT_STORAGE_KEY) === "true" ||
-    localStorage.getItem(CLIENT_GA_CONSENT_STORAGE_KEY) === "true";
-
-  if (hasConsent) {
-    grantAnalyticsConsent();
-  }
 };
 
 export const grantAnalyticsConsent = () => {
   if (!canUseGA() || typeof window.gtag !== "function") return;
 
+  analyticsConsentGranted = true;
   window.gtag("consent", "update", {
     analytics_storage: "granted",
   });
@@ -62,6 +71,7 @@ export const grantAnalyticsConsent = () => {
 
 export const trackPageView = (pagePath: string) => {
   if (!canUseGA() || typeof window.gtag !== "function") return;
+  if (!hasAnalyticsConsent()) return;
 
   window.gtag("event", "page_view", {
     page_path: pagePath,
@@ -69,4 +79,3 @@ export const trackPageView = (pagePath: string) => {
     page_title: document.title,
   });
 };
-
