@@ -271,9 +271,9 @@ const TermsConsentPage = () => {
 
       // 첫 동의 시점에만 page_view와 영구 동의 상태를 기록한다.
       if (!hasGrantedAnalyticsRef.current) {
-        trackPageView(`${location.pathname}${location.search}`);
         localStorage.setItem(consentStorageKey, "true");
         hasGrantedAnalyticsRef.current = true;
+        trackPageView(`${location.pathname}${location.search}`);
       }
     }
 
