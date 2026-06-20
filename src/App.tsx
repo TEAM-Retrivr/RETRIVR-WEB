@@ -27,22 +27,9 @@ import ClientHomePage from "./pages/client/ClientHomePage";
 import RentalInformationSubmitPage from "./pages/client/RentalInformationSubmitPage";
 import RenterSearchPage from "./pages/client/RenterSearchPage";
 import RentalConfirmationPage from "./pages/client/RentalConfirmationPage";
-import {
-  ADMIN_GA_CONSENT_STORAGE_KEY,
-  CLIENT_GA_CONSENT_STORAGE_KEY,
-  trackPageView,
-} from "./lib/analytics";
+import { hasTermsConsent, trackPageView } from "./lib/analytics";
 
 type UserType = "admin" | "client";
-
-const hasTermsConsent = (userType: UserType) => {
-  if (typeof window === "undefined") return false;
-  const consentKey =
-    userType === "client"
-      ? CLIENT_GA_CONSENT_STORAGE_KEY
-      : ADMIN_GA_CONSENT_STORAGE_KEY;
-  return localStorage.getItem(consentKey) === "true";
-};
 
 const isAuthenticated = () =>
   typeof window !== "undefined" && Boolean(localStorage.getItem("accessToken"));

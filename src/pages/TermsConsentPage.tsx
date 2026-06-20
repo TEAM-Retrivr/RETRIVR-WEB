@@ -1,14 +1,14 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import { Layout } from "../components/Layout";
 import Button from "../components/Button";
 import CustomCheckBox from "../components/CustomCheckbox";
 import {
-  ADMIN_GA_CONSENT_STORAGE_KEY,
-  CLIENT_GA_CONSENT_STORAGE_KEY,
   grantAnalyticsConsent,
+  setTermsConsent,
   trackPageView,
+  type AnalyticsUserType,
 } from "../lib/analytics";
 
 const CLIENT_TERMS_REDIRECT_STORAGE_KEY = "clientTermsRedirectPayload";
@@ -23,11 +23,6 @@ type TermsRouteState = {
 const PAGE_DESTINATION_BY_USER_TYPE: Record<"admin" | "client", string> = {
   admin: "/login",
   client: "/",
-};
-
-const CONSENT_STORAGE_KEY_BY_USER_TYPE: Record<"admin" | "client", string> = {
-  admin: ADMIN_GA_CONSENT_STORAGE_KEY,
-  client: CLIENT_GA_CONSENT_STORAGE_KEY,
 };
 
 const TERMS_CONTENT_BY_USER_TYPE: Record<"admin" | "client", string> = {
@@ -230,12 +225,7 @@ const TermsConsentPage = () => {
 
   const [isTermsChecked, setIsTermsChecked] = useState(false);
   const [isPrivacyChecked, setIsPrivacyChecked] = useState(false);
-  const userType = effectiveState?.userType ?? "admin";
-  const consentStorageKey = CONSENT_STORAGE_KEY_BY_USER_TYPE[userType];
-  const hasGrantedAnalyticsRef = useRef(
-    typeof window !== "undefined" &&
-      localStorage.getItem(consentStorageKey) === "true",
-  );
+  const userType: AnalyticsUserType = effectiveState?.userType ?? "admin";
   const termsContent = TERMS_CONTENT_BY_USER_TYPE[userType];
   const privacyContent = PRIVACY_CONTENT_BY_USER_TYPE[userType];
 
@@ -266,16 +256,11 @@ const TermsConsentPage = () => {
 
   // 약관 동의 완료 후 진입 목적(관리자/대여자)에 맞는 다음 화면으로 이동
   const handleNextStep = () => {
-    if (isAllRequiredChecked) {
-      grantAnalyticsConsent();
+    if (!isAllRequiredChecked) return;
 
-      // 첫 동의 시점에만 page_view와 영구 동의 상태를 기록한다.
-      if (!hasGrantedAnalyticsRef.current) {
-        localStorage.setItem(consentStorageKey, "true");
-        hasGrantedAnalyticsRef.current = true;
-        trackPageView(`${location.pathname}${location.search}`);
-      }
-    }
+    setTermsConsent(userType);
+    grantAnalyticsConsent(userType);
+    trackPageView(`${location.pathname}${location.search}`);
 
     if (userType === "client") {
       if (effectiveState?.nextState) {
