@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from "react";
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import ConfirmModal from "../../components/modals/ConfirmModal";
@@ -19,7 +19,7 @@ const getPublicWebOrigin = () => {
 };
 
 const AccountPage = () => {
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
   const { data } = useAdminProfile();
   const qrCanvasRef = useRef<HTMLCanvasElement>(null);
   const [confirmModalMessage, setConfirmModalMessage] = useState<string | null>(
@@ -226,7 +226,7 @@ const AccountPage = () => {
           <div className="flex flex-col w-full h-26.5 text-14px font-bold shadow-16-gray rounded-2xl">
             <button
               type="button"
-              onClick={() => alert("개발 예정입니다.")}
+              onClick={() => navigate("/account/terms")}
               className="flex items-center justify-between h-13.25 px-7.5 rounded-t-2xl cursor-pointer hover:bg-neutral-gray-4/50"
             >
               <p className="text-start">이용약관</p>
@@ -235,7 +235,7 @@ const AccountPage = () => {
             <p className="mx-2.5 border border-neutral-gray-4 opacity-[0.3]"></p>
             <button
               type="button"
-              onClick={() => alert("개발 예정입니다.")}
+              onClick={() => navigate("/account/privacy")}
               className="flex items-center justify-between h-13.25 px-7.5 rounded-b-2xl cursor-pointer hover:bg-neutral-gray-4/50"
             >
               <p className="text-start">개인정보 처리방침</p>
