@@ -5,6 +5,7 @@ import ErrorModal from "../components/modals/ErrorModal";
 import QRCodeDisplay from "../components/qr/QRCodeDisplay";
 import QRcodeModal from "../components/modals/admin/QRcodeModal";
 import AdminCodeInputModal from "../components/modals/AdminCodeInputModal";
+import ReturnApprovalModal from "../components/modals/admin/return/ReturnApprovalModal";
 
 const PRODUCTION_WEB_ORIGIN = "https://www.retrivr.kr";
 const PREVIEW_WEB_ORIGIN = "https://retrivr-web.vercel.app";
@@ -22,6 +23,8 @@ export const ModalTestPage = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isQROpen, setIsQROpen] = useState(false);
   const [isAdminCodeOpen, setIsAdminCodeOpen] = useState(false);
+  const [isReturnApprovalOpen, setIsReturnApprovalOpen] = useState(false);
+  const [isReturnOverdue, setIsReturnOverdue] = useState(true);
   const [modalType, setModalType] = useState<"confirm" | "error">("confirm");
   const [selectedKey, setSelectedKey] = useState<
     "noAuth" | "signupDone" | "approveDone" | "editDone"
@@ -63,10 +66,47 @@ export const ModalTestPage = () => {
           <p className="mb-3 text-center text-16px font-[700] text-secondary-1">
             QR 컴포넌트 미리보기
           </p>
-          <QRCodeDisplay value={`${publicWebOrigin}/client-home?organizationId=1`} />
+          <QRCodeDisplay
+            value={`${publicWebOrigin}/client-home?organizationId=1`}
+          />
           <div className="mt-4 flex justify-center">
-            <Button variant="primary" size="lg" onClick={() => setIsQROpen(true)}>
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={() => setIsQROpen(true)}
+            >
               QRcodeModal 열기
+            </Button>
+          </div>
+        </div>
+
+        <div className="rounded-[20px] border border-neutral-gray-5 p-5">
+          <p className="mb-3 text-center text-16px font-[700] text-secondary-1">
+            반납 승인 모달 미리보기
+          </p>
+          <div className="mb-3 flex justify-center gap-2">
+            <Button
+              variant={isReturnOverdue ? "primary" : "outline"}
+              size="sm"
+              onClick={() => setIsReturnOverdue(true)}
+            >
+              연체 중
+            </Button>
+            <Button
+              variant={!isReturnOverdue ? "primary" : "outline"}
+              size="sm"
+              onClick={() => setIsReturnOverdue(false)}
+            >
+              대여 중
+            </Button>
+          </div>
+          <div className="flex justify-center">
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={() => setIsReturnApprovalOpen(true)}
+            >
+              반납 상세 모달 열기
             </Button>
           </div>
         </div>
@@ -165,6 +205,35 @@ export const ModalTestPage = () => {
           setIsAdminCodeOpen(false);
         }}
         rentalId={1}
+      />
+      <ReturnApprovalModal
+        isOpen={isReturnApprovalOpen}
+        onClose={() => setIsReturnApprovalOpen(false)}
+        isOverdue={isReturnOverdue}
+        itemName="c타입 충전기"
+        itemUnitLabel="c타입 충전기(1)"
+        borrowerName="이리버"
+        borrowerPhone="01033385583"
+        borrowerFields={{
+          additionalProp1: "컴퓨터공학과",
+          additionalProp2: "202312019",
+        }}
+        rentalDate="2026-01-19"
+        expectedReturnDueDate="2026-01-23"
+        requestNote="반납기한 연장 요청드립니다"
+        approvalAdminName="조조슈"
+        onEdit={() => {
+          setIsReturnApprovalOpen(false);
+          alert("수정하기 클릭됨");
+        }}
+        onSendOverdueMessage={() => {
+          setIsReturnApprovalOpen(false);
+          alert("연체 문자 전송 클릭됨");
+        }}
+        onConfirm={(adminName) => {
+          alert(`반납 확정: ${adminName}`);
+          setIsReturnApprovalOpen(false);
+        }}
       />
     </div>
   );
