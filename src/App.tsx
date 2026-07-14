@@ -12,6 +12,8 @@ import { ModalTestPage } from "./pages/ModalTestPage";
 import LoginPage from "./pages/admin/LoginPage";
 import HomePage from "./pages/admin/HomePage";
 import AccountPage from "./pages/admin/AccountPage";
+import AccountTermsPage from "./pages/admin/AccountTermsPage";
+import AccountPrivacyPage from "./pages/admin/AccountPrivacyPage";
 import MembershipPage from "./pages/admin/MembershipPage";
 import ProfileEditPage from "./pages/admin/ProfileEditPage";
 import LandingPage from "./pages/LandingPage";
@@ -54,10 +56,7 @@ const TermsGate = () => {
   if (userType === "client" && hasTermsConsent("client")) return <Outlet />;
 
   // admin 플로우는 관리자 약관 동의 또는 로그인 세션이 있으면 통과.
-  if (
-    userType === "admin" &&
-    (hasTermsConsent("admin") || isAuthenticated())
-  ) {
+  if (userType === "admin" && (hasTermsConsent("admin") || isAuthenticated())) {
     return <Outlet />;
   }
 
@@ -117,6 +116,8 @@ function App() {
         <Route element={<AuthGate />}>
           <Route path="/home" element={<HomePage />} />
           <Route path="/account" element={<AccountPage />} />
+          <Route path="/account/terms" element={<AccountTermsPage />} />
+          <Route path="/account/privacy" element={<AccountPrivacyPage />} />
           <Route path="/membership" element={<MembershipPage />} />
           <Route path="/profile" element={<ProfileEditPage />} />
           <Route path="/item-manage" element={<ItemManagementPage />} />
