@@ -89,8 +89,10 @@ export interface LoginRequest {
 }
 
 // 4-2. 로그인 응답 바디
+// organizationId가 우선이며, 구응답의 orgId도 허용한다.
 export interface LoginResponse {
-  orgId: number; // 서버에서 식별자로 쓰이는 key
+  organizationId?: number; // 서버에서 식별자로 쓰이는 key (신규)
+  orgId?: number; // 레거시 필드 (하위 호환)
   email: string; // 사용자 이메일
   accessToken: string; // 엑세스 토큰
   refreshToken: string; // 리프레시 토큰
