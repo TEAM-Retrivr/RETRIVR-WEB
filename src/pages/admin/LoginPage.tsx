@@ -37,7 +37,7 @@ const LoginPage = () => {
         onSuccess: (data) => {
           localStorage.setItem("accessToken", data.accessToken);
           localStorage.setItem("refreshToken", data.refreshToken);
-          localStorage.setItem("orgId", String(data.orgId));
+          localStorage.setItem("orgId", String(data.organizationId));
           navigate("/home");
         },
         onError: () => {

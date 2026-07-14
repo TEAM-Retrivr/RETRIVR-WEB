@@ -90,7 +90,7 @@ export interface LoginRequest {
 
 // 4-2. 로그인 응답 바디
 export interface LoginResponse {
-  orgId: number; // 서버에서 식별자로 쓰이는 key
+  organizationId: number; // 서버에서 식별자로 쓰이는 key
   email: string; // 사용자 이메일
   accessToken: string; // 엑세스 토큰
   refreshToken: string; // 리프레시 토큰
