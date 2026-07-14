@@ -39,6 +39,8 @@ const ReturnCheckPage = () => {
           : undefined,
         rentalDate: unit.rentalDate,
         expectedReturnDueDate: unit.expectedReturnDueDate,
+        requestNote: unit.requestNote,
+        approvalAdminName: unit.approvalAdminName,
       })) ?? []
     );
   }, [data]);

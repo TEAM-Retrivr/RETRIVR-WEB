@@ -29,6 +29,8 @@ export interface ReturnCheckCardRentalInfo {
   // 대여/반납 일자
   rentalDate: string;
   expectedReturnDueDate: string;
+  requestNote?: string;
+  approvalAdminName?: string;
 }
 
 interface ReturnCheckCardProps {
@@ -167,6 +169,24 @@ const ReturnCheckCard = ({
         }}
         isSubmitting={isConfirming}
         submitError={submitError}
+        isOverdue={rental.isOverdue}
+        itemName={rental.itemName}
+        itemUnitLabel={rental.borrowedItemName}
+        borrowerName={rental.borrowerName}
+        borrowerPhone={rental.borrowerPhone}
+        borrowerFields={rental.borrowerFields}
+        rentalDate={rental.rentalDate}
+        expectedReturnDueDate={rental.expectedReturnDueDate}
+        requestNote={rental.requestNote}
+        approvalAdminName={rental.approvalAdminName}
+        onEdit={() => {
+          setIsReturnApprovalOpen(false);
+          setIsRentalDateChangeOpen(true);
+        }}
+        onSendOverdueMessage={() => {
+          setIsReturnApprovalOpen(false);
+          setIsOverdueMessageOpen(true);
+        }}
         onConfirm={(adminNameToConfirm) => {
           if (!rental.rentalId) {
             setSubmitError(
