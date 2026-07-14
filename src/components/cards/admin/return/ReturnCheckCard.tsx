@@ -29,6 +29,8 @@ export interface ReturnCheckCardRentalInfo {
   // 대여/반납 일자
   rentalDate: string;
   expectedReturnDueDate: string;
+  requestNote?: string;
+  approvalAdminName?: string;
 }
 
 interface ReturnCheckCardProps {
@@ -175,6 +177,8 @@ const ReturnCheckCard = ({
         borrowerFields={rental.borrowerFields}
         rentalDate={rental.rentalDate}
         expectedReturnDueDate={rental.expectedReturnDueDate}
+        requestNote={rental.requestNote}
+        approvalAdminName={rental.approvalAdminName}
         onEdit={() => {
           setIsReturnApprovalOpen(false);
           setIsRentalDateChangeOpen(true);

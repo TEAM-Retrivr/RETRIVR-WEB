@@ -263,6 +263,8 @@ export interface AdminActiveRentalItemUnit {
   };
   rentalDate: string; // ISO date string (대여 일자)
   expectedReturnDueDate: string; // ISO date string (반납 예정 일자)
+  requestNote?: string; // 대여자 요청사항
+  approvalAdminName?: string; // 대여 승인 관리자 이름
 }
 
 export interface AdminActiveRentalsByItemResponse {

@@ -23,6 +23,8 @@ interface ReturnApprovalModalProps {
   rentalDate?: string;
   expectedReturnDueDate?: string;
   requestNote?: string;
+  /** 대여 요청을 승인한 관리자 이름 (상세 표시용) */
+  approvalAdminName?: string;
 }
 
 const parseDateParts = (raw?: string) => {
@@ -95,6 +97,7 @@ const ReturnApprovalModal = ({
   rentalDate,
   expectedReturnDueDate,
   requestNote,
+  approvalAdminName,
 }: ReturnApprovalModalProps) => {
   const [adminName, setAdminName] = useState("");
 
@@ -111,6 +114,8 @@ const ReturnApprovalModal = ({
     () => parseDateParts(expectedReturnDueDate),
     [expectedReturnDueDate],
   );
+
+  const trimmedApprovalAdminName = approvalAdminName?.trim() || "";
 
   const borrowerInfoRows = useMemo(() => {
     const rows: { label: string; value: string }[] = [];
@@ -138,8 +143,11 @@ const ReturnApprovalModal = ({
         value: borrowerFields.additionalProp3.trim(),
       });
     }
+    if (trimmedApprovalAdminName) {
+      rows.push({ label: "대여 승인 관리자", value: trimmedApprovalAdminName });
+    }
     return rows;
-  }, [borrowerName, borrowerPhone, borrowerFields]);
+  }, [borrowerName, borrowerPhone, borrowerFields, trimmedApprovalAdminName]);
 
   const trimmedRequestNote = requestNote?.trim().slice(0, 30) || "";
   const canSubmit = !!adminName.trim() && !isSubmitting;
