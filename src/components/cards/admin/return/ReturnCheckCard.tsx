@@ -167,6 +167,22 @@ const ReturnCheckCard = ({
         }}
         isSubmitting={isConfirming}
         submitError={submitError}
+        isOverdue={rental.isOverdue}
+        itemName={rental.itemName}
+        itemUnitLabel={rental.borrowedItemName}
+        borrowerName={rental.borrowerName}
+        borrowerPhone={rental.borrowerPhone}
+        borrowerFields={rental.borrowerFields}
+        rentalDate={rental.rentalDate}
+        expectedReturnDueDate={rental.expectedReturnDueDate}
+        onEdit={() => {
+          setIsReturnApprovalOpen(false);
+          setIsRentalDateChangeOpen(true);
+        }}
+        onSendOverdueMessage={() => {
+          setIsReturnApprovalOpen(false);
+          setIsOverdueMessageOpen(true);
+        }}
         onConfirm={(adminNameToConfirm) => {
           if (!rental.rentalId) {
             setSubmitError(
