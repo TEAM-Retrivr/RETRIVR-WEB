@@ -266,7 +266,7 @@ const RentalInformationSubmitPage = () => {
   const handleSendRentalRequest = () => {
     const normalizedPhone = formatPhoneNumber(phoneNumber.trim());
     const normalizedName = name.trim();
-    const normalizedRequestment = requestment.trim();
+    const normalizedRequestment = requestment.trim().slice(0, 30);
 
     const renterFields: Record<string, string> = {};
 
@@ -468,11 +468,15 @@ const RentalInformationSubmitPage = () => {
             <CommonInput
               type="text"
               value={requestment}
-              onChange={(e) => setRequestment(e.target.value)}
+              onChange={(e) => setRequestment(e.target.value.slice(0, 30))}
+              maxLength={30}
               placeholder="요청사항을 입력하세요. ex) 반납기한 연장"
               inputSize="large"
               className="placeholder:text-14px placeholder:font-[400] placeholder:leading-[120%]"
             />
+            <p className="mt-1 text-right text-12px text-neutral-gray-3">
+              {requestment.length}/30
+            </p>
           </div>
           {/* 개인 정보 동의 영역 */}
           <div>
