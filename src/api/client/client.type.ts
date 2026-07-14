@@ -66,6 +66,7 @@ export interface RentalDetailResponse {
   itemName: string;
   rentalDuration: number; // 대여 일수
   itemUnitLabel?: string;
+  borrowerName?: string; // 대여자 이름
   contact?: string; // 대여자 연락처
   guaranteedGoods?: string; // 보증 물품
   borrowerField?: Record<string, string>;

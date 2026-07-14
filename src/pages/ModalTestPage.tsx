@@ -5,6 +5,8 @@ import ErrorModal from "../components/modals/ErrorModal";
 import QRCodeDisplay from "../components/qr/QRCodeDisplay";
 import QRcodeModal from "../components/modals/admin/QRcodeModal";
 import AdminCodeInputModal from "../components/modals/AdminCodeInputModal";
+import { ShortRentalApprovalModal } from "../components/modals/admin/rentalApprovalModal/ShortRentalApprovalModal";
+import LongRentalApprovalModal from "../components/modals/admin/rentalApprovalModal/LongRentalApprovalModal";
 
 const PRODUCTION_WEB_ORIGIN = "https://www.retrivr.kr";
 const PREVIEW_WEB_ORIGIN = "https://retrivr-web.vercel.app";
@@ -22,6 +24,8 @@ export const ModalTestPage = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isQROpen, setIsQROpen] = useState(false);
   const [isAdminCodeOpen, setIsAdminCodeOpen] = useState(false);
+  const [isShortApprovalOpen, setIsShortApprovalOpen] = useState(false);
+  const [isLongApprovalOpen, setIsLongApprovalOpen] = useState(false);
   const [modalType, setModalType] = useState<"confirm" | "error">("confirm");
   const [selectedKey, setSelectedKey] = useState<
     "noAuth" | "signupDone" | "approveDone" | "editDone"
@@ -67,6 +71,28 @@ export const ModalTestPage = () => {
           <div className="mt-4 flex justify-center">
             <Button variant="primary" size="lg" onClick={() => setIsQROpen(true)}>
               QRcodeModal 열기
+            </Button>
+          </div>
+        </div>
+
+        <div className="rounded-[20px] border border-neutral-gray-5 p-5">
+          <p className="mb-3 text-center text-16px font-[700] text-secondary-1">
+            요청 승인 모달 미리보기
+          </p>
+          <div className="flex flex-wrap gap-2 justify-center">
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={() => setIsShortApprovalOpen(true)}
+            >
+              Short 승인 모달
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => setIsLongApprovalOpen(true)}
+            >
+              Long 승인 모달
             </Button>
           </div>
         </div>
@@ -165,6 +191,39 @@ export const ModalTestPage = () => {
           setIsAdminCodeOpen(false);
         }}
         rentalId={1}
+      />
+      <ShortRentalApprovalModal
+        isOpen={isShortApprovalOpen}
+        onClose={() => setIsShortApprovalOpen(false)}
+        rentalId={1}
+        itemData={{
+          name: "우산",
+          borrower: "홍길동",
+          duration: "3일",
+          guaranteedGoods: "학생증",
+        }}
+      />
+      <LongRentalApprovalModal
+        isOpen={isLongApprovalOpen}
+        onClose={() => setIsLongApprovalOpen(false)}
+        rentalId={1}
+        approvalApiMode="admin"
+        itemName="c타입 충전기"
+        count="(3/5)"
+        itemUnitLabel="c타입 충전기(1)"
+        applicant="이리버"
+        contact="01033385583"
+        time="2026-02-17 16:20:03"
+        rentalDurationDays={3}
+        guaranteedGoodsProp="신분증 or 학생증"
+        requestNote="읽을읽을읽을읽을읽을읽을읽을읽을읽을읽을읽을읽을읽을읽을"
+        expiresAt={new Date(Date.now() + 14 * 60 * 60 * 1000 + 49 * 60 * 1000).toISOString()}
+        borrowerFields={{
+          이름: "이리버",
+          연락처: "01033385583",
+          학과: "컴퓨터공학과",
+          학번: "202312019",
+        }}
       />
     </div>
   );
