@@ -160,6 +160,20 @@ export interface AdminProfileResponse {
 export type SendAdminEmailCodeRequest = SendEmailCodeRequest;
 export type SendAdminEmailCodeResponse = SendEmailCodeResponse;
 
+// 6-2. 관리자 이메일 인증 코드 검증
+// 엔드포인트: "/api/admin/v1/email/verification/verify" (POST)
+export interface VerifyAdminEmailCodeRequest {
+  email: string;
+  purpose: EmailVerificationPurpose; // 이메일 변경: EMAIL_CHANGE
+  code: string;
+}
+
+export interface VerifyAdminEmailCodeResponse {
+  tokenType: string;
+  token: string;
+  expiresInSeconds: number;
+}
+
 // 관리자 이메일 인증 공통 에러 응답 (400/429 등)
 export interface AdminEmailVerificationErrorResponse {
   status: string; // 예: "400 BAD_REQUEST", "429 TOO_MANY_REQUESTS"
