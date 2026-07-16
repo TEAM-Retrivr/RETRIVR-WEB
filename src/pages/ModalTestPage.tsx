@@ -8,6 +8,9 @@ import AdminCodeInputModal from "../components/modals/AdminCodeInputModal";
 import { ShortRentalApprovalModal } from "../components/modals/admin/rentalApprovalModal/ShortRentalApprovalModal";
 import LongRentalApprovalModal from "../components/modals/admin/rentalApprovalModal/LongRentalApprovalModal";
 import ReturnApprovalModal from "../components/modals/admin/return/ReturnApprovalModal";
+import WithdrawExitConfirmModal from "../components/modals/admin/account/WithdrawExitConfirmModal";
+import WithdrawPasswordMismatchModal from "../components/modals/admin/account/WithdrawPasswordMismatchModal";
+import WithdrawCompleteModal from "../components/modals/admin/account/WithdrawCompleteModal";
 
 const PRODUCTION_WEB_ORIGIN = "https://www.retrivr.kr";
 const PREVIEW_WEB_ORIGIN = "https://retrivr-web.vercel.app";
@@ -29,6 +32,10 @@ export const ModalTestPage = () => {
   const [isLongApprovalOpen, setIsLongApprovalOpen] = useState(false);
   const [isReturnApprovalOpen, setIsReturnApprovalOpen] = useState(false);
   const [isReturnOverdue, setIsReturnOverdue] = useState(true);
+  const [isWithdrawExitOpen, setIsWithdrawExitOpen] = useState(false);
+  const [isWithdrawPasswordMismatchOpen, setIsWithdrawPasswordMismatchOpen] =
+    useState(false);
+  const [isWithdrawCompleteOpen, setIsWithdrawCompleteOpen] = useState(false);
   const [modalType, setModalType] = useState<"confirm" | "error">("confirm");
   const [selectedKey, setSelectedKey] = useState<
     "noAuth" | "signupDone" | "approveDone" | "editDone"
@@ -102,6 +109,35 @@ export const ModalTestPage = () => {
               onClick={() => setIsLongApprovalOpen(true)}
             >
               Long 승인 모달
+            </Button>
+          </div>
+        </div>
+
+        <div className="rounded-[20px] border border-neutral-gray-5 p-5">
+          <p className="mb-3 text-center text-16px font-[700] text-secondary-1">
+            회원 탈퇴 모달 미리보기
+          </p>
+          <div className="flex flex-wrap gap-2 justify-center">
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={() => setIsWithdrawExitOpen(true)}
+            >
+              탈퇴 종료 확인
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => setIsWithdrawPasswordMismatchOpen(true)}
+            >
+              비밀번호 불일치
+            </Button>
+            <Button
+              variant="gray"
+              size="lg"
+              onClick={() => setIsWithdrawCompleteOpen(true)}
+            >
+              탈퇴 완료
             </Button>
           </div>
         </div>
@@ -295,6 +331,19 @@ export const ModalTestPage = () => {
           alert(`반납 확정: ${adminName}`);
           setIsReturnApprovalOpen(false);
         }}
+      />
+      <WithdrawExitConfirmModal
+        isOpen={isWithdrawExitOpen}
+        onClose={() => setIsWithdrawExitOpen(false)}
+        onConfirmExit={() => setIsWithdrawExitOpen(false)}
+      />
+      <WithdrawPasswordMismatchModal
+        isOpen={isWithdrawPasswordMismatchOpen}
+        onClose={() => setIsWithdrawPasswordMismatchOpen(false)}
+      />
+      <WithdrawCompleteModal
+        isOpen={isWithdrawCompleteOpen}
+        onClose={() => setIsWithdrawCompleteOpen(false)}
       />
     </div>
   );
