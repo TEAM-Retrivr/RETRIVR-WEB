@@ -20,12 +20,12 @@ export default defineConfig(({ mode }) => {
           target: proxyTarget,
           changeOrigin: true,
           configure: (proxy) => {
-            // 403 방지: 브라우저가 보낸 Origin(localhost:5173)이 백엔드에서 거부될 수 있어
-            // 프록시 단에서 타깃 origin으로 맞춰서 전달합니다.
+            // 백엔드 Origin 허용 목록에 localhost:5173이 없어서
+            // (로그아웃 등 Origin 검증이 있는 엔드포인트에서 403 "Origin is not allowed" 발생)
+            // 허용 목록에 포함된 localhost:3000으로 맞춰서 전달합니다.
+            // TODO: 백엔드가 localhost:5173을 허용하면 이 우회를 제거
             proxy.on("proxyReq", (proxyReq) => {
-              const baseUrl = proxyTarget;
-              const targetUrl = new URL(baseUrl);
-              proxyReq.setHeader("Origin", targetUrl.origin);
+              proxyReq.setHeader("Origin", "http://localhost:3000");
             });
           },
         },

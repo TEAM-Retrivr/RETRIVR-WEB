@@ -6,6 +6,8 @@ import {
   verifyPhoneVerificationCode,
   requestRegisteration,
   requestLogin,
+  requestLogout,
+  requestWithdraw,
   requestLoadHome,
   requestAdminProfile,
 } from "../../api/auth/auth.api";
@@ -112,7 +114,37 @@ export const useLogin = () => {
 };
 
 //
-// 5. 홈 화면 출력 요청
+// 5. 로그아웃 요청
+//
+export const useLogout = () => {
+  return useMutation({
+    mutationFn: requestLogout,
+    onSuccess: () => {
+      console.log("로그아웃 요청 성공");
+    },
+    onError: (error: any) => {
+      console.log("로그아웃 요청 실패", error);
+    },
+  });
+};
+
+//
+// 5-1. 회원 탈퇴 요청
+//
+export const useWithdraw = () => {
+  return useMutation({
+    mutationFn: requestWithdraw,
+    onSuccess: () => {
+      console.log("회원 탈퇴 요청 성공");
+    },
+    onError: (error: any) => {
+      console.log("회원 탈퇴 요청 실패", error);
+    },
+  });
+};
+
+//
+// 6. 홈 화면 출력 요청
 //
 export const useLoadHome = () => {
   return useQuery({
@@ -123,7 +155,7 @@ export const useLoadHome = () => {
 };
 
 //
-// 6. 관리자 프로필 조회 요청
+// 7. 관리자 프로필 조회 요청
 //
 export const useAdminProfile = () => {
   return useQuery({

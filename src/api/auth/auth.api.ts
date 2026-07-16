@@ -14,6 +14,9 @@ import type {
   LoginResponse,
   AdminProfileResponse,
   LoadHomeResponse,
+  LogoutResponse,
+  WithdrawRequest,
+  WithdrawResponse,
 } from "./auth.type";
 
 //
@@ -99,7 +102,30 @@ export const requestLogin = async (
 };
 
 //
-// 5. 홈 화면 출력 API (GET)
+// 5. 로그아웃 요청 API (POST)
+// 엔드포인트: "/api/admin/v1/auth/logout"
+export const requestLogout = async (): Promise<LogoutResponse> => {
+  const response = await apiClient.post<LogoutResponse>(
+    "/api/admin/v1/auth/logout",
+  );
+  return response.data;
+};
+
+//
+// 5-1. 회원 탈퇴 요청 API (POST)
+// 엔드포인트: "/api/admin/v1/account/withdraw"
+export const requestWithdraw = async (
+  data: WithdrawRequest,
+): Promise<WithdrawResponse> => {
+  const response = await apiClient.post<WithdrawResponse>(
+    "/api/admin/v1/account/withdraw",
+    data,
+  );
+  return response.data;
+};
+
+//
+// 6. 홈 화면 출력 API (GET)
 // 엔드포인트 : "/api/admin/v1/home"
 export const requestLoadHome = async (): Promise<LoadHomeResponse> => {
   const response = await apiClient.get<LoadHomeResponse>("/api/admin/v1/home");
@@ -107,7 +133,7 @@ export const requestLoadHome = async (): Promise<LoadHomeResponse> => {
 };
 
 //
-// 6. 관리자 프로필 조회 API (GET)
+// 7. 관리자 프로필 조회 API (GET)
 // 엔드포인트 : "/api/admin/v1/profile"
 export const requestAdminProfile = async (): Promise<AdminProfileResponse> => {
   const response = await apiClient.get<AdminProfileResponse>(

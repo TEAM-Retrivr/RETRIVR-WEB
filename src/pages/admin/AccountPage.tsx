@@ -1,10 +1,13 @@
 import { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import ConfirmModal from "../../components/modals/ConfirmModal";
+import LogoutConfirmModal from "../../components/modals/admin/account/LogoutConfirmModal";
+import WithdrawConfirmModal from "../../components/modals/admin/account/WithdrawConfirmModal";
 import QRCodeDisplay from "../../components/qr/QRCodeDisplay";
-import { useAdminProfile } from "../../hooks/queries/useAuthQueries";
+import { useAdminProfile, useLogout } from "../../hooks/queries/useAuthQueries";
 
 const PRODUCTION_WEB_ORIGIN = "https://www.retrivr.kr";
 const PREVIEW_WEB_ORIGIN = "https://retrivr-web.vercel.app";
@@ -18,13 +21,23 @@ const getPublicWebOrigin = () => {
   return PREVIEW_WEB_ORIGIN;
 };
 
+const clearAdminSession = () => {
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("orgId");
+};
+
 const AccountPage = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data } = useAdminProfile();
+  const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
   const qrCanvasRef = useRef<HTMLCanvasElement>(null);
   const [confirmModalMessage, setConfirmModalMessage] = useState<string | null>(
     null,
   );
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const organizationId =
     typeof window === "undefined"
       ? null
@@ -246,7 +259,7 @@ const AccountPage = () => {
           <div className="flex flex-col w-full h-26.5 text-14px font-bold shadow-16-gray rounded-2xl">
             <button
               type="button"
-              onClick={() => alert("개발 예정입니다.")}
+              onClick={() => setIsLogoutModalOpen(true)}
               className="h-13.25 px-7.5 rounded-t-2xl cursor-pointer hover:bg-neutral-gray-4/50"
             >
               <p className="text-start">로그아웃</p>
@@ -254,7 +267,7 @@ const AccountPage = () => {
             <p className="mx-2.5 border border-neutral-gray-4 opacity-[0.3]"></p>
             <button
               type="button"
-              onClick={() => alert("개발 예정입니다.")}
+              onClick={() => setIsWithdrawModalOpen(true)}
               className="h-13.25 px-7.5 rounded-b-2xl cursor-pointer hover:bg-neutral-gray-4/50"
             >
               <p className="text-start">탈퇴하기</p>
@@ -267,6 +280,38 @@ const AccountPage = () => {
         onClose={() => setConfirmModalMessage(null)}
         message={confirmModalMessage ?? ""}
         confirmText="확인"
+      />
+      <LogoutConfirmModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        isLoading={isLoggingOut}
+        onConfirm={async () => {
+          try {
+            // 토큰이 살아있을 때 서버 세션을 먼저 무효화
+            await logout();
+          } catch (error) {
+            // 서버 로그아웃이 실패해도 클라이언트 세션은 정리한다
+            console.error("로그아웃 요청 실패", error);
+          } finally {
+            clearAdminSession();
+            // 다른 계정으로 재로그인 시 이전 사용자 데이터(home, adminProfile 등)가
+            // 캐시에서 노출되지 않도록 쿼리 캐시를 비운다
+            queryClient.clear();
+            setIsLogoutModalOpen(false);
+            navigate("/login", { replace: true });
+          }
+        }}
+      />
+      <WithdrawConfirmModal
+        isOpen={isWithdrawModalOpen}
+        onClose={() => setIsWithdrawModalOpen(false)}
+        onConfirm={() => {
+          // TODO: 회원 탈퇴 API 연동(RTR-283) 후 서버 탈퇴 처리로 교체
+          clearAdminSession();
+          queryClient.clear();
+          setIsWithdrawModalOpen(false);
+          navigate("/login", { replace: true });
+        }}
       />
     </Layout>
   );

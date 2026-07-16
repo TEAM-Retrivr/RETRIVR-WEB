@@ -36,7 +36,10 @@ const LoginPage = () => {
       {
         onSuccess: (data) => {
           localStorage.setItem("accessToken", data.accessToken);
-          localStorage.setItem("refreshToken", data.refreshToken);
+          // 서버가 refreshToken을 HttpOnly 쿠키로 내려주는 경우 바디에 없을 수 있음
+          if (data.refreshToken) {
+            localStorage.setItem("refreshToken", data.refreshToken);
+          }
           const organizationId = data.organizationId ?? data.orgId;
           if (organizationId != null) {
             localStorage.setItem("orgId", String(organizationId));
@@ -96,12 +99,8 @@ const LoginPage = () => {
             disabled={isInLogin}
           />
           {/* TODO : 로그인 페이지 라우팅 및 이벤트 핸들러 설정 */}
-          <Button
-            variant="primary"
-            size="lg"
-            type="submit"
-            onClick={handleRequestLogin}
-          >
+          {/* form의 onSubmit이 로그인을 처리하므로 onClick을 중복 등록하지 않는다 (중복 요청 방지) */}
+          <Button variant="primary" size="lg" type="submit">
             {isInLogin ? "로그인 중 ..." : "로그인"}
           </Button>
           {/* TODO : 찾기 페이지 라우팅 설정 */}
