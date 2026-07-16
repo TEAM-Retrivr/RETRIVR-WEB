@@ -157,10 +157,11 @@ export const useLoadHome = () => {
 //
 // 7. 관리자 프로필 조회 요청
 //
-export const useAdminProfile = () => {
+export const useAdminProfile = (options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: ["adminProfile"],
     queryFn: requestAdminProfile,
     retry: false,
+    enabled: options?.enabled ?? true,
   });
 };

@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { Layout } from "../../components/Layout";
@@ -30,7 +31,9 @@ const clearAdminSession = () => {
 const AccountPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { data } = useAdminProfile();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  // 로그아웃/탈퇴 중에는 프로필 쿼리를 꺼서 clear() 시 refetch → 401을 막는다
+  const { data } = useAdminProfile({ enabled: !isSigningOut });
   const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
   const qrCanvasRef = useRef<HTMLCanvasElement>(null);
   const [confirmModalMessage, setConfirmModalMessage] = useState<string | null>(
@@ -286,6 +289,10 @@ const AccountPage = () => {
         onClose={() => setIsLogoutModalOpen(false)}
         isLoading={isLoggingOut}
         onConfirm={async () => {
+          // enabled=false가 clear() 전에 반영되도록 동기적으로 반영
+          flushSync(() => {
+            setIsSigningOut(true);
+          });
           try {
             // 토큰이 살아있을 때 서버 세션을 먼저 무효화
             await logout();
@@ -294,23 +301,31 @@ const AccountPage = () => {
             console.error("로그아웃 요청 실패", error);
           } finally {
             clearAdminSession();
-            // 다른 계정으로 재로그인 시 이전 사용자 데이터(home, adminProfile 등)가
-            // 캐시에서 노출되지 않도록 쿼리 캐시를 비운다
-            queryClient.clear();
+            await queryClient.cancelQueries();
             setIsLogoutModalOpen(false);
             navigate("/login", { replace: true });
+            // AccountPage 언마운트 이후에 캐시를 비워 활성 observer refetch를 피한다
+            queueMicrotask(() => {
+              queryClient.clear();
+            });
           }
         }}
       />
       <WithdrawConfirmModal
         isOpen={isWithdrawModalOpen}
         onClose={() => setIsWithdrawModalOpen(false)}
-        onConfirm={() => {
+        onConfirm={async () => {
           // TODO: 회원 탈퇴 API 연동(RTR-283) 후 서버 탈퇴 처리로 교체
+          flushSync(() => {
+            setIsSigningOut(true);
+          });
           clearAdminSession();
-          queryClient.clear();
+          await queryClient.cancelQueries();
           setIsWithdrawModalOpen(false);
           navigate("/login", { replace: true });
+          queueMicrotask(() => {
+            queryClient.clear();
+          });
         }}
       />
     </Layout>
