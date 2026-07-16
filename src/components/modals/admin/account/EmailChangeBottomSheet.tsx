@@ -2,12 +2,16 @@ import {
   forwardRef,
   useEffect,
   useImperativeHandle,
+  useRef,
   useState,
 } from "react";
+import axios from "axios";
 import BottomSheet from "../../../BottomSheet";
 import CommonInput from "../../../CommonInput";
 import Button from "../../../Button";
 import EmailChangeExitConfirmModal from "./EmailChangeExitConfirmModal";
+import { useSendAdminEmailCode } from "../../../../hooks/queries/useAuthQueries";
+import type { AdminEmailVerificationErrorResponse } from "../../../../api/auth/auth.type";
 
 export type EmailChangeBottomSheetHandle = {
   /** 종료 확인 모달을 연다 (Header 뒤로가기 등 외부 이탈용) */
@@ -39,6 +43,10 @@ const EmailChangeBottomSheet = forwardRef<
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [hasRequestedCode, setHasRequestedCode] = useState(false);
   const [isExitModalOpen, setIsExitModalOpen] = useState(false);
+  /** 시트 닫힘/재전송 시 in-flight 콜백을 무효화 */
+  const sendRequestIdRef = useRef(0);
+
+  const { mutate: sendCode, isPending: isSendingCode } = useSendAdminEmailCode();
 
   const handleRequestClose = () => {
     setIsExitModalOpen(true);
@@ -50,6 +58,7 @@ const EmailChangeBottomSheet = forwardRef<
 
   useEffect(() => {
     if (!isOpen) {
+      sendRequestIdRef.current += 1;
       setNewEmail("");
       setAuthCode("");
       setTimeLeft(0);
@@ -78,17 +87,41 @@ const EmailChangeBottomSheet = forwardRef<
   };
 
   const handleSendCode = () => {
-    if (!newEmail.trim()) {
+    const email = newEmail.trim();
+    if (!email) {
       alert("변경할 이메일을 입력해주세요.");
       return;
     }
 
-    // TODO: 이메일 변경용 인증번호 전송 API 연동
-    setHasRequestedCode(true);
-    setTimeLeft(600);
-    setIsTimerActive(true);
-    setAuthCode("");
-    alert("이메일로 인증 코드가 전송되었습니다.");
+    const requestId = ++sendRequestIdRef.current;
+
+    sendCode(
+      { email, purpose: "EMAIL_CHANGE" },
+      {
+        onSuccess: (data) => {
+          // 시트 닫힘/재전송으로 무효화된 응답은 무시
+          if (requestId !== sendRequestIdRef.current) return;
+          setHasRequestedCode(true);
+          setTimeLeft(data.expiresInSeconds);
+          setIsTimerActive(true);
+          setAuthCode("");
+          alert("이메일로 인증 코드가 전송되었습니다.");
+        },
+        onError: (error) => {
+          if (requestId !== sendRequestIdRef.current) return;
+          if (axios.isAxiosError(error)) {
+            const data = error.response?.data as
+              | AdminEmailVerificationErrorResponse
+              | undefined;
+            if (data?.message) {
+              alert(data.message);
+              return;
+            }
+          }
+          alert("인증 코드 전송에 실패했습니다. 다시 시도해주세요.");
+        },
+      },
+    );
   };
 
   const handleVerifyCode = () => {
@@ -133,9 +166,13 @@ const EmailChangeBottomSheet = forwardRef<
               size="sm"
               className="h-11.5 w-25 shrink-0 rounded-xl text-14px font-semibold"
               onClick={handleSendCode}
-              disabled={!newEmail.trim() || isTimerActive}
+              disabled={!newEmail.trim() || isTimerActive || isSendingCode}
             >
-              {hasRequestedCode ? "재전송" : "인증번호 전송"}
+              {isSendingCode
+                ? "전송 중..."
+                : hasRequestedCode
+                  ? "재전송"
+                  : "인증번호 전송"}
             </Button>
           </div>
 

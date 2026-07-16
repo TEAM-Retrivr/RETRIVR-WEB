@@ -1,4 +1,8 @@
-export type EmailVerificationPurpose = "SIGNUP" | "PASSWORD_RESET" | "LOGIN";
+export type EmailVerificationPurpose =
+  | "SIGNUP"
+  | "PASSWORD_RESET"
+  | "LOGIN"
+  | "EMAIL_CHANGE";
 
 // 휴대폰 인증 코드 발송/검증 목적
 // (현재 클라이언트 대여 요청에만 사용)
@@ -148,6 +152,27 @@ export interface AdminProfileResponse {
   profileImageUrl?: string; // 프로필 사진 URL
   email: string; // 관리자 이메일
 }
+
+// 6-1. 관리자 이메일 인증 코드 발송
+// 엔드포인트: "/api/admin/v1/email/verification" (POST)
+// 요청/응답 바디는 public 이메일 인증과 동일 형태 (purpose: EMAIL_CHANGE)
+
+export type SendAdminEmailCodeRequest = SendEmailCodeRequest;
+export type SendAdminEmailCodeResponse = SendEmailCodeResponse;
+
+// 관리자 이메일 인증 공통 에러 응답 (400/429 등)
+export interface AdminEmailVerificationErrorResponse {
+  status: string; // 예: "400 BAD_REQUEST", "429 TOO_MANY_REQUESTS"
+  code: number;
+  message: string;
+  detail?: string;
+}
+
+export const ADMIN_EMAIL_VERIFICATION_ERROR_CODE = {
+  INVALID_REQUEST: 2002, // 400: 올바르지 않은 요청 값입니다.
+  TOO_MANY_REQUESTS: 7104, // 429: 인증 코드는 60초 후 재요청 가능합니다.
+  REQUEST_NOT_FOUND: 7000, // 400: 인증 요청이 존재하지 않습니다.
+} as const;
 
 // 7. 홈 화면 출력 요청
 // 홈 화면 출력 요청 바디 없음

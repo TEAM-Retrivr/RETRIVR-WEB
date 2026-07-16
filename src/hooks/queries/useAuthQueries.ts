@@ -10,6 +10,7 @@ import {
   requestWithdraw,
   requestLoadHome,
   requestAdminProfile,
+  sendAdminEmailCode,
 } from "../../api/auth/auth.api";
 
 //
@@ -163,5 +164,20 @@ export const useAdminProfile = (options?: { enabled?: boolean }) => {
     queryFn: requestAdminProfile,
     retry: false,
     enabled: options?.enabled ?? true,
+  });
+};
+
+//
+// 7-1. 관리자 이메일 인증 코드 발송 요청
+//
+export const useSendAdminEmailCode = () => {
+  return useMutation({
+    mutationFn: sendAdminEmailCode,
+    onSuccess: () => {
+      console.log("관리자 이메일 인증 코드 발송 성공");
+    },
+    onError: (error) => {
+      console.error("관리자 이메일 인증 코드 발송 실패:", error);
+    },
   });
 };
