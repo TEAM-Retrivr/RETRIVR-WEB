@@ -126,4 +126,30 @@
 
   /* 보더 컬러 */
   --color-menu-border: rgba(118, 173, 255, 0.1);
+
+  /* 탈퇴 페이지 단계 전환 슬라이드 */
+  --animate-slide-in-from-right: slide-in-from-right 280ms ease-out both;
+  --animate-slide-in-from-left: slide-in-from-left 280ms ease-out both;
+
+  @keyframes slide-in-from-right {
+    from {
+      opacity: 0;
+      transform: translateX(28px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slide-in-from-left {
+    from {
+      opacity: 0;
+      transform: translateX(-28px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
 }
