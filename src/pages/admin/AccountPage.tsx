@@ -6,7 +6,7 @@ import ConfirmModal from "../../components/modals/ConfirmModal";
 import LogoutConfirmModal from "../../components/modals/admin/account/LogoutConfirmModal";
 import WithdrawConfirmModal from "../../components/modals/admin/account/WithdrawConfirmModal";
 import QRCodeDisplay from "../../components/qr/QRCodeDisplay";
-import { useAdminProfile } from "../../hooks/queries/useAuthQueries";
+import { useAdminProfile, useLogout } from "../../hooks/queries/useAuthQueries";
 
 const PRODUCTION_WEB_ORIGIN = "https://www.retrivr.kr";
 const PREVIEW_WEB_ORIGIN = "https://retrivr-web.vercel.app";
@@ -29,6 +29,7 @@ const clearAdminSession = () => {
 const AccountPage = () => {
   const navigate = useNavigate();
   const { data } = useAdminProfile();
+  const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
   const qrCanvasRef = useRef<HTMLCanvasElement>(null);
   const [confirmModalMessage, setConfirmModalMessage] = useState<string | null>(
     null,
@@ -281,11 +282,19 @@ const AccountPage = () => {
       <LogoutConfirmModal
         isOpen={isLogoutModalOpen}
         onClose={() => setIsLogoutModalOpen(false)}
-        onConfirm={() => {
-          // TODO: 로그아웃 API 연동(RTR-282) 후 서버 세션 무효화 추가
-          clearAdminSession();
-          setIsLogoutModalOpen(false);
-          navigate("/login", { replace: true });
+        isLoading={isLoggingOut}
+        onConfirm={async () => {
+          try {
+            // 토큰이 살아있을 때 서버 세션을 먼저 무효화
+            await logout();
+          } catch (error) {
+            // 서버 로그아웃이 실패해도 클라이언트 세션은 정리한다
+            console.error("로그아웃 요청 실패", error);
+          } finally {
+            clearAdminSession();
+            setIsLogoutModalOpen(false);
+            navigate("/login", { replace: true });
+          }
         }}
       />
       <WithdrawConfirmModal
