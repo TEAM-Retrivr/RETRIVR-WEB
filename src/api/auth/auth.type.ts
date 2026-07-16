@@ -98,7 +98,15 @@ export interface LoginResponse {
   refreshToken: string; // 리프레시 토큰
 }
 
-// 5. 관리자 프로필 조회
+// 5. 로그아웃 요청
+// 로그아웃 요청 바디 없음
+
+// 5-1. 로그아웃 응답 바디
+export interface LogoutResponse {
+  success: boolean;
+}
+
+// 6. 관리자 프로필 조회
 export interface AdminProfileResponse {
   organizationId: number; // 관리자 고유 번호
   organizationName: string; // 관리자 이름 (단체명)
@@ -106,10 +114,10 @@ export interface AdminProfileResponse {
   email: string; // 관리자 이메일
 }
 
-// 5. 홈 화면 출력 요청
+// 7. 홈 화면 출력 요청
 // 홈 화면 출력 요청 바디 없음
 
-// 5-1. 홈 화면 출력 응답 바디
+// 7-1. 홈 화면 출력 응답 바디
 export interface LoadHomeResponse {
   organizationId: number; // 관리자 아이디
   organizationName: string; // 관리자 이름 (단체명)
