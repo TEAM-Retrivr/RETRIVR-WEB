@@ -6,7 +6,6 @@ import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import LogoutConfirmModal from "../../components/modals/admin/account/LogoutConfirmModal";
-import WithdrawConfirmModal from "../../components/modals/admin/account/WithdrawConfirmModal";
 import QRCodeDisplay from "../../components/qr/QRCodeDisplay";
 import { useAdminProfile, useLogout } from "../../hooks/queries/useAuthQueries";
 
@@ -40,7 +39,6 @@ const AccountPage = () => {
     null,
   );
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const organizationId =
     typeof window === "undefined"
       ? null
@@ -270,7 +268,7 @@ const AccountPage = () => {
             <p className="mx-2.5 border border-neutral-gray-4 opacity-[0.3]"></p>
             <button
               type="button"
-              onClick={() => setIsWithdrawModalOpen(true)}
+              onClick={() => navigate("/account/withdraw")}
               className="h-13.25 px-7.5 rounded-b-2xl cursor-pointer hover:bg-neutral-gray-4/50"
             >
               <p className="text-start">탈퇴하기</p>
@@ -309,23 +307,6 @@ const AccountPage = () => {
               queryClient.clear();
             });
           }
-        }}
-      />
-      <WithdrawConfirmModal
-        isOpen={isWithdrawModalOpen}
-        onClose={() => setIsWithdrawModalOpen(false)}
-        onConfirm={async () => {
-          // TODO: 회원 탈퇴 API 연동(RTR-283) 후 서버 탈퇴 처리로 교체
-          flushSync(() => {
-            setIsSigningOut(true);
-          });
-          clearAdminSession();
-          await queryClient.cancelQueries();
-          setIsWithdrawModalOpen(false);
-          navigate("/login", { replace: true });
-          queueMicrotask(() => {
-            queryClient.clear();
-          });
         }}
       />
     </Layout>

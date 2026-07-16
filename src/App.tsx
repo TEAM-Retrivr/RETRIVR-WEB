@@ -14,6 +14,7 @@ import HomePage from "./pages/admin/HomePage";
 import AccountPage from "./pages/admin/AccountPage";
 import AccountTermsPage from "./pages/admin/AccountTermsPage";
 import AccountPrivacyPage from "./pages/admin/AccountPrivacyPage";
+import WithdrawPage from "./pages/admin/WithdrawPage";
 import MembershipPage from "./pages/admin/MembershipPage";
 import ProfileEditPage from "./pages/admin/ProfileEditPage";
 import LandingPage from "./pages/LandingPage";
@@ -118,6 +119,7 @@ function App() {
           <Route path="/account" element={<AccountPage />} />
           <Route path="/account/terms" element={<AccountTermsPage />} />
           <Route path="/account/privacy" element={<AccountPrivacyPage />} />
+          <Route path="/account/withdraw" element={<WithdrawPage />} />
           <Route path="/membership" element={<MembershipPage />} />
           <Route path="/profile" element={<ProfileEditPage />} />
           <Route path="/item-manage" element={<ItemManagementPage />} />
