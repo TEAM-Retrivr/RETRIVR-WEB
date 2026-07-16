@@ -162,7 +162,7 @@ const AccountPage = () => {
           </div>
           <button
             type="button"
-            onClick={() => alert("개발 예정입니다.")}
+            onClick={() => navigate("/profile")}
             className="w-45 h-9.75 border border-primary shadow-primary rounded-[23.164px] hover:bg-bg-pale cursor-pointer"
           >
             <p className="text-center text-14px text-primary font-bold">
