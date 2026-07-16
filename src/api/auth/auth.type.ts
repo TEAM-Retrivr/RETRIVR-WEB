@@ -106,6 +106,41 @@ export interface LogoutResponse {
   success: boolean;
 }
 
+// 5-2. 회원 탈퇴 요청
+// 엔드포인트: "/api/admin/v1/account/withdraw"
+
+// 탈퇴 사유 코드 (서버 enum)
+// 확인된 값 외에도 추가될 수 있어 string 유니언으로 열어둔다
+export type WithdrawReasonCode = "ORG_CLOSED" | (string & {});
+
+// 5-2-1. 회원 탈퇴 요청 바디
+export interface WithdrawRequest {
+  password: string; // 본인 확인용 비밀번호
+  reasonCodes: WithdrawReasonCode[]; // 탈퇴 사유 코드 목록
+  otherReason?: string; // 기타 사유 (직접 입력)
+  agreedToWarning: boolean; // 탈퇴 경고 동의 여부
+}
+
+// 5-2-2. 회원 탈퇴 응답 바디
+export interface WithdrawResponse {
+  success: boolean;
+}
+
+// 5-2-3. 회원 탈퇴 에러 응답 바디 (400/403/404 공통 스펙)
+export interface WithdrawErrorResponse {
+  status: string; // 예: "400 BAD_REQUEST"
+  code: number; // 서버 에러 코드
+  message: string; // 사용자에게 보여줄 수 있는 메시지
+  detail?: string;
+}
+
+// 회원 탈퇴 에러 코드 상수
+export const WITHDRAW_ERROR_CODE = {
+  PASSWORD_MISMATCH: 6007, // 400: 비밀번호가 일치하지 않습니다.
+  ALREADY_WITHDRAWN: 6004, // 403: 탈퇴한 계정입니다.
+  ACCOUNT_NOT_FOUND: 6002, // 404: 계정을 찾을 수 없습니다.
+} as const;
+
 // 6. 관리자 프로필 조회
 export interface AdminProfileResponse {
   organizationId: number; // 관리자 고유 번호

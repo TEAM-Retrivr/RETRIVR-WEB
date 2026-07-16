@@ -7,6 +7,7 @@ import {
   requestRegisteration,
   requestLogin,
   requestLogout,
+  requestWithdraw,
   requestLoadHome,
   requestAdminProfile,
 } from "../../api/auth/auth.api";
@@ -123,6 +124,21 @@ export const useLogout = () => {
     },
     onError: (error: any) => {
       console.log("로그아웃 요청 실패", error);
+    },
+  });
+};
+
+//
+// 5-1. 회원 탈퇴 요청
+//
+export const useWithdraw = () => {
+  return useMutation({
+    mutationFn: requestWithdraw,
+    onSuccess: () => {
+      console.log("회원 탈퇴 요청 성공");
+    },
+    onError: (error: any) => {
+      console.log("회원 탈퇴 요청 실패", error);
     },
   });
 };

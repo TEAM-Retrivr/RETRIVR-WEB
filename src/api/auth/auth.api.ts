@@ -15,6 +15,8 @@ import type {
   AdminProfileResponse,
   LoadHomeResponse,
   LogoutResponse,
+  WithdrawRequest,
+  WithdrawResponse,
 } from "./auth.type";
 
 //
@@ -105,6 +107,19 @@ export const requestLogin = async (
 export const requestLogout = async (): Promise<LogoutResponse> => {
   const response = await apiClient.post<LogoutResponse>(
     "/api/admin/v1/auth/logout",
+  );
+  return response.data;
+};
+
+//
+// 5-1. 회원 탈퇴 요청 API (POST)
+// 엔드포인트: "/api/admin/v1/account/withdraw"
+export const requestWithdraw = async (
+  data: WithdrawRequest,
+): Promise<WithdrawResponse> => {
+  const response = await apiClient.post<WithdrawResponse>(
+    "/api/admin/v1/account/withdraw",
+    data,
   );
   return response.data;
 };
