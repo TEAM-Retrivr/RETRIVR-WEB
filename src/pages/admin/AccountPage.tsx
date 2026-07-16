@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import ConfirmModal from "../../components/modals/ConfirmModal";
@@ -28,6 +29,7 @@ const clearAdminSession = () => {
 
 const AccountPage = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data } = useAdminProfile();
   const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
   const qrCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -292,6 +294,9 @@ const AccountPage = () => {
             console.error("로그아웃 요청 실패", error);
           } finally {
             clearAdminSession();
+            // 다른 계정으로 재로그인 시 이전 사용자 데이터(home, adminProfile 등)가
+            // 캐시에서 노출되지 않도록 쿼리 캐시를 비운다
+            queryClient.clear();
             setIsLogoutModalOpen(false);
             navigate("/login", { replace: true });
           }
@@ -303,6 +308,7 @@ const AccountPage = () => {
         onConfirm={() => {
           // TODO: 회원 탈퇴 API 연동(RTR-283) 후 서버 탈퇴 처리로 교체
           clearAdminSession();
+          queryClient.clear();
           setIsWithdrawModalOpen(false);
           navigate("/login", { replace: true });
         }}
