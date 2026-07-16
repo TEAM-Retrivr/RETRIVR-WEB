@@ -11,6 +11,7 @@ import {
   requestLoadHome,
   requestAdminProfile,
   sendAdminEmailCode,
+  verifyAdminEmailCode,
 } from "../../api/auth/auth.api";
 
 //
@@ -178,6 +179,21 @@ export const useSendAdminEmailCode = () => {
     },
     onError: (error) => {
       console.error("관리자 이메일 인증 코드 발송 실패:", error);
+    },
+  });
+};
+
+//
+// 7-2. 관리자 이메일 인증 코드 검증 요청
+//
+export const useVerifyAdminEmailCode = () => {
+  return useMutation({
+    mutationFn: verifyAdminEmailCode,
+    onSuccess: () => {
+      console.log("관리자 이메일 인증 코드 검증 성공");
+    },
+    onError: (error) => {
+      console.error("관리자 이메일 인증 코드 검증 실패:", error);
     },
   });
 };

@@ -23,6 +23,8 @@ const ProfileEditPage = () => {
   const [adminCode, setAdminCode] = useState("");
   const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
   const [isEmailSheetOpen, setIsEmailSheetOpen] = useState(false);
+  /** 이메일 변경 인증 성공 시 발급되는 토큰 (프로필 PATCH용) */
+  const [emailVerificationToken, setEmailVerificationToken] = useState("");
 
   useEffect(() => {
     if (!profile) return;
@@ -57,6 +59,14 @@ const ProfileEditPage = () => {
     if (!adminCode.trim()) return alert("관리자 코드를 입력해주세요.");
     if (!/^\d{6}$/.test(adminCode)) {
       return alert("관리자 코드는 6자리 숫자여야 합니다.");
+    }
+
+    if (
+      profile?.email &&
+      email.trim() !== profile.email &&
+      !emailVerificationToken
+    ) {
+      return alert("이메일 변경 시 인증이 필요해요. 이메일 수정을 완료해주세요.");
     }
 
     // TODO: 개인정보 수정 API 연동
@@ -94,9 +104,12 @@ const ProfileEditPage = () => {
               <CommonInput
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                readOnly
+                tabIndex={-1}
+                onFocus={(e) => e.currentTarget.blur()}
+                aria-readonly="true"
                 placeholder="retrivr@gmail.com"
-                className="h-12 max-w-none rounded-xl px-3.5 placeholder:text-14px placeholder:font-normal placeholder:leading-[140%] placeholder:text-neutral-gray-3"
+                className="h-12 max-w-none cursor-default rounded-xl px-3.5 placeholder:text-14px placeholder:font-normal placeholder:leading-[140%] placeholder:text-neutral-gray-3 focus:ring-0"
               />
             </div>
             <Button
@@ -200,7 +213,10 @@ const ProfileEditPage = () => {
         ref={emailSheetRef}
         isOpen={isEmailSheetOpen}
         onClose={() => setIsEmailSheetOpen(false)}
-        onVerified={(nextEmail) => setEmail(nextEmail)}
+        onVerified={({ email: nextEmail, token }) => {
+          setEmail(nextEmail);
+          setEmailVerificationToken(token);
+        }}
       />
     </Layout>
   );

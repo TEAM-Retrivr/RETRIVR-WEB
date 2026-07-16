@@ -10,7 +10,10 @@ import BottomSheet from "../../../BottomSheet";
 import CommonInput from "../../../CommonInput";
 import Button from "../../../Button";
 import EmailChangeExitConfirmModal from "./EmailChangeExitConfirmModal";
-import { useSendAdminEmailCode } from "../../../../hooks/queries/useAuthQueries";
+import {
+  useSendAdminEmailCode,
+  useVerifyAdminEmailCode,
+} from "../../../../hooks/queries/useAuthQueries";
 import type { AdminEmailVerificationErrorResponse } from "../../../../api/auth/auth.type";
 
 export type EmailChangeBottomSheetHandle = {
@@ -18,11 +21,16 @@ export type EmailChangeBottomSheetHandle = {
   requestClose: () => void;
 };
 
+export type EmailChangeVerifiedPayload = {
+  email: string;
+  token: string;
+};
+
 type EmailChangeBottomSheetProps = {
   isOpen: boolean;
   onClose: () => void;
-  /** 인증 완료 시 변경된 이메일 */
-  onVerified?: (email: string) => void;
+  /** 인증 완료 시 변경된 이메일 + 검증 토큰 */
+  onVerified?: (payload: EmailChangeVerifiedPayload) => void;
 };
 
 const formatTime = (seconds: number) => {
@@ -43,10 +51,13 @@ const EmailChangeBottomSheet = forwardRef<
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [hasRequestedCode, setHasRequestedCode] = useState(false);
   const [isExitModalOpen, setIsExitModalOpen] = useState(false);
-  /** 시트 닫힘/재전송 시 in-flight 콜백을 무효화 */
+  /** 시트 닫힘/재요청 시 in-flight 콜백을 무효화 */
   const sendRequestIdRef = useRef(0);
+  const verifyRequestIdRef = useRef(0);
 
   const { mutate: sendCode, isPending: isSendingCode } = useSendAdminEmailCode();
+  const { mutate: verifyCode, isPending: isVerifyingCode } =
+    useVerifyAdminEmailCode();
 
   const handleRequestClose = () => {
     setIsExitModalOpen(true);
@@ -59,6 +70,7 @@ const EmailChangeBottomSheet = forwardRef<
   useEffect(() => {
     if (!isOpen) {
       sendRequestIdRef.current += 1;
+      verifyRequestIdRef.current += 1;
       setNewEmail("");
       setAuthCode("");
       setTimeLeft(0);
@@ -94,6 +106,8 @@ const EmailChangeBottomSheet = forwardRef<
     }
 
     const requestId = ++sendRequestIdRef.current;
+    // 재전송 시 진행 중인 검증 콜백도 무효화
+    verifyRequestIdRef.current += 1;
 
     sendCode(
       { email, purpose: "EMAIL_CHANGE" },
@@ -125,18 +139,55 @@ const EmailChangeBottomSheet = forwardRef<
   };
 
   const handleVerifyCode = () => {
-    if (!authCode.trim()) {
+    const email = newEmail.trim();
+    const code = authCode.trim();
+    if (!code) {
       alert("인증번호를 입력해주세요.");
       return;
     }
+    if (!email) {
+      alert("변경할 이메일을 입력해주세요.");
+      return;
+    }
 
-    // TODO: 이메일 변경용 인증번호 확인 API 연동
-    onVerified?.(newEmail.trim());
-    onClose();
+    const requestId = ++verifyRequestIdRef.current;
+
+    verifyCode(
+      { email, purpose: "EMAIL_CHANGE", code },
+      {
+        onSuccess: (data) => {
+          if (requestId !== verifyRequestIdRef.current) return;
+          if (!data.token) {
+            alert("인증 토큰 발급에 실패했습니다. 다시 시도해주세요.");
+            return;
+          }
+          alert("이메일 인증이 완료되었습니다.");
+          setIsTimerActive(false);
+          onVerified?.({ email, token: data.token });
+          onClose();
+        },
+        onError: (error) => {
+          if (requestId !== verifyRequestIdRef.current) return;
+          if (axios.isAxiosError(error)) {
+            const data = error.response?.data as
+              | AdminEmailVerificationErrorResponse
+              | undefined;
+            if (data?.message) {
+              alert(data.message);
+              return;
+            }
+          }
+          alert("인증 코드 확인에 실패했습니다. 다시 시도해주세요.");
+        },
+      },
+    );
   };
 
   const canConfirm =
-    isTimerActive && timeLeft > 0 && authCode.trim().length > 0;
+    isTimerActive &&
+    timeLeft > 0 &&
+    authCode.trim().length > 0 &&
+    !isVerifyingCode;
 
   return (
     <>
@@ -203,7 +254,7 @@ const EmailChangeBottomSheet = forwardRef<
               onClick={handleVerifyCode}
               disabled={!canConfirm}
             >
-              인증번호 확인
+              {isVerifyingCode ? "확인 중..." : "인증번호 확인"}
             </Button>
           </div>
         </div>
