@@ -13,6 +13,8 @@ import type {
   LoginRequest,
   LoginResponse,
   AdminProfileResponse,
+  SendAdminEmailCodeRequest,
+  SendAdminEmailCodeResponse,
   LoadHomeResponse,
   LogoutResponse,
   WithdrawRequest,
@@ -138,6 +140,19 @@ export const requestLoadHome = async (): Promise<LoadHomeResponse> => {
 export const requestAdminProfile = async (): Promise<AdminProfileResponse> => {
   const response = await apiClient.get<AdminProfileResponse>(
     "/api/admin/v1/profile",
+  );
+  return response.data;
+};
+
+//
+// 7-1. 관리자 이메일 인증 코드 발송 API (POST)
+// 엔드포인트 : "/api/admin/v1/email/verification"
+export const sendAdminEmailCode = async (
+  data: SendAdminEmailCodeRequest,
+): Promise<SendAdminEmailCodeResponse> => {
+  const response = await apiClient.post<SendAdminEmailCodeResponse>(
+    "/api/admin/v1/email/verification",
+    data,
   );
   return response.data;
 };
