@@ -17,6 +17,8 @@ import type {
   SendAdminEmailCodeResponse,
   VerifyAdminEmailCodeRequest,
   VerifyAdminEmailCodeResponse,
+  UpdateAdminProfileRequest,
+  UpdateAdminProfileResponse,
   LoadHomeResponse,
   LogoutResponse,
   WithdrawRequest,
@@ -167,6 +169,19 @@ export const verifyAdminEmailCode = async (
 ): Promise<VerifyAdminEmailCodeResponse> => {
   const response = await apiClient.post<VerifyAdminEmailCodeResponse>(
     "/api/admin/v1/email/verification/verify",
+    data,
+  );
+  return response.data;
+};
+
+//
+// 7-3. 관리자 프로필 수정 API (PATCH)
+// 엔드포인트 : "/api/admin/v1/profile"
+export const updateAdminProfile = async (
+  data: UpdateAdminProfileRequest,
+): Promise<UpdateAdminProfileResponse> => {
+  const response = await apiClient.patch<UpdateAdminProfileResponse>(
+    "/api/admin/v1/profile",
     data,
   );
   return response.data;

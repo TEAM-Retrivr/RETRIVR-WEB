@@ -188,6 +188,32 @@ export const ADMIN_EMAIL_VERIFICATION_ERROR_CODE = {
   REQUEST_NOT_FOUND: 7000, // 400: 인증 요청이 존재하지 않습니다.
 } as const;
 
+// 6-3. 관리자 프로필 수정
+// 엔드포인트: "/api/admin/v1/profile" (PATCH)
+export interface UpdateAdminProfileRequest {
+  newEmail: string;
+  newPassword: string;
+  confirmPassword: string;
+  newOrganizationName: string;
+  newAdminCode: string;
+  /** 이메일 변경 인증 토큰 등 검증 토큰 (변경 시에만 전달) */
+  adminCodeVerificationToken?: string;
+}
+
+export type UpdateAdminProfileResponse = AdminProfileResponse;
+
+export interface UpdateAdminProfileErrorResponse {
+  status: string; // 예: "400 BAD_REQUEST", "404 NOT_FOUND"
+  code: number;
+  message: string;
+  detail?: string;
+}
+
+export const UPDATE_ADMIN_PROFILE_ERROR_CODE = {
+  INVALID_REQUEST: 2002, // 400: 올바르지 않은 요청 값입니다.
+  ORGANIZATION_NOT_FOUND: 3004, // 404: 존재하지 않는 단체입니다.
+} as const;
+
 // 7. 홈 화면 출력 요청
 // 홈 화면 출력 요청 바디 없음
 
