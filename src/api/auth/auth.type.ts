@@ -95,7 +95,7 @@ export interface LoginResponse {
   orgId?: number; // 레거시 필드 (하위 호환)
   email: string; // 사용자 이메일
   accessToken: string; // 엑세스 토큰
-  refreshToken: string; // 리프레시 토큰
+  refreshToken?: string; // 리프레시 토큰 (현재 서버는 HttpOnly 쿠키로 내려주어 바디에 없음)
 }
 
 // 5. 관리자 프로필 조회
