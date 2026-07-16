@@ -17,7 +17,9 @@ const LogoutConfirmModal = ({
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      // 로그아웃 요청 중에는 배경 클릭으로 모달이 닫히지 않도록 막는다
+      // (닫혀도 진행 중인 로그아웃은 계속되어 세션이 정리되기 때문)
+      onClose={isLoading ? () => {} : onClose}
       showTitle={false}
       showCloseButton={false}
       modalClassName="!w-[338px] !rounded-[24px] !px-4 !pt-10 !pb-6 shadow-[0_0_16px_-6px_rgba(0,0,0,0.2)]"
