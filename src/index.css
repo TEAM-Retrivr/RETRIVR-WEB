@@ -126,4 +126,28 @@
 
   /* 보더 컬러 */
   --color-menu-border: rgba(118, 173, 255, 0.1);
+
+  --animate-bottom-sheet-up: bottom-sheet-up 420ms cubic-bezier(0.32, 0.72, 0, 1)
+    both;
+  --animate-bottom-sheet-down: bottom-sheet-down 420ms cubic-bezier(0.32, 0.72, 0, 1)
+    both;
+  --duration-420: 420ms;
+
+  @keyframes bottom-sheet-up {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes bottom-sheet-down {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(100%);
+    }
+  }
 }
