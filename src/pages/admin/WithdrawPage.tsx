@@ -1,5 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import Button from "../../components/Button";
@@ -7,8 +9,15 @@ import CustomCheckBox from "../../components/CustomCheckbox";
 import WithdrawExitConfirmModal from "../../components/modals/admin/account/WithdrawExitConfirmModal";
 import WithdrawPasswordMismatchModal from "../../components/modals/admin/account/WithdrawPasswordMismatchModal";
 import WithdrawCompleteModal from "../../components/modals/admin/account/WithdrawCompleteModal";
-import { useAdminProfile } from "../../hooks/queries/useAuthQueries";
-import type { WithdrawReasonCode } from "../../api/auth/auth.type";
+import {
+  useAdminProfile,
+  useWithdraw,
+} from "../../hooks/queries/useAuthQueries";
+import type {
+  WithdrawErrorResponse,
+  WithdrawReasonCode,
+} from "../../api/auth/auth.type";
+import { WITHDRAW_ERROR_CODE } from "../../api/auth/auth.type";
 
 const NOTICE_ITEMS = [
   {
@@ -45,6 +54,12 @@ const WITHDRAW_REASONS: { code: WithdrawReasonCode; label: string }[] = [
 type WithdrawStep = 1 | 2;
 type SlideDirection = "forward" | "back";
 
+const clearAdminSession = () => {
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("orgId");
+};
+
 const StepIndicator = ({ step }: { step: WithdrawStep }) => {
   const circle = (n: WithdrawStep) => {
     const active = step === n;
@@ -76,7 +91,10 @@ const StepIndicator = ({ step }: { step: WithdrawStep }) => {
 
 const WithdrawPage = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: profile } = useAdminProfile();
+  const { mutate: withdraw, isPending: isWithdrawing } = useWithdraw();
+
   const [step, setStep] = useState<WithdrawStep>(1);
   const [slideDirection, setSlideDirection] =
     useState<SlideDirection>("forward");
@@ -96,7 +114,6 @@ const WithdrawPage = () => {
   const [otherReason, setOtherReason] = useState("");
 
   const [password, setPassword] = useState("");
-  const [isPasswordVerified, setIsPasswordVerified] = useState(false);
   const [isExitModalOpen, setIsExitModalOpen] = useState(false);
   const [isPasswordMismatchOpen, setIsPasswordMismatchOpen] = useState(false);
   const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
@@ -108,6 +125,8 @@ const WithdrawPage = () => {
     if (selectedReasons.has("OTHER") && !otherReason.trim()) return false;
     return true;
   }, [agreedToWarning, selectedReasons, otherReason]);
+
+  const canWithdraw = password.trim().length > 0 && !isWithdrawing;
 
   const toggleReason = (code: WithdrawReasonCode) => {
     setSelectedReasons((prev) => {
@@ -122,22 +141,49 @@ const WithdrawPage = () => {
     });
   };
 
-  const handleVerifyPassword = () => {
-    // TODO: 비밀번호 확인 API 연동. 실패 시 불일치 모달 표시
+  const handleWithdraw = () => {
     if (!password.trim()) {
       setIsPasswordMismatchOpen(true);
       return;
     }
-    setIsPasswordVerified(true);
-  };
 
-  const handleWithdraw = () => {
-    if (!isPasswordVerified) {
-      alert("비밀번호를 먼저 확인해주세요.");
-      return;
-    }
-    // TODO: 탈퇴 API 연동. 성공 응답 시 완료 모달 표시
-    setIsCompleteModalOpen(true);
+    const reasonCodes = Array.from(selectedReasons);
+    withdraw(
+      {
+        password: password.trim(),
+        reasonCodes,
+        ...(selectedReasons.has("OTHER") && otherReason.trim()
+          ? { otherReason: otherReason.trim() }
+          : {}),
+        agreedToWarning,
+      },
+      {
+        onSuccess: () => {
+          clearAdminSession();
+          void queryClient.cancelQueries();
+          queueMicrotask(() => {
+            queryClient.clear();
+          });
+          setIsCompleteModalOpen(true);
+        },
+        onError: (error) => {
+          if (axios.isAxiosError(error)) {
+            const data = error.response?.data as
+              | WithdrawErrorResponse
+              | undefined;
+            if (data?.code === WITHDRAW_ERROR_CODE.PASSWORD_MISMATCH) {
+              setIsPasswordMismatchOpen(true);
+              return;
+            }
+            if (data?.message) {
+              alert(data.message);
+              return;
+            }
+          }
+          alert("회원 탈퇴에 실패했습니다. 다시 시도해주세요.");
+        },
+      },
+    );
   };
 
   return (
@@ -148,7 +194,6 @@ const WithdrawPage = () => {
         onBackClick={() => {
           if (step === 2) {
             goToStep(1);
-            setIsPasswordVerified(false);
             setPassword("");
             return;
           }
@@ -289,7 +334,7 @@ const WithdrawPage = () => {
             </>
           ) : (
             <>
-              {/* 비밀번호 재확인 */}
+              {/* 비밀번호 재확인 — 입력값을 탈퇴 요청 바디로 전달 */}
               <div className="mt-8 flex w-full max-w-[338px] flex-col gap-2.5">
                 <p className="flex items-center text-14px font-bold">
                   비밀번호 재확인
@@ -300,32 +345,13 @@ const WithdrawPage = () => {
                   {email || "이메일 불러오는 중…"}
                 </div>
 
-                <div className="flex items-center gap-1">
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      setIsPasswordVerified(false);
-                    }}
-                    placeholder="비밀번호 입력"
-                    className="h-12 w-[234px] shrink-0 rounded-xl bg-[#F8F9F9] px-3.5 text-14px font-normal text-neutral-gray-1 outline-none placeholder:text-neutral-gray-3"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleVerifyPassword}
-                    className="flex h-11.5 w-25 shrink-0 cursor-pointer items-center justify-center rounded-xl bg-primary text-14px font-semibold text-neutral-white hover:bg-secondary-2"
-                  >
-                    확인
-                  </button>
-                </div>
-
-                {isPasswordVerified && (
-                  <div className="flex items-center gap-1 text-12px font-normal leading-[140%] text-primary">
-                    <CustomCheckBox checked disabled />
-                    <span>비밀번호가 확인되었어요!</span>
-                  </div>
-                )}
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="비밀번호 입력"
+                  className="h-12 w-full rounded-xl bg-[#F8F9F9] px-3.5 text-14px font-normal text-neutral-gray-1 outline-none placeholder:text-neutral-gray-3"
+                />
               </div>
 
               <div className="mt-auto w-full max-w-[338px] pt-20">
@@ -333,10 +359,10 @@ const WithdrawPage = () => {
                   variant="primary"
                   size="lg"
                   className="h-12.5 max-w-none rounded-[23px] shadow-[0_0_16px_rgba(181,244,255,0.5)] disabled:shadow-none"
-                  disabled={!isPasswordVerified}
+                  disabled={!canWithdraw}
                   onClick={handleWithdraw}
                 >
-                  탈퇴하기
+                  {isWithdrawing ? "탈퇴 중..." : "탈퇴하기"}
                 </Button>
               </div>
             </>

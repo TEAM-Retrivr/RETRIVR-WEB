@@ -118,12 +118,19 @@ export const requestLogout = async (): Promise<LogoutResponse> => {
 //
 // 5-1. 회원 탈퇴 요청 API (POST)
 // 엔드포인트: "/api/admin/v1/account/withdraw"
+// 요청 바디: password, reasonCodes, otherReason?, agreedToWarning
+// 비밀번호는 별도 확인 API 없이 탈퇴 요청에 포함해 서버에서 검증한다.
 export const requestWithdraw = async (
   data: WithdrawRequest,
 ): Promise<WithdrawResponse> => {
   const response = await apiClient.post<WithdrawResponse>(
     "/api/admin/v1/account/withdraw",
-    data,
+    {
+      password: data.password,
+      reasonCodes: data.reasonCodes,
+      ...(data.otherReason ? { otherReason: data.otherReason } : {}),
+      agreedToWarning: data.agreedToWarning,
+    },
   );
   return response.data;
 };
