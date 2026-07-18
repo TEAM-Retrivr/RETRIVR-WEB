@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import CommonInput from "../../components/CommonInput";
@@ -9,11 +10,17 @@ import EmailChangeBottomSheet, {
   type EmailChangeBottomSheetHandle,
 } from "../../components/modals/admin/account/EmailChangeBottomSheet";
 import { getPasswordValidationError } from "../../utils/passwordValidation";
-import { useAdminProfile } from "../../hooks/queries/useAuthQueries";
+import {
+  useAdminProfile,
+  useUpdateAdminProfile,
+} from "../../hooks/queries/useAuthQueries";
+import type { UpdateAdminProfileErrorResponse } from "../../api/auth/auth.type";
 
 const ProfileEditPage = () => {
   const navigate = useNavigate();
   const { data: profile } = useAdminProfile();
+  const { mutate: updateProfile, isPending: isUpdating } =
+    useUpdateAdminProfile();
   const emailSheetRef = useRef<EmailChangeBottomSheetHandle>(null);
 
   const [organizationName, setOrganizationName] = useState("");
@@ -61,16 +68,48 @@ const ProfileEditPage = () => {
       return alert("관리자 코드는 6자리 숫자여야 합니다.");
     }
 
-    if (
-      profile?.email &&
-      email.trim() !== profile.email &&
-      !emailVerificationToken
-    ) {
+    const emailChanged = Boolean(
+      profile?.email && email.trim() !== profile.email,
+    );
+    if (emailChanged && !emailVerificationToken) {
       return alert("이메일 변경 시 인증이 필요해요. 이메일 수정을 완료해주세요.");
     }
 
-    // TODO: 개인정보 수정 API 연동
-    setIsCompleteModalOpen(true);
+    updateProfile(
+      {
+        newEmail: email.trim(),
+        newPassword: password,
+        confirmPassword: passwordCheck,
+        newOrganizationName: organizationName.trim(),
+        newAdminCode: adminCode.trim(),
+        ...(emailChanged && emailVerificationToken
+          ? { adminCodeVerificationToken: emailVerificationToken }
+          : {}),
+      },
+      {
+        onSuccess: (data) => {
+          setEmail(data.email);
+          setOrganizationName(data.organizationName);
+          setEmailVerificationToken("");
+          setPassword("");
+          setPasswordCheck("");
+          setAdminCode("");
+          setIsCompleteModalOpen(true);
+        },
+        onError: (error) => {
+          if (axios.isAxiosError(error)) {
+            const data = error.response?.data as
+              | UpdateAdminProfileErrorResponse
+              | undefined;
+            if (data?.message) {
+              alert(data.message);
+              return;
+            }
+          }
+          alert("개인정보 수정에 실패했습니다. 다시 시도해주세요.");
+        },
+      },
+    );
   };
 
   return (
@@ -197,8 +236,9 @@ const ProfileEditPage = () => {
           size="lg"
           className="h-12.5 w-full max-w-[338px] rounded-[23.164px] shadow-primary"
           onClick={handleSubmit}
+          disabled={isUpdating}
         >
-          확인
+          {isUpdating ? "저장 중..." : "확인"}
         </Button>
       </div>
 

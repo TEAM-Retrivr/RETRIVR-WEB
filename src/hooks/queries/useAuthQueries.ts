@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   sendEmailCode,
   verifyEmailCode,
@@ -12,6 +12,7 @@ import {
   requestAdminProfile,
   sendAdminEmailCode,
   verifyAdminEmailCode,
+  updateAdminProfile,
 } from "../../api/auth/auth.api";
 
 //
@@ -194,6 +195,25 @@ export const useVerifyAdminEmailCode = () => {
     },
     onError: (error) => {
       console.error("관리자 이메일 인증 코드 검증 실패:", error);
+    },
+  });
+};
+
+//
+// 7-3. 관리자 프로필 수정 요청
+//
+export const useUpdateAdminProfile = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateAdminProfile,
+    onSuccess: () => {
+      console.log("관리자 프로필 수정 성공");
+      queryClient.invalidateQueries({ queryKey: ["adminProfile"] });
+      queryClient.invalidateQueries({ queryKey: ["home"] });
+    },
+    onError: (error) => {
+      console.error("관리자 프로필 수정 실패:", error);
     },
   });
 };
