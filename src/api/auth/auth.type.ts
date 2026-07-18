@@ -114,8 +114,15 @@ export interface LogoutResponse {
 // 엔드포인트: "/api/admin/v1/account/withdraw"
 
 // 탈퇴 사유 코드 (서버 enum)
-// 확인된 값 외에도 추가될 수 있어 string 유니언으로 열어둔다
-export type WithdrawReasonCode = "ORG_CLOSED" | (string & {});
+export type WithdrawReasonCode =
+  | "ORG_CLOSED"
+  | "NO_LONGER_OPERATING_RENTAL"
+  | "MOVED_TO_OTHER_SERVICE"
+  | "PRIVACY_CONCERN"
+  | "SERVICE_UNSATISFIED"
+  | "MISSING_FEATURE"
+  | "LOW_USAGE"
+  | "OTHER";
 
 // 5-2-1. 회원 탈퇴 요청 바디
 export interface WithdrawRequest {
