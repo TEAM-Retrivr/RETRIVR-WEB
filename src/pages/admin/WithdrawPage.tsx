@@ -40,14 +40,14 @@ const NOTICE_ITEMS = [
 const WITHDRAW_REASONS: { code: WithdrawReasonCode; label: string }[] = [
   { code: "ORG_CLOSED", label: "조직(동아리/기관/팀)이 해체되었어요" },
   {
-    code: "NO_LONGER_OPERATING",
+    code: "NO_LONGER_OPERATING_RENTAL",
     label: "물품 대여 업무를 더 이상 운영하지 않아요",
   },
-  { code: "MOVED_SERVICE", label: "다른 서비스로 이전했어요" },
+  { code: "MOVED_TO_OTHER_SERVICE", label: "다른 서비스로 이전했어요" },
   { code: "PRIVACY_CONCERN", label: "개인정보 및 보안이 걱정돼요" },
-  { code: "INCONVENIENT", label: "서비스 사용이 불편했어요" },
-  { code: "LACKING_FEATURES", label: "원하는 기능이 부족했어요" },
-  { code: "INFREQUENT_USE", label: "자주 사용하지 않게 되었어요" },
+  { code: "SERVICE_UNSATISFIED", label: "서비스 사용이 불편했어요" },
+  { code: "MISSING_FEATURE", label: "원하는 기능이 부족했어요" },
+  { code: "LOW_USAGE", label: "자주 사용하지 않게 되었어요" },
   { code: "OTHER", label: "기타" },
 ];
 
@@ -59,6 +59,9 @@ const clearAdminSession = () => {
   localStorage.removeItem("refreshToken");
   localStorage.removeItem("orgId");
 };
+
+const hasAccessToken = () =>
+  typeof window !== "undefined" && Boolean(localStorage.getItem("accessToken"));
 
 const StepIndicator = ({ step }: { step: WithdrawStep }) => {
   const circle = (n: WithdrawStep) => {
@@ -92,7 +95,13 @@ const StepIndicator = ({ step }: { step: WithdrawStep }) => {
 const WithdrawPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { data: profile } = useAdminProfile();
+  const [isWithdrawComplete, setIsWithdrawComplete] = useState(false);
+  /** onError 등 비동기 콜백에서 최신 탈퇴 완료 여부를 읽기 위한 ref */
+  const isWithdrawCompleteRef = useRef(false);
+  // 세션이 없거나 탈퇴 완료 후에는 프로필 API를 호출하지 않는다
+  const { data: profile } = useAdminProfile({
+    enabled: hasAccessToken() && !isWithdrawComplete,
+  });
   const { mutate: withdraw, isPending: isWithdrawing } = useWithdraw();
 
   const [step, setStep] = useState<WithdrawStep>(1);
@@ -126,7 +135,19 @@ const WithdrawPage = () => {
     return true;
   }, [agreedToWarning, selectedReasons, otherReason]);
 
-  const canWithdraw = password.trim().length > 0 && !isWithdrawing;
+  const canWithdraw =
+    password.trim().length > 0 && !isWithdrawing && !isWithdrawComplete;
+
+  /** 완료 모달 확인(또는 닫기) 시 세션 정리 후 로그인으로 이동 */
+  const finishWithdraw = () => {
+    clearAdminSession();
+    void queryClient.cancelQueries();
+    setIsCompleteModalOpen(false);
+    navigate("/login", { replace: true });
+    queueMicrotask(() => {
+      queryClient.clear();
+    });
+  };
 
   const toggleReason = (code: WithdrawReasonCode) => {
     setSelectedReasons((prev) => {
@@ -142,6 +163,7 @@ const WithdrawPage = () => {
   };
 
   const handleWithdraw = () => {
+    if (isWithdrawCompleteRef.current) return;
     if (!password.trim()) {
       setIsPasswordMismatchOpen(true);
       return;
@@ -159,14 +181,13 @@ const WithdrawPage = () => {
       },
       {
         onSuccess: () => {
-          clearAdminSession();
-          void queryClient.cancelQueries();
-          queueMicrotask(() => {
-            queryClient.clear();
-          });
+          // 세션은 유지한 채 완료 모달만 띄운다. clear는 확인 클릭 시 수행.
+          isWithdrawCompleteRef.current = true;
+          setIsWithdrawComplete(true);
           setIsCompleteModalOpen(true);
         },
         onError: (error) => {
+          if (isWithdrawCompleteRef.current) return;
           if (axios.isAxiosError(error)) {
             const data = error.response?.data as
               | WithdrawErrorResponse
@@ -192,6 +213,10 @@ const WithdrawPage = () => {
         name="계정관리"
         pageName="탈퇴하기"
         onBackClick={() => {
+          if (isWithdrawComplete) {
+            finishWithdraw();
+            return;
+          }
           if (step === 2) {
             goToStep(1);
             setPassword("");
@@ -321,14 +346,7 @@ const WithdrawPage = () => {
                   disabled={!canGoNext}
                   onClick={() => goToStep(2)}
                 >
-                  <span className="flex items-center gap-1.5">
-                    다음으로
-                    <img
-                      src="/icons/client/left-arrow-white.svg"
-                      alt=""
-                      className="h-3 w-1.5 rotate-180"
-                    />
-                  </span>
+                  <span className="flex items-center gap-1.5">다음으로</span>
                 </Button>
               </div>
             </>
@@ -384,10 +402,8 @@ const WithdrawPage = () => {
       />
       <WithdrawCompleteModal
         isOpen={isCompleteModalOpen}
-        onClose={() => setIsCompleteModalOpen(false)}
-        onConfirm={() => {
-          navigate("/login", { replace: true });
-        }}
+        onClose={finishWithdraw}
+        onConfirm={finishWithdraw}
       />
     </Layout>
   );
