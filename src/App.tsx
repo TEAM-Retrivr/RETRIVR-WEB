@@ -16,6 +16,8 @@ import AccountTermsPage from "./pages/admin/AccountTermsPage";
 import AccountPrivacyPage from "./pages/admin/AccountPrivacyPage";
 import WithdrawPage from "./pages/admin/WithdrawPage";
 import MembershipPage from "./pages/admin/MembershipPage";
+import PaymentMethodsPage from "./pages/admin/PaymentMethodsPage";
+import PaymentMethodRegisterPage from "./pages/admin/PaymentMethodRegisterPage";
 import ProfileEditPage from "./pages/admin/ProfileEditPage";
 import LandingPage from "./pages/LandingPage";
 import RegisterPage from "./pages/admin/RegisterPage";
@@ -121,6 +123,14 @@ function App() {
           <Route path="/account/privacy" element={<AccountPrivacyPage />} />
           <Route path="/account/withdraw" element={<WithdrawPage />} />
           <Route path="/membership" element={<MembershipPage />} />
+          <Route
+            path="/membership/payment-methods"
+            element={<PaymentMethodsPage />}
+          />
+          <Route
+            path="/membership/payment-methods/register"
+            element={<PaymentMethodRegisterPage />}
+          />
           <Route path="/profile" element={<ProfileEditPage />} />
           <Route path="/item-manage" element={<ItemManagementPage />} />
           <Route path="/item-register" element={<ItemRegisterationPage />} />

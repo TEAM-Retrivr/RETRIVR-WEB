@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import ConfirmModal from "../../components/modals/ConfirmModal";
@@ -40,6 +41,7 @@ const MENU_ITEMS = [
 const COMING_SOON_MESSAGE = "개발 예정입니다.";
 
 const MembershipPage = () => {
+  const navigate = useNavigate();
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
   const [couponCode, setCouponCode] = useState("");
   const [confirmModalMessage, setConfirmModalMessage] = useState<string | null>(
@@ -52,6 +54,14 @@ const MembershipPage = () => {
 
   const handleComingSoon = () => {
     alert(COMING_SOON_MESSAGE);
+  };
+
+  const handleMenuClick = (menuId: (typeof MENU_ITEMS)[number]["id"]) => {
+    if (menuId === "payment-manage") {
+      navigate("/membership/payment-methods");
+      return;
+    }
+    handleComingSoon();
   };
 
   const handleRegisterCoupon = () => {
@@ -95,7 +105,7 @@ const MembershipPage = () => {
                 <button
                   key={item.id}
                   type="button"
-                  onClick={handleComingSoon}
+                  onClick={() => handleMenuClick(item.id)}
                   className="flex w-full items-center justify-between rounded-[7.5px] border border-[#e6eaed] bg-neutral-white px-[18px] py-3 text-left cursor-pointer"
                 >
                   <div className="flex flex-col">

@@ -18,6 +18,7 @@ import type {
   WithdrawReasonCode,
 } from "../../api/auth/auth.type";
 import { WITHDRAW_ERROR_CODE } from "../../api/auth/auth.type";
+import { resetPaymentMethodsStore } from "../../store/paymentMethodsStore";
 
 const NOTICE_ITEMS = [
   {
@@ -58,6 +59,7 @@ const clearAdminSession = () => {
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
   localStorage.removeItem("orgId");
+  resetPaymentMethodsStore();
 };
 
 const hasAccessToken = () =>

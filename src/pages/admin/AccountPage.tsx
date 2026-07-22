@@ -8,6 +8,7 @@ import ConfirmModal from "../../components/modals/ConfirmModal";
 import LogoutConfirmModal from "../../components/modals/admin/account/LogoutConfirmModal";
 import QRCodeDisplay from "../../components/qr/QRCodeDisplay";
 import { useAdminProfile, useLogout } from "../../hooks/queries/useAuthQueries";
+import { resetPaymentMethodsStore } from "../../store/paymentMethodsStore";
 
 const PRODUCTION_WEB_ORIGIN = "https://www.retrivr.kr";
 const PREVIEW_WEB_ORIGIN = "https://retrivr-web.vercel.app";
@@ -25,6 +26,7 @@ const clearAdminSession = () => {
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
   localStorage.removeItem("orgId");
+  resetPaymentMethodsStore();
 };
 
 const AccountPage = () => {
