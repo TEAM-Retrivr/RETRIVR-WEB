@@ -5,6 +5,7 @@ import CommonInput from "../../components/CommonInput";
 import Button from "../../components/Button";
 import { useLogin } from "../../hooks/queries/useAuthQueries";
 import ErrorModal from "../../components/modals/ErrorModal";
+import { resetPaymentMethodsStore } from "../../store/paymentMethodsStore";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -35,6 +36,7 @@ const LoginPage = () => {
       { email, password },
       {
         onSuccess: (data) => {
+          resetPaymentMethodsStore();
           localStorage.setItem("accessToken", data.accessToken);
           // 서버가 refreshToken을 HttpOnly 쿠키로 내려주는 경우 바디에 없을 수 있음
           if (data.refreshToken) {
