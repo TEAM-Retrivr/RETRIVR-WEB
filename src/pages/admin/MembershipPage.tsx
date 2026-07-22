@@ -61,6 +61,10 @@ const MembershipPage = () => {
       navigate("/membership/payment-methods");
       return;
     }
+    if (menuId === "voucher-manage") {
+      navigate("/membership/vouchers");
+      return;
+    }
     handleComingSoon();
   };
 
@@ -211,7 +215,7 @@ const MembershipPage = () => {
               <p className="text-12px font-normal leading-[1.4] text-neutral-gray-3">
                 이벤트나 제휴를 통해 받은 쿠폰번호를 등록하면
                 <br />
-                이용권이 지급돼요
+                이용권이 지급돼요.
               </p>
             </div>
 
