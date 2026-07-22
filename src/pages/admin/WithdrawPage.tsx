@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
@@ -140,7 +140,7 @@ const WithdrawPage = () => {
   const canWithdraw =
     password.trim().length > 0 && !isWithdrawing && !isWithdrawComplete;
 
-  /** 완료 모달 확인(또는 닫기) 시 세션 정리 후 로그인으로 이동 */
+  /** 완료 모달 확인(또는 닫기) 시 로그인으로 이동. 세션은 탈퇴 성공 시점에 이미 정리한다. */
   const finishWithdraw = () => {
     clearAdminSession();
     void queryClient.cancelQueries();
@@ -150,6 +150,15 @@ const WithdrawPage = () => {
       queryClient.clear();
     });
   };
+
+  // 완료 모달에서 확인하지 않고 페이지를 벗어나도 세션이 남지 않도록 언마운트 시에도 정리한다.
+  useEffect(() => {
+    return () => {
+      if (isWithdrawCompleteRef.current) {
+        clearAdminSession();
+      }
+    };
+  }, []);
 
   const toggleReason = (code: WithdrawReasonCode) => {
     setSelectedReasons((prev) => {
@@ -183,9 +192,10 @@ const WithdrawPage = () => {
       },
       {
         onSuccess: () => {
-          // 세션은 유지한 채 완료 모달만 띄운다. clear는 확인 클릭 시 수행.
+          // 탈퇴 성공 즉시 세션을 정리한다. 완료 모달만 잠깐 보여 준 뒤 확인 시 로그인으로 이동한다.
           isWithdrawCompleteRef.current = true;
           setIsWithdrawComplete(true);
+          clearAdminSession();
           setIsCompleteModalOpen(true);
         },
         onError: (error) => {

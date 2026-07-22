@@ -33,10 +33,14 @@ const ProfileEditPage = () => {
   /** 이메일 변경 인증 성공 시 발급되는 토큰 (프로필 PATCH용) */
   const [emailVerificationToken, setEmailVerificationToken] = useState("");
 
+  /** 프로필 최초 로드 시에만 폼을 채운다. refetch로 입력/이메일 인증 상태를 덮어쓰지 않는다. */
+  const hasHydratedProfileRef = useRef(false);
+
   useEffect(() => {
-    if (!profile) return;
+    if (!profile || hasHydratedProfileRef.current) return;
     setOrganizationName(profile.organizationName ?? "");
     setEmail(profile.email ?? "");
+    hasHydratedProfileRef.current = true;
   }, [profile]);
 
   const handleEditEmail = () => {

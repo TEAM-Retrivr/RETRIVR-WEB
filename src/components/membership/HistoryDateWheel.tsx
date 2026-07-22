@@ -20,10 +20,6 @@ const DateWheelColumn = ({
 }: DateWheelColumnProps) => {
   const wheelRef = useRef<HTMLDivElement | null>(null);
   const settleTimerRef = useRef<number | null>(null);
-  const wheelRows = useMemo(
-    () => [null, ...values, null] as Array<number | null>,
-    [values],
-  );
 
   const clearSettleTimer = () => {
     if (settleTimerRef.current) {
@@ -37,6 +33,7 @@ const DateWheelColumn = ({
     if (!container) return;
     const index = values.indexOf(value);
     if (index < 0) return;
+    // padding-top 1칸이 있으므로 values[i]는 scrollTop = i * HEIGHT 일 때 중앙에 온다.
     container.scrollTo({
       top: index * WHEEL_ITEM_HEIGHT,
       behavior,
@@ -77,30 +74,28 @@ const DateWheelColumn = ({
       <div
         ref={wheelRef}
         onScroll={handleScroll}
-        className="h-[87px] overflow-y-auto no-scrollbar snap-y snap-mandatory"
+        className="h-[87px] overflow-y-auto no-scrollbar snap-y snap-mandatory py-[29px]"
       >
-        {wheelRows.map((value, index) => (
+        {values.map((value) => (
           <div
-            key={`${value ?? "spacer"}-${index}`}
+            key={value}
             className="flex h-[29px] items-center justify-center snap-start"
           >
-            {value === null ? null : (
-              <button
-                type="button"
-                onClick={() => {
-                  onChange(value);
-                  scrollToValue(value, "smooth");
-                }}
-                className={`z-10 whitespace-nowrap text-12px leading-[1.4] cursor-pointer ${
-                  value === selectedValue
-                    ? "font-semibold text-neutral-gray-1"
-                    : "font-normal text-neutral-gray-4"
-                }`}
-              >
-                {formatter(value)}
-                {unit}
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => {
+                onChange(value);
+                scrollToValue(value, "smooth");
+              }}
+              className={`z-10 whitespace-nowrap text-12px leading-[1.4] cursor-pointer ${
+                value === selectedValue
+                  ? "font-semibold text-neutral-gray-1"
+                  : "font-normal text-neutral-gray-4"
+              }`}
+            >
+              {formatter(value)}
+              {unit}
+            </button>
           </div>
         ))}
       </div>
