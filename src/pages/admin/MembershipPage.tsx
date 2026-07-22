@@ -2,96 +2,64 @@ import { useState } from "react";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import ConfirmModal from "../../components/modals/ConfirmModal";
-import CouponRegistrationModal, {
-  type CouponPreview,
-} from "../../components/modals/membership/CouponRegistrationModal";
+import { lookupCouponPreview } from "../../components/modals/membership/CouponRegistrationModal";
 import MembershipCouponCard from "../../components/membership/MembershipCouponCard";
 import MembershipProBadge from "../../components/membership/MembershipProBadge";
 
-type MembershipTab = "subscription" | "voucher";
+type BillingCycle = "monthly" | "yearly";
 
-const ACTIVE_VOUCHER = {
-  title: "2달 이용권",
-  eventName: "Retrivr 출시 이벤트",
-  period: "26. 05. 01 ~ 26. 06. 30",
+const ACTIVE_PLAN = {
+  title: "월간 이용권",
+  priceAmount: "4,900₩",
+  priceUnit: "/월",
+  nextBillingDate: "26. 05. 01",
+  usageType: "월간 이용권",
 };
 
-const AVAILABLE_VOUCHERS = [
-  {
-    id: "voucher-1",
-    title: "2달 이용권",
-    eventName: "Retrivr 출시 이벤트",
-    period: "26. 05. 01 ~ 26. 06. 30",
-    status: "active" as const,
-  },
-  {
-    id: "voucher-2",
-    title: "2달 이용권",
-    eventName: "Retrivr 출시 이벤트",
-    period: "26. 05. 01 ~ 26. 06. 30",
-    status: "pending" as const,
-  },
-];
-
-const COMPLETED_VOUCHERS = [
-  {
-    id: "completed-1",
-    title: "2달 이용권",
-    eventName: "Retrivr 출시 이벤트",
-    period: "26. 05. 01 ~ 26. 06. 30",
-  },
-  {
-    id: "completed-2",
-    title: "2달 이용권",
-    eventName: "Retrivr 출시 이벤트",
-    period: "26. 05. 01 ~ 26. 06. 30",
-  },
-  {
-    id: "completed-3",
-    title: "2달 이용권",
-    eventName: "Retrivr 출시 이벤트",
-    period: "26. 05. 01 ~ 26. 06. 30",
-  },
-];
-
-type VoucherItem = {
-  id: string;
-  title: string;
-  eventName: string;
-  period: string;
-  status: "active" | "pending";
+const SUBSCRIPTION_PLANS: Record<
+  BillingCycle,
+  { durationLabel: string; amount: string; unit: string }
+> = {
+  monthly: { durationLabel: "1개월", amount: "4,900₩", unit: "/월" },
+  yearly: { durationLabel: "12개월", amount: "49,000₩", unit: "/년" },
 };
+
+const MENU_ITEMS = [
+  {
+    id: "voucher-manage",
+    title: "이용권 관리",
+    description: "구독이용권, 쿠폰, 결제내역",
+  },
+  {
+    id: "payment-manage",
+    title: "결제 수단 관리",
+    description: "이용권 결제수단 관리 및 등록",
+  },
+] as const;
+
+const COMING_SOON_MESSAGE = "개발 예정입니다.";
 
 const MembershipPage = () => {
-  const [activeTab, setActiveTab] = useState<MembershipTab>("voucher");
-  const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
+  const [couponCode, setCouponCode] = useState("");
   const [confirmModalMessage, setConfirmModalMessage] = useState<string | null>(
     null,
   );
-  const [availableVouchers, setAvailableVouchers] =
-    useState<VoucherItem[]>(AVAILABLE_VOUCHERS);
 
-  const handleRegisterCoupon = () => {
-    setIsCouponModalOpen(true);
+  const selectedPlan = SUBSCRIPTION_PLANS[billingCycle];
+  const couponPreview = lookupCouponPreview(couponCode);
+  const canRegisterCoupon = couponPreview !== null;
+
+  const handleComingSoon = () => {
+    alert(COMING_SOON_MESSAGE);
   };
 
-  const handleCouponRegister = (_code: string, preview: CouponPreview) => {
-    setAvailableVouchers((prev) => {
-      const hasPending = prev.some((voucher) => voucher.status === "pending");
-      if (hasPending) return prev;
-
-      return [
-        ...prev,
-        {
-          id: `voucher-${Date.now()}`,
-          title: preview.title,
-          eventName: preview.eventName,
-          period: preview.validityPeriod,
-          status: "pending",
-        },
-      ];
-    });
-    setIsCouponModalOpen(false);
+  const handleRegisterCoupon = () => {
+    if (!couponPreview) {
+      setConfirmModalMessage("유효하지 않은 쿠폰 번호예요");
+      return;
+    }
+    setCouponCode("");
     setConfirmModalMessage("쿠폰이 등록되었어요");
   };
 
@@ -99,177 +67,167 @@ const MembershipPage = () => {
     <Layout>
       <Header name="계정 관리" pageName="Retrivr 프로" backTo="/account" />
 
-      <div className="flex flex-1 flex-col overflow-y-auto no-scrollbar font-[Pretendard]">
-        <section className="relative bg-gradient-to-b from-white from-[42.5%] to-secondary-4 to-[87.7%] px-8 pb-6 pt-8">
-          <div className="flex flex-col items-center gap-4">
-            <img
-              src="/icons/retrivr_text_primary.svg"
-              alt="Retrivr"
-              className="h-[38px] w-auto object-contain"
-            />
-            <h1 className="text-18px font-bold text-neutral-gray-1">
-              <span className="text-primary">리트리버 프로</span> 멤버십
-            </h1>
+      <div className="flex flex-1 flex-col overflow-y-auto no-scrollbar bg-gradient-to-b from-secondary-4 from-[14%] to-neutral-white to-[88%] font-[Pretendard]">
+        <section className="flex flex-col gap-3 px-12 pb-6 pt-10">
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2">
+              <h2 className="text-18px font-bold leading-normal text-neutral-gray-1">
+                이용 현황
+              </h2>
+              <MembershipProBadge />
+            </div>
+            <p className="text-12px font-bold leading-[1.5] text-secondary-2">
+              이용 방식: {ACTIVE_PLAN.usageType}
+            </p>
           </div>
 
-          <div className="mx-auto mt-8 flex w-full max-w-[360px] flex-col items-center rounded-[26px] bg-white/40 px-[27px] py-6 shadow-[0px_0px_0px_0px_rgba(45,78,127,0.5),0px_0px_12.9px_0px_rgba(92,174,255,0.2)]">
-            <div className="flex w-full max-w-[306px] flex-col items-center gap-[29px]">
-              <div className="flex flex-col items-center gap-1">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-20px font-bold leading-[1.4] text-neutral-gray-1">
-                    이용 현황
-                  </h2>
-                  <MembershipProBadge />
-                </div>
-                <p className="text-12px font-bold leading-[1.5] text-secondary-2">
-                  구독 방식: 이용권 사용
-                </p>
-              </div>
+          <div className="flex flex-col gap-3">
+            <MembershipCouponCard
+              title={ACTIVE_PLAN.title}
+              status="active"
+              priceAmount={ACTIVE_PLAN.priceAmount}
+              priceUnit={ACTIVE_PLAN.priceUnit}
+              footerText={`다음 결제 예정일: ${ACTIVE_PLAN.nextBillingDate}`}
+            />
 
-              <div className="flex w-full flex-col gap-[11px]">
-                <MembershipCouponCard
-                  title={ACTIVE_VOUCHER.title}
-                  eventName={ACTIVE_VOUCHER.eventName}
-                  period={ACTIVE_VOUCHER.period}
-                  status="active"
-                  compact
-                />
-
-                <div className="flex items-center justify-between rounded-[7.5px] border border-[#e6eaed] bg-neutral-white px-[18px] py-3">
-                  <div className="flex items-center gap-1.5">
-                    <img
-                      src="/icons/membership/calendar.svg"
-                      alt=""
-                      className="size-[18px] shrink-0"
-                      aria-hidden
-                    />
-                    <span className="text-[11px] font-bold leading-[1.5] text-neutral-gray-2">
-                      다음 갱신일
+            <div className="flex flex-col gap-1.5">
+              {MENU_ITEMS.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={handleComingSoon}
+                  className="flex w-full items-center justify-between rounded-[7.5px] border border-[#e6eaed] bg-neutral-white px-[18px] py-3 text-left cursor-pointer"
+                >
+                  <div className="flex flex-col">
+                    <span className="text-12px font-bold leading-[1.5] text-neutral-gray-2">
+                      {item.title}
+                    </span>
+                    <span className="text-10px font-normal leading-[1.3] text-neutral-gray-3">
+                      {item.description}
                     </span>
                   </div>
-                  <span className="text-[11px] font-bold leading-[1.5] text-neutral-gray-2">
-                    2026. 07. 01
-                  </span>
-                </div>
-              </div>
+                  <img
+                    src="/icons/right-arrow2.svg"
+                    alt=""
+                    className="h-2.5 w-[4.2px] shrink-0"
+                    aria-hidden
+                  />
+                </button>
+              ))}
             </div>
           </div>
         </section>
 
-        <section className="flex flex-1 flex-col rounded-t-[24px] bg-neutral-white px-8 pb-10 shadow-[0px_2px_12px_0px_rgba(116,132,155,0.25)]">
-          <div className="flex w-full">
+        <section className="flex flex-col gap-4 px-8 pb-10">
+          <div className="flex w-full flex-col gap-4 rounded-2xl bg-neutral-white px-[26px] py-6 shadow-[0px_0px_16px_-6px_rgba(0,0,0,0.2)]">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex flex-col gap-2">
+                <h3 className="text-18px font-bold leading-normal text-secondary-1">
+                  pro 이용권 구독
+                </h3>
+                <div className="flex items-center gap-0.5">
+                  <span
+                    className="flex size-[17px] shrink-0 items-center justify-center"
+                    aria-hidden
+                  >
+                    <span className="size-0.5 rounded-full bg-neutral-gray-3" />
+                  </span>
+                  <p className="text-12px font-normal leading-[1.4] text-neutral-gray-3">
+                    카카오톡 알림 메시지 이용
+                  </p>
+                </div>
+              </div>
+
+              <div
+                role="tablist"
+                aria-label="결제 주기"
+                className="relative flex h-7 w-[102px] shrink-0 rounded-lg bg-neutral-gray-5 p-0.5"
+              >
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={billingCycle === "monthly"}
+                  onClick={() => setBillingCycle("monthly")}
+                  className={`relative z-10 flex h-full flex-1 items-center justify-center rounded-md text-12px cursor-pointer ${
+                    billingCycle === "monthly"
+                      ? "bg-neutral-white font-bold text-neutral-gray-1 shadow-[0px_0px_8px_-4px_rgba(0,0,0,0.3)]"
+                      : "font-medium text-neutral-gray-1"
+                  }`}
+                >
+                  월간
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={billingCycle === "yearly"}
+                  onClick={() => setBillingCycle("yearly")}
+                  className={`relative z-10 flex h-full flex-1 items-center justify-center rounded-md text-12px cursor-pointer ${
+                    billingCycle === "yearly"
+                      ? "bg-neutral-white font-bold text-neutral-gray-1 shadow-[0px_0px_8px_-4px_rgba(0,0,0,0.3)]"
+                      : "font-medium text-neutral-gray-1"
+                  }`}
+                >
+                  연간
+                </button>
+              </div>
+            </div>
+
+            <div className="flex h-[61px] w-full items-center justify-between rounded-[7.5px] border border-primary bg-secondary-4 px-5">
+              <span className="text-16px font-semibold leading-normal text-primary">
+                {selectedPlan.durationLabel}
+              </span>
+              <p className="text-14px font-bold leading-5 text-neutral-gray-1">
+                <span className="font-semibold">{selectedPlan.amount}</span>
+                <span className="font-medium text-neutral-gray-3">
+                  {selectedPlan.unit}
+                </span>
+              </p>
+            </div>
+
             <button
               type="button"
-              onClick={() => setActiveTab("subscription")}
-              className="flex h-[57px] flex-1 flex-col items-center justify-end gap-4"
+              onClick={handleComingSoon}
+              className="flex h-12 w-full items-center justify-center rounded-[12px] bg-primary text-18px font-bold text-neutral-white shadow-primary cursor-pointer"
             >
-              <span
-                className={`text-18px font-bold ${
-                  activeTab === "subscription"
-                    ? "text-secondary-1"
-                    : "text-neutral-gray-4"
-                }`}
-              >
-                요금제 구독
-              </span>
-              <span
-                className={`h-[3px] w-full ${
-                  activeTab === "subscription"
-                    ? "bg-primary"
-                    : "bg-neutral-gray-5"
-                }`}
-              />
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("voucher")}
-              className="flex h-[57px] flex-1 flex-col items-center justify-end gap-4"
-            >
-              <span
-                className={`text-18px font-bold ${
-                  activeTab === "voucher"
-                    ? "text-secondary-1"
-                    : "text-neutral-gray-4"
-                }`}
-              >
-                이용권
-              </span>
-              <span
-                className={`h-[3px] w-full ${
-                  activeTab === "voucher" ? "bg-primary" : "bg-neutral-gray-5"
-                }`}
-              />
+              구독 시작하기
             </button>
           </div>
 
-          {activeTab === "voucher" ? (
-            <div className="mt-6 flex flex-col gap-8">
+          <div className="flex w-full flex-col gap-4 rounded-2xl bg-neutral-white px-[26px] py-6 shadow-[0px_0px_16px_-6px_rgba(0,0,0,0.2)]">
+            <div className="flex flex-col gap-1">
+              <h3 className="text-18px font-bold leading-normal text-secondary-1">
+                쿠폰이 있으신가요?
+              </h3>
+              <p className="text-12px font-normal leading-[1.4] text-neutral-gray-3">
+                이벤트나 제휴를 통해 받은 쿠폰번호를 등록하면
+                <br />
+                이용권이 지급돼요
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={couponCode}
+                onChange={(event) =>
+                  setCouponCode(event.target.value.toUpperCase())
+                }
+                placeholder="쿠폰 번호 입력"
+                className="h-12 min-w-0 flex-1 rounded-[12px] bg-neutral-gray-5 px-3.5 text-14px font-normal leading-[1.4] text-neutral-gray-2 outline-none placeholder:text-neutral-gray-3 focus:ring-2 focus:ring-primary/30"
+              />
               <button
                 type="button"
                 onClick={handleRegisterCoupon}
-                className="flex h-13 w-full items-center justify-center rounded-[12px] bg-neutral-white drop-shadow-[0px_0px_2px_rgba(148,169,201,0.5)] cursor-pointer"
+                disabled={!canRegisterCoupon}
+                className="flex h-12 w-20 shrink-0 items-center justify-center rounded-[12px] text-16px font-semibold text-neutral-white transition-colors enabled:cursor-pointer enabled:bg-primary enabled:hover:bg-secondary-2 disabled:cursor-not-allowed disabled:bg-neutral-gray-4"
               >
-                <img
-                  src="/icons/membership/plus.svg"
-                  alt=""
-                  className="size-12"
-                  aria-hidden
-                />
-                <span className="text-14px font-bold text-secondary-1">
-                  쿠폰 등록하기
-                </span>
+                등록
               </button>
-
-              <div className="flex flex-col gap-2.5">
-                <h3 className="text-18px font-bold text-secondary-1">이용권</h3>
-                <div className="flex flex-col gap-2.5">
-                  {availableVouchers.map((voucher) => (
-                    <MembershipCouponCard
-                      key={voucher.id}
-                      title={voucher.title}
-                      eventName={voucher.eventName}
-                      period={voucher.period}
-                      status={voucher.status}
-                      periodLabel={
-                        voucher.status === "pending" ? "유효 기간" : "사용 기간"
-                      }
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2.5">
-                <p className="text-14px font-semibold leading-5 text-neutral-gray-3">
-                  사용 완료
-                </p>
-                <div className="flex flex-col gap-2.5">
-                  {COMPLETED_VOUCHERS.map((voucher) => (
-                    <MembershipCouponCard
-                      key={voucher.id}
-                      title={voucher.title}
-                      eventName={voucher.eventName}
-                      period={voucher.period}
-                      status="completed"
-                    />
-                  ))}
-                </div>
-              </div>
             </div>
-          ) : (
-            <div className="mt-10 flex flex-col items-center justify-center py-16 text-center">
-              <p className="text-14px font-bold text-secondary-2">
-                요금제 구독은 준비 중이에요
-              </p>
-            </div>
-          )}
+          </div>
         </section>
       </div>
 
-      <CouponRegistrationModal
-        isOpen={isCouponModalOpen}
-        onClose={() => setIsCouponModalOpen(false)}
-        onRegister={handleCouponRegister}
-      />
       <ConfirmModal
         isOpen={confirmModalMessage !== null}
         onClose={() => setConfirmModalMessage(null)}

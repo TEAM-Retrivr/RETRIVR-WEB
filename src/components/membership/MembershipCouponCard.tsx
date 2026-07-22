@@ -4,10 +4,13 @@ import MembershipStatusBadge, {
 
 export type MembershipCouponCardProps = {
   title: string;
-  eventName: string;
-  period: string;
   status: MembershipCouponStatus;
-  periodLabel?: "사용 기간" | "유효 기간";
+  eventName?: string;
+  priceAmount?: string;
+  priceUnit?: string;
+  period?: string;
+  periodLabel?: "사용 기간" | "유효 기간" | "다음 결제 예정일";
+  footerText?: string;
   compact?: boolean;
   preview?: boolean;
 };
@@ -38,28 +41,37 @@ const PERIOD_STYLES: Record<MembershipCouponStatus, string> = {
 
 const MembershipCouponCard = ({
   title,
-  eventName,
-  period,
   status,
+  eventName,
+  priceAmount,
+  priceUnit,
+  period,
   periodLabel = status === "pending" ? "유효 기간" : "사용 기간",
+  footerText,
   compact = false,
   preview = false,
 }: MembershipCouponCardProps) => {
   const isCompleted = status === "completed";
+  const isPlanCard = Boolean(priceAmount);
   const accentClass = preview ? "bg-secondary-5" : ACCENT_STYLES[status];
+  const resolvedFooter =
+    footerText ??
+    (period ? `${periodLabel}: ${period}` : null);
 
   return (
     <article
       className={`relative flex w-full overflow-hidden rounded-[8px] border border-[#e6eaed] bg-neutral-white ${
-        compact || preview
-          ? "min-h-[92px] px-[31px] py-[18px]"
-          : isCompleted
-            ? "min-h-[94px] px-6 py-5"
-            : "min-h-[102px] px-[34px] py-5"
+        isPlanCard
+          ? "min-h-[88px] px-[30px] py-[18px]"
+          : compact || preview
+            ? "min-h-[92px] px-[31px] py-[18px]"
+            : isCompleted
+              ? "min-h-[94px] px-6 py-5"
+              : "min-h-[102px] px-[34px] py-5"
       }`}
     >
       <div
-        className={`absolute left-0 top-0 bottom-0 w-[14px] rounded-bl-[8px] rounded-tl-[8px] ${accentClass}`}
+        className={`absolute left-0 top-0 bottom-0 w-3 rounded-bl-[7px] rounded-tl-[7px] ${accentClass}`}
         aria-hidden
       />
 
@@ -76,30 +88,51 @@ const MembershipCouponCard = ({
       </div>
 
       <div className="relative z-10 flex w-full flex-col gap-1 pr-4">
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-[5px]">
           <p
-            className={`font-bold leading-[1.4] whitespace-nowrap ${
-              compact ? "text-[18px]" : "text-20px"
+            className={`font-bold leading-normal whitespace-nowrap ${
+              isPlanCard
+                ? "text-16px"
+                : compact
+                  ? "text-[18px]"
+                  : "text-20px"
             } ${TITLE_STYLES[status]}`}
           >
             {title}
           </p>
           <MembershipStatusBadge status={status} />
         </div>
-        <p
-          className={`font-semibold leading-[1.4] ${
-            compact ? "text-[11px]" : "text-12px"
-          } ${EVENT_STYLES[status]}`}
-        >
-          {eventName}
-        </p>
-        <p
-          className={`self-end font-semibold leading-normal whitespace-nowrap ${
-            compact ? "text-10px" : "text-10px"
-          } ${PERIOD_STYLES[status]}`}
-        >
-          {periodLabel}: {period}
-        </p>
+
+        {priceAmount ? (
+          <p
+            className={`font-semibold leading-[1.4] ${
+              isPlanCard ? "text-10px" : "text-12px"
+            } ${EVENT_STYLES[status]}`}
+          >
+            <span>{priceAmount}</span>
+            {priceUnit ? (
+              <span className="text-neutral-gray-3">{priceUnit}</span>
+            ) : null}
+          </p>
+        ) : eventName ? (
+          <p
+            className={`font-semibold leading-[1.4] ${
+              compact ? "text-[11px]" : "text-12px"
+            } ${EVENT_STYLES[status]}`}
+          >
+            {eventName}
+          </p>
+        ) : null}
+
+        {resolvedFooter ? (
+          <p
+            className={`self-end font-semibold leading-[1.3] whitespace-nowrap ${
+              isPlanCard ? "text-[8px]" : "text-10px"
+            } ${PERIOD_STYLES[status]}`}
+          >
+            {resolvedFooter}
+          </p>
+        ) : null}
       </div>
     </article>
   );

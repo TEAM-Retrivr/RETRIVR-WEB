@@ -21,7 +21,7 @@ const NOTICE_ITEMS = [
   "관련 문의: 인스타그램 DM (@Retrivr_official)",
 ];
 
-const lookupCouponPreview = (code: string): CouponPreview | null => {
+export const lookupCouponPreview = (code: string): CouponPreview | null => {
   const normalized = code.trim().toUpperCase();
   if (!normalized) return null;
   if (normalized.length < 4) return null;
