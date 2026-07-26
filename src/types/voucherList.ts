@@ -19,16 +19,22 @@ export const HISTORY_PERIOD_LABEL: Record<HistoryPeriodOption, string> = {
   custom: "직접입력",
 };
 
-export const SUBSCRIPTION_VOUCHER = {
-  title: "연간 이용권",
-  statusLabel: "일시중지",
-  description:
-    "등록된 쿠폰 이용권을 모두 사용하면\n26.09.01부터 자동 결제가 다시 진행돼요.",
-  durationLabel: "12개월",
-  originalPrice: "58,800",
-  priceAmount: "46,900₩",
-  priceUnit: "/연",
-};
+export const COUPON_VOUCHERS = [
+  {
+    id: "coupon-active",
+    title: "2개월 이용권 쿠폰",
+    eventName: "Retrivr 출시 이벤트",
+    status: "active" as const,
+    footerText: "사용 기간: 26. 05. 01 ~ 26. 06. 30",
+  },
+  {
+    id: "coupon-pending",
+    title: "2개월 이용권 쿠폰",
+    eventName: "Retrivr 출시 이벤트",
+    status: "pending" as const,
+    footerText: "26. 07. 01 활성화 예정",
+  },
+];
 
 export const SUBSCRIPTION_USAGE_GUIDE = [
   "쿠폰 코드를 등록하면 쿠폰 이용권을 사용할 수 있습니다.",
