@@ -24,6 +24,7 @@ import type {
   PublicRejectRentalResponse,
   AdminCouponLookupResponse,
   AdminCouponRegistrationResponse,
+  AdminMembershipResponse,
 } from "./admin.type";
 import { apiClient } from "../core";
 import type { AxiosResponse } from "axios";
@@ -387,3 +388,14 @@ export const registerAdminCoupon = async ({
   );
   return response.data;
 };
+
+// 현재 멤버십 상태 조회
+// - 이용권 목록(쿠폰/구독) 화면에서 현재 이용권 정보를 표시
+// GET /api/admin/v1/membership
+export const requestAdminMembership =
+  async (): Promise<AdminMembershipResponse> => {
+    const response = await apiClient.get<AdminMembershipResponse>(
+      "/api/admin/v1/membership",
+    );
+    return response.data;
+  };
