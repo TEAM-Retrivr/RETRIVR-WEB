@@ -320,3 +320,36 @@ export interface AdminVerifyCodeResponse {
   rawToken?: string;
   rentalId?: number;
 }
+
+// 쿠폰 조회 응답
+// GET /api/admin/v1/coupons/{couponCode}
+export interface AdminCouponLookupResponse {
+  isExist: boolean;
+  isUsed: boolean;
+  couponId: string;
+  name: string;
+  description: string;
+  durationDays: number;
+  activeStartDay: string; // YYYY-MM-DD
+  expiresDay: string; // YYYY-MM-DD
+  guideline: string;
+}
+
+// 쿠폰 등록 응답
+// POST /api/admin/v1/coupons/{couponId}/registrations
+export interface AdminCouponRegistrationResponse {
+  organizationId: number;
+  couponRegistrationId: string;
+  couponId: string;
+  membershipPassId: string;
+}
+
+// 쿠폰 조회/등록 실패 시 공통 에러 응답
+// - 404: code 3004 (존재하지 않는 단체)
+// - 409: code 12101 (이용 불가능한 쿠폰, 등록 API)
+export interface AdminCouponErrorResponse {
+  status: string;
+  code: number;
+  message: string;
+  detail?: string;
+}
