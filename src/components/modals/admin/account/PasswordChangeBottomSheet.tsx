@@ -1,4 +1,9 @@
-import { useEffect, useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from "react";
 import axios from "axios";
 import BottomSheet from "../../../BottomSheet";
 import CommonInput from "../../../CommonInput";
@@ -11,22 +16,33 @@ import {
 } from "../../../../utils/passwordValidation";
 import type { UpdateAdminProfileErrorResponse } from "../../../../api/auth/auth.type";
 
+export type PasswordChangeBottomSheetHandle = {
+  requestClose: () => void;
+};
+
 type PasswordChangeBottomSheetProps = {
   isOpen: boolean;
   onClose: () => void;
   onChanged: () => void;
 };
 
-const PasswordChangeBottomSheet = ({
-  isOpen,
-  onClose,
-  onChanged,
-}: PasswordChangeBottomSheetProps) => {
+const PasswordChangeBottomSheet = forwardRef<
+  PasswordChangeBottomSheetHandle,
+  PasswordChangeBottomSheetProps
+>(({ isOpen, onClose, onChanged }, ref) => {
   const [password, setPassword] = useState("");
   const [passwordCheck, setPasswordCheck] = useState("");
   const [bounceKey, setBounceKey] = useState(0);
   const [isExitModalOpen, setIsExitModalOpen] = useState(false);
   const { mutate: updateProfile, isPending } = useUpdateAdminProfile();
+
+  const handleRequestClose = () => {
+    setIsExitModalOpen(true);
+  };
+
+  useImperativeHandle(ref, () => ({
+    requestClose: handleRequestClose,
+  }));
 
   useEffect(() => {
     if (!isOpen) {
@@ -40,10 +56,6 @@ const PasswordChangeBottomSheet = ({
   const passwordMatches = password.length > 0 && password === passwordCheck;
   const rulesOk = isPasswordValid(password);
   const canSubmit = rulesOk && passwordMatches && !isPending;
-
-  const handleRequestClose = () => {
-    setIsExitModalOpen(true);
-  };
 
   const handleConfirmExit = () => {
     setIsExitModalOpen(false);
@@ -171,6 +183,8 @@ const PasswordChangeBottomSheet = ({
       />
     </>
   );
-};
+});
+
+PasswordChangeBottomSheet.displayName = "PasswordChangeBottomSheet";
 
 export default PasswordChangeBottomSheet;

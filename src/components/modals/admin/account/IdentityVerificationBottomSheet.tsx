@@ -1,9 +1,18 @@
-import { useEffect, useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from "react";
 import BottomSheet from "../../../BottomSheet";
 import CommonInput from "../../../CommonInput";
 import Button from "../../../Button";
 import ProfileChangeExitConfirmModal from "./ProfileChangeExitConfirmModal";
 import { useLogin } from "../../../../hooks/queries/useAuthQueries";
+
+export type IdentityVerificationBottomSheetHandle = {
+  requestClose: () => void;
+};
 
 type IdentityVerificationBottomSheetProps = {
   isOpen: boolean;
@@ -12,16 +21,22 @@ type IdentityVerificationBottomSheetProps = {
   onVerified: () => void;
 };
 
-const IdentityVerificationBottomSheet = ({
-  isOpen,
-  email,
-  onClose,
-  onVerified,
-}: IdentityVerificationBottomSheetProps) => {
+const IdentityVerificationBottomSheet = forwardRef<
+  IdentityVerificationBottomSheetHandle,
+  IdentityVerificationBottomSheetProps
+>(({ isOpen, email, onClose, onVerified }, ref) => {
   const [password, setPassword] = useState("");
   const [isMismatch, setIsMismatch] = useState(false);
   const [isExitModalOpen, setIsExitModalOpen] = useState(false);
   const { mutate: login, isPending } = useLogin();
+
+  const handleRequestClose = () => {
+    setIsExitModalOpen(true);
+  };
+
+  useImperativeHandle(ref, () => ({
+    requestClose: handleRequestClose,
+  }));
 
   useEffect(() => {
     if (!isOpen) {
@@ -30,10 +45,6 @@ const IdentityVerificationBottomSheet = ({
       setIsExitModalOpen(false);
     }
   }, [isOpen]);
-
-  const handleRequestClose = () => {
-    setIsExitModalOpen(true);
-  };
 
   const handleConfirmExit = () => {
     setIsExitModalOpen(false);
@@ -122,6 +133,8 @@ const IdentityVerificationBottomSheet = ({
       />
     </>
   );
-};
+});
+
+IdentityVerificationBottomSheet.displayName = "IdentityVerificationBottomSheet";
 
 export default IdentityVerificationBottomSheet;

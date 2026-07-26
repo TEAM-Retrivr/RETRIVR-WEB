@@ -7,9 +7,15 @@ import CommonInput from "../../components/CommonInput";
 import EmailChangeBottomSheet, {
   type EmailChangeBottomSheetHandle,
 } from "../../components/modals/admin/account/EmailChangeBottomSheet";
-import IdentityVerificationBottomSheet from "../../components/modals/admin/account/IdentityVerificationBottomSheet";
-import PasswordChangeBottomSheet from "../../components/modals/admin/account/PasswordChangeBottomSheet";
-import AdminCodeChangeBottomSheet from "../../components/modals/admin/account/AdminCodeChangeBottomSheet";
+import IdentityVerificationBottomSheet, {
+  type IdentityVerificationBottomSheetHandle,
+} from "../../components/modals/admin/account/IdentityVerificationBottomSheet";
+import PasswordChangeBottomSheet, {
+  type PasswordChangeBottomSheetHandle,
+} from "../../components/modals/admin/account/PasswordChangeBottomSheet";
+import AdminCodeChangeBottomSheet, {
+  type AdminCodeChangeBottomSheetHandle,
+} from "../../components/modals/admin/account/AdminCodeChangeBottomSheet";
 import ProfileChangeCompleteModal from "../../components/modals/admin/account/ProfileChangeCompleteModal";
 import {
   useAdminProfile,
@@ -24,7 +30,12 @@ const ProfileEditPage = () => {
   const { data: profile } = useAdminProfile();
   const { mutate: updateProfile, isPending: isUpdatingName } =
     useUpdateAdminProfile();
+
   const emailSheetRef = useRef<EmailChangeBottomSheetHandle>(null);
+  const identitySheetRef = useRef<IdentityVerificationBottomSheetHandle>(null);
+  const passwordSheetRef = useRef<PasswordChangeBottomSheetHandle>(null);
+  const adminCodeSheetRef = useRef<AdminCodeChangeBottomSheetHandle>(null);
+  const suppressNameCompleteRef = useRef(false);
 
   const [organizationName, setOrganizationName] = useState("");
   const [savedOrganizationName, setSavedOrganizationName] = useState("");
@@ -48,18 +59,23 @@ const ProfileEditPage = () => {
     hasHydratedProfileRef.current = true;
   }, [profile]);
 
-  const anySheetOpen =
-    isIdentitySheetOpen ||
-    isEmailSheetOpen ||
-    isPasswordSheetOpen ||
-    isAdminCodeSheetOpen;
-
   const handleHeaderBack = () => {
     if (isEmailSheetOpen) {
       emailSheetRef.current?.requestClose();
       return;
     }
-    if (anySheetOpen) return;
+    if (isPasswordSheetOpen) {
+      passwordSheetRef.current?.requestClose();
+      return;
+    }
+    if (isAdminCodeSheetOpen) {
+      adminCodeSheetRef.current?.requestClose();
+      return;
+    }
+    if (isIdentitySheetOpen) {
+      identitySheetRef.current?.requestClose();
+      return;
+    }
     navigate("/account");
   };
 
@@ -68,6 +84,7 @@ const ProfileEditPage = () => {
   };
 
   const openIdentityFor = (target: ChangeTarget) => {
+    suppressNameCompleteRef.current = true;
     setPendingChangeTarget(target);
     setIsIdentitySheetOpen(true);
   };
@@ -86,7 +103,11 @@ const ProfileEditPage = () => {
 
   const handleSaveOrganizationName = () => {
     const nextName = organizationName.trim();
-    if (!nextName || nextName === savedOrganizationName || isUpdatingName) {
+    if (!nextName) {
+      setOrganizationName(savedOrganizationName);
+      return;
+    }
+    if (nextName === savedOrganizationName || isUpdatingName) {
       return;
     }
 
@@ -97,9 +118,14 @@ const ProfileEditPage = () => {
           const saved = data.organizationName ?? nextName;
           setOrganizationName(saved);
           setSavedOrganizationName(saved);
+          if (suppressNameCompleteRef.current) {
+            suppressNameCompleteRef.current = false;
+            return;
+          }
           showCompleteModal();
         },
         onError: (error) => {
+          suppressNameCompleteRef.current = false;
           if (axios.isAxiosError(error)) {
             const data = error.response?.data as
               | UpdateAdminProfileErrorResponse
@@ -158,6 +184,7 @@ const ProfileEditPage = () => {
             />
             <button
               type="button"
+              onMouseDown={(event) => event.preventDefault()}
               onClick={() => openIdentityFor("email")}
               className="absolute right-2.5 top-1/2 flex h-[27px] -translate-y-1/2 items-center justify-center rounded-[6px] border border-neutral-gray-4 bg-neutral-white px-3 text-12px font-normal leading-[1.4] text-neutral-gray-3 cursor-pointer"
             >
@@ -191,6 +218,7 @@ const ProfileEditPage = () => {
             />
             <button
               type="button"
+              onMouseDown={(event) => event.preventDefault()}
               onClick={() => openIdentityFor("password")}
               className="absolute right-2.5 top-1/2 flex h-[27px] -translate-y-1/2 items-center justify-center rounded-[6px] border border-neutral-gray-4 bg-neutral-white px-3 text-12px font-normal leading-[1.4] text-neutral-gray-3 cursor-pointer"
             >
@@ -224,6 +252,7 @@ const ProfileEditPage = () => {
             </div>
             <button
               type="button"
+              onMouseDown={(event) => event.preventDefault()}
               onClick={() => openIdentityFor("adminCode")}
               className="absolute right-0 flex h-[27px] items-center justify-center rounded-[6px] border border-neutral-gray-4 bg-neutral-white px-3 text-12px font-normal leading-[1.4] text-neutral-gray-3 cursor-pointer"
             >
@@ -234,6 +263,7 @@ const ProfileEditPage = () => {
       </div>
 
       <IdentityVerificationBottomSheet
+        ref={identitySheetRef}
         isOpen={isIdentitySheetOpen}
         email={email || profile?.email || ""}
         onClose={() => {
@@ -254,12 +284,14 @@ const ProfileEditPage = () => {
       />
 
       <PasswordChangeBottomSheet
+        ref={passwordSheetRef}
         isOpen={isPasswordSheetOpen}
         onClose={() => setIsPasswordSheetOpen(false)}
         onChanged={showCompleteModal}
       />
 
       <AdminCodeChangeBottomSheet
+        ref={adminCodeSheetRef}
         isOpen={isAdminCodeSheetOpen}
         onClose={() => setIsAdminCodeSheetOpen(false)}
         onChanged={showCompleteModal}

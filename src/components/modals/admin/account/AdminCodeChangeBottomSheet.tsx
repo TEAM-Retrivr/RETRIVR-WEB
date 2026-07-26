@@ -1,4 +1,9 @@
-import { useEffect, useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from "react";
 import axios from "axios";
 import BottomSheet from "../../../BottomSheet";
 import CommonInput from "../../../CommonInput";
@@ -7,20 +12,31 @@ import ProfileChangeExitConfirmModal from "./ProfileChangeExitConfirmModal";
 import { useUpdateAdminProfile } from "../../../../hooks/queries/useAuthQueries";
 import type { UpdateAdminProfileErrorResponse } from "../../../../api/auth/auth.type";
 
+export type AdminCodeChangeBottomSheetHandle = {
+  requestClose: () => void;
+};
+
 type AdminCodeChangeBottomSheetProps = {
   isOpen: boolean;
   onClose: () => void;
   onChanged: () => void;
 };
 
-const AdminCodeChangeBottomSheet = ({
-  isOpen,
-  onClose,
-  onChanged,
-}: AdminCodeChangeBottomSheetProps) => {
+const AdminCodeChangeBottomSheet = forwardRef<
+  AdminCodeChangeBottomSheetHandle,
+  AdminCodeChangeBottomSheetProps
+>(({ isOpen, onClose, onChanged }, ref) => {
   const [adminCode, setAdminCode] = useState("");
   const [isExitModalOpen, setIsExitModalOpen] = useState(false);
   const { mutate: updateProfile, isPending } = useUpdateAdminProfile();
+
+  const handleRequestClose = () => {
+    setIsExitModalOpen(true);
+  };
+
+  useImperativeHandle(ref, () => ({
+    requestClose: handleRequestClose,
+  }));
 
   useEffect(() => {
     if (!isOpen) {
@@ -31,10 +47,6 @@ const AdminCodeChangeBottomSheet = ({
 
   const isValidCode = /^\d{6}$/.test(adminCode);
   const canSubmit = isValidCode && !isPending;
-
-  const handleRequestClose = () => {
-    setIsExitModalOpen(true);
-  };
 
   const handleConfirmExit = () => {
     setIsExitModalOpen(false);
@@ -119,6 +131,8 @@ const AdminCodeChangeBottomSheet = ({
       />
     </>
   );
-};
+});
+
+AdminCodeChangeBottomSheet.displayName = "AdminCodeChangeBottomSheet";
 
 export default AdminCodeChangeBottomSheet;
