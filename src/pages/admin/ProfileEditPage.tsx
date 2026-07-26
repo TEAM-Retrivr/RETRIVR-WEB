@@ -35,7 +35,6 @@ const ProfileEditPage = () => {
   const identitySheetRef = useRef<IdentityVerificationBottomSheetHandle>(null);
   const passwordSheetRef = useRef<PasswordChangeBottomSheetHandle>(null);
   const adminCodeSheetRef = useRef<AdminCodeChangeBottomSheetHandle>(null);
-  const suppressNameCompleteRef = useRef(false);
 
   const [organizationName, setOrganizationName] = useState("");
   const [savedOrganizationName, setSavedOrganizationName] = useState("");
@@ -83,10 +82,48 @@ const ProfileEditPage = () => {
     setIsCompleteModalOpen(true);
   };
 
-  const openIdentityFor = (target: ChangeTarget) => {
-    suppressNameCompleteRef.current = true;
+  const openIdentitySheet = (target: ChangeTarget) => {
     setPendingChangeTarget(target);
     setIsIdentitySheetOpen(true);
+  };
+
+  const openIdentityFor = (target: ChangeTarget) => {
+    const nextName = organizationName.trim();
+    if (!nextName) {
+      setOrganizationName(savedOrganizationName);
+      openIdentitySheet(target);
+      return;
+    }
+
+    if (nextName === savedOrganizationName || isUpdatingName) {
+      openIdentitySheet(target);
+      return;
+    }
+
+    updateProfile(
+      { newOrganizationName: nextName },
+      {
+        onSuccess: (data) => {
+          const saved = data.organizationName ?? nextName;
+          setOrganizationName(saved);
+          setSavedOrganizationName(saved);
+          openIdentitySheet(target);
+        },
+        onError: (error) => {
+          if (axios.isAxiosError(error)) {
+            const data = error.response?.data as
+              | UpdateAdminProfileErrorResponse
+              | undefined;
+            if (data?.message) {
+              alert(data.message);
+              return;
+            }
+          }
+          alert("이름(단체명) 저장에 실패했습니다. 다시 시도해주세요.");
+          setOrganizationName(savedOrganizationName);
+        },
+      },
+    );
   };
 
   const handleIdentityVerified = () => {
@@ -118,14 +155,9 @@ const ProfileEditPage = () => {
           const saved = data.organizationName ?? nextName;
           setOrganizationName(saved);
           setSavedOrganizationName(saved);
-          if (suppressNameCompleteRef.current) {
-            suppressNameCompleteRef.current = false;
-            return;
-          }
           showCompleteModal();
         },
         onError: (error) => {
-          suppressNameCompleteRef.current = false;
           if (axios.isAxiosError(error)) {
             const data = error.response?.data as
               | UpdateAdminProfileErrorResponse
@@ -184,7 +216,6 @@ const ProfileEditPage = () => {
             />
             <button
               type="button"
-              onMouseDown={(event) => event.preventDefault()}
               onClick={() => openIdentityFor("email")}
               className="absolute right-2.5 top-1/2 flex h-[27px] -translate-y-1/2 items-center justify-center rounded-[6px] border border-neutral-gray-4 bg-neutral-white px-3 text-12px font-normal leading-[1.4] text-neutral-gray-3 cursor-pointer"
             >
@@ -218,7 +249,6 @@ const ProfileEditPage = () => {
             />
             <button
               type="button"
-              onMouseDown={(event) => event.preventDefault()}
               onClick={() => openIdentityFor("password")}
               className="absolute right-2.5 top-1/2 flex h-[27px] -translate-y-1/2 items-center justify-center rounded-[6px] border border-neutral-gray-4 bg-neutral-white px-3 text-12px font-normal leading-[1.4] text-neutral-gray-3 cursor-pointer"
             >
@@ -252,7 +282,6 @@ const ProfileEditPage = () => {
             </div>
             <button
               type="button"
-              onMouseDown={(event) => event.preventDefault()}
               onClick={() => openIdentityFor("adminCode")}
               className="absolute right-0 flex h-[27px] items-center justify-center rounded-[6px] border border-neutral-gray-4 bg-neutral-white px-3 text-12px font-normal leading-[1.4] text-neutral-gray-3 cursor-pointer"
             >
