@@ -35,6 +35,7 @@ const ProfileEditPage = () => {
   const identitySheetRef = useRef<IdentityVerificationBottomSheetHandle>(null);
   const passwordSheetRef = useRef<PasswordChangeBottomSheetHandle>(null);
   const adminCodeSheetRef = useRef<AdminCodeChangeBottomSheetHandle>(null);
+  const pendingOpenTargetRef = useRef<ChangeTarget | null>(null);
 
   const [organizationName, setOrganizationName] = useState("");
   const [savedOrganizationName, setSavedOrganizationName] = useState("");
@@ -87,19 +88,15 @@ const ProfileEditPage = () => {
     setIsIdentitySheetOpen(true);
   };
 
-  const openIdentityFor = (target: ChangeTarget) => {
-    const nextName = organizationName.trim();
-    if (!nextName) {
-      setOrganizationName(savedOrganizationName);
-      openIdentitySheet(target);
-      return;
-    }
-
-    if (nextName === savedOrganizationName || isUpdatingName) {
-      openIdentitySheet(target);
-      return;
-    }
-
+  const persistOrganizationName = ({
+    nextName,
+    openTargetAfter,
+    showCompleteOnSuccess,
+  }: {
+    nextName: string;
+    openTargetAfter?: ChangeTarget;
+    showCompleteOnSuccess: boolean;
+  }) => {
     updateProfile(
       { newOrganizationName: nextName },
       {
@@ -107,9 +104,20 @@ const ProfileEditPage = () => {
           const saved = data.organizationName ?? nextName;
           setOrganizationName(saved);
           setSavedOrganizationName(saved);
-          openIdentitySheet(target);
+
+          const queuedTarget = openTargetAfter ?? pendingOpenTargetRef.current;
+          pendingOpenTargetRef.current = null;
+          if (queuedTarget) {
+            openIdentitySheet(queuedTarget);
+            return;
+          }
+
+          if (showCompleteOnSuccess) {
+            showCompleteModal();
+          }
         },
         onError: (error) => {
+          pendingOpenTargetRef.current = null;
           if (axios.isAxiosError(error)) {
             const data = error.response?.data as
               | UpdateAdminProfileErrorResponse
@@ -124,6 +132,31 @@ const ProfileEditPage = () => {
         },
       },
     );
+  };
+
+  const openIdentityFor = (target: ChangeTarget) => {
+    const nextName = organizationName.trim();
+    if (!nextName) {
+      setOrganizationName(savedOrganizationName);
+      openIdentitySheet(target);
+      return;
+    }
+
+    if (nextName === savedOrganizationName) {
+      openIdentitySheet(target);
+      return;
+    }
+
+    if (isUpdatingName) {
+      pendingOpenTargetRef.current = target;
+      return;
+    }
+
+    persistOrganizationName({
+      nextName,
+      openTargetAfter: target,
+      showCompleteOnSuccess: false,
+    });
   };
 
   const handleIdentityVerified = () => {
@@ -148,30 +181,10 @@ const ProfileEditPage = () => {
       return;
     }
 
-    updateProfile(
-      { newOrganizationName: nextName },
-      {
-        onSuccess: (data) => {
-          const saved = data.organizationName ?? nextName;
-          setOrganizationName(saved);
-          setSavedOrganizationName(saved);
-          showCompleteModal();
-        },
-        onError: (error) => {
-          if (axios.isAxiosError(error)) {
-            const data = error.response?.data as
-              | UpdateAdminProfileErrorResponse
-              | undefined;
-            if (data?.message) {
-              alert(data.message);
-              return;
-            }
-          }
-          alert("이름(단체명) 저장에 실패했습니다. 다시 시도해주세요.");
-          setOrganizationName(savedOrganizationName);
-        },
-      },
-    );
+    persistOrganizationName({
+      nextName,
+      showCompleteOnSuccess: pendingOpenTargetRef.current === null,
+    });
   };
 
   return (

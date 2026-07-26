@@ -2,6 +2,7 @@ import {
   forwardRef,
   useEffect,
   useImperativeHandle,
+  useRef,
   useState,
 } from "react";
 import BottomSheet from "../../../BottomSheet";
@@ -28,6 +29,7 @@ const IdentityVerificationBottomSheet = forwardRef<
   const [password, setPassword] = useState("");
   const [isMismatch, setIsMismatch] = useState(false);
   const [isExitModalOpen, setIsExitModalOpen] = useState(false);
+  const verifyRequestIdRef = useRef(0);
   const { mutate: login, isPending } = useLogin();
 
   const handleRequestClose = () => {
@@ -40,6 +42,7 @@ const IdentityVerificationBottomSheet = forwardRef<
 
   useEffect(() => {
     if (!isOpen) {
+      verifyRequestIdRef.current += 1;
       setPassword("");
       setIsMismatch(false);
       setIsExitModalOpen(false);
@@ -47,6 +50,7 @@ const IdentityVerificationBottomSheet = forwardRef<
   }, [isOpen]);
 
   const handleConfirmExit = () => {
+    verifyRequestIdRef.current += 1;
     setIsExitModalOpen(false);
     onClose();
   };
@@ -55,10 +59,13 @@ const IdentityVerificationBottomSheet = forwardRef<
     const trimmed = password.trim();
     if (!trimmed || !email || isPending) return;
 
+    const requestId = ++verifyRequestIdRef.current;
+
     login(
       { email, password: trimmed },
       {
         onSuccess: (data) => {
+          if (requestId !== verifyRequestIdRef.current) return;
           if (data.accessToken) {
             localStorage.setItem("accessToken", data.accessToken);
           }
@@ -69,6 +76,7 @@ const IdentityVerificationBottomSheet = forwardRef<
           onVerified();
         },
         onError: () => {
+          if (requestId !== verifyRequestIdRef.current) return;
           setIsMismatch(true);
         },
       },
