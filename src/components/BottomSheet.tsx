@@ -11,6 +11,8 @@ type BottomSheetProps = {
   title?: string;
   description?: ReactNode;
   children: ReactNode;
+  /** 하단 고정 액션 영역 (변경하기 버튼 등) */
+  footer?: ReactNode;
   /** 시트 패널 커스텀 클래스 */
   sheetClassName?: string;
   /** 배경 클릭 시 닫기 (기본 true) */
@@ -48,6 +50,7 @@ const BottomSheet = ({
   title,
   description,
   children,
+  footer,
   sheetClassName = "",
   closeOnOverlayClick = true,
   showCloseButton = true,
@@ -218,9 +221,20 @@ const BottomSheet = ({
             )}
           </div>
         )}
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-8 pt-9 pb-[max(2.5rem,env(safe-area-inset-bottom))]">
+        <div
+          className={`min-h-0 flex-1 overflow-y-auto overscroll-contain px-8 pt-9 ${
+            footer
+              ? "pb-4"
+              : "pb-[max(2.5rem,env(safe-area-inset-bottom))]"
+          }`}
+        >
           {children}
         </div>
+        {footer ? (
+          <div className="shrink-0 px-8 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-2">
+            {footer}
+          </div>
+        ) : null}
       </div>
     </div>,
     modalRoot,
