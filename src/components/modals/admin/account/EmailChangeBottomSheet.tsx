@@ -55,6 +55,7 @@ const EmailChangeBottomSheet = forwardRef<
   const [isExitModalOpen, setIsExitModalOpen] = useState(false);
   const sendRequestIdRef = useRef(0);
   const verifyRequestIdRef = useRef(0);
+  const updateRequestIdRef = useRef(0);
 
   const { mutate: sendCode, isPending: isSendingCode } = useSendAdminEmailCode();
   const { mutate: verifyCode, isPending: isVerifyingCode } =
@@ -74,6 +75,7 @@ const EmailChangeBottomSheet = forwardRef<
     if (!isOpen) {
       sendRequestIdRef.current += 1;
       verifyRequestIdRef.current += 1;
+      updateRequestIdRef.current += 1;
       setNewEmail("");
       setAuthCode("");
       setTimeLeft(0);
@@ -100,6 +102,9 @@ const EmailChangeBottomSheet = forwardRef<
   }, [isTimerActive, timeLeft]);
 
   const handleConfirmExit = () => {
+    sendRequestIdRef.current += 1;
+    verifyRequestIdRef.current += 1;
+    updateRequestIdRef.current += 1;
     setIsExitModalOpen(false);
     onClose();
   };
@@ -190,6 +195,8 @@ const EmailChangeBottomSheet = forwardRef<
   const handleChangeEmail = () => {
     if (!canChange) return;
 
+    const requestId = ++updateRequestIdRef.current;
+
     updateProfile(
       {
         newEmail: trimmedEmail,
@@ -197,10 +204,12 @@ const EmailChangeBottomSheet = forwardRef<
       },
       {
         onSuccess: () => {
+          if (requestId !== updateRequestIdRef.current) return;
           onChanged(trimmedEmail);
           onClose();
         },
         onError: (error) => {
+          if (requestId !== updateRequestIdRef.current) return;
           if (axios.isAxiosError(error)) {
             const data = error.response?.data as
               | UpdateAdminProfileErrorResponse

@@ -2,6 +2,7 @@ import {
   forwardRef,
   useEffect,
   useImperativeHandle,
+  useRef,
   useState,
 } from "react";
 import axios from "axios";
@@ -28,6 +29,7 @@ const AdminCodeChangeBottomSheet = forwardRef<
 >(({ isOpen, onClose, onChanged }, ref) => {
   const [adminCode, setAdminCode] = useState("");
   const [isExitModalOpen, setIsExitModalOpen] = useState(false);
+  const updateRequestIdRef = useRef(0);
   const { mutate: updateProfile, isPending } = useUpdateAdminProfile();
 
   const handleRequestClose = () => {
@@ -40,6 +42,7 @@ const AdminCodeChangeBottomSheet = forwardRef<
 
   useEffect(() => {
     if (!isOpen) {
+      updateRequestIdRef.current += 1;
       setAdminCode("");
       setIsExitModalOpen(false);
     }
@@ -49,6 +52,7 @@ const AdminCodeChangeBottomSheet = forwardRef<
   const canSubmit = isValidCode && !isPending;
 
   const handleConfirmExit = () => {
+    updateRequestIdRef.current += 1;
     setIsExitModalOpen(false);
     onClose();
   };
@@ -56,14 +60,18 @@ const AdminCodeChangeBottomSheet = forwardRef<
   const handleSubmit = () => {
     if (!canSubmit) return;
 
+    const requestId = ++updateRequestIdRef.current;
+
     updateProfile(
       { newAdminCode: adminCode },
       {
         onSuccess: () => {
+          if (requestId !== updateRequestIdRef.current) return;
           onChanged();
           onClose();
         },
         onError: (error) => {
+          if (requestId !== updateRequestIdRef.current) return;
           if (axios.isAxiosError(error)) {
             const data = error.response?.data as
               | UpdateAdminProfileErrorResponse

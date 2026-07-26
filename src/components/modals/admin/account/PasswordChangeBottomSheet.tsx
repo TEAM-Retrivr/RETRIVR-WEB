@@ -2,6 +2,7 @@ import {
   forwardRef,
   useEffect,
   useImperativeHandle,
+  useRef,
   useState,
 } from "react";
 import axios from "axios";
@@ -34,6 +35,7 @@ const PasswordChangeBottomSheet = forwardRef<
   const [passwordCheck, setPasswordCheck] = useState("");
   const [bounceKey, setBounceKey] = useState(0);
   const [isExitModalOpen, setIsExitModalOpen] = useState(false);
+  const updateRequestIdRef = useRef(0);
   const { mutate: updateProfile, isPending } = useUpdateAdminProfile();
 
   const handleRequestClose = () => {
@@ -46,6 +48,7 @@ const PasswordChangeBottomSheet = forwardRef<
 
   useEffect(() => {
     if (!isOpen) {
+      updateRequestIdRef.current += 1;
       setPassword("");
       setPasswordCheck("");
       setBounceKey(0);
@@ -58,6 +61,7 @@ const PasswordChangeBottomSheet = forwardRef<
   const canSubmit = rulesOk && passwordMatches && !isPending;
 
   const handleConfirmExit = () => {
+    updateRequestIdRef.current += 1;
     setIsExitModalOpen(false);
     onClose();
   };
@@ -72,6 +76,8 @@ const PasswordChangeBottomSheet = forwardRef<
   const handleSubmit = () => {
     if (!canSubmit) return;
 
+    const requestId = ++updateRequestIdRef.current;
+
     updateProfile(
       {
         newPassword: password,
@@ -79,10 +85,12 @@ const PasswordChangeBottomSheet = forwardRef<
       },
       {
         onSuccess: () => {
+          if (requestId !== updateRequestIdRef.current) return;
           onChanged();
           onClose();
         },
         onError: (error) => {
+          if (requestId !== updateRequestIdRef.current) return;
           if (axios.isAxiosError(error)) {
             const data = error.response?.data as
               | UpdateAdminProfileErrorResponse
