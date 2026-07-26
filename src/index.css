@@ -176,4 +176,22 @@
       transform: translateY(100%);
     }
   }
+
+  /* 비밀번호 규정 미충족 강조 */
+  --animate-password-rule-bounce: password-rule-bounce 520ms ease-out;
+  @keyframes password-rule-bounce {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    25% {
+      transform: translateY(-4px);
+    }
+    50% {
+      transform: translateY(0);
+    }
+    75% {
+      transform: translateY(-2px);
+    }
+  }
 }

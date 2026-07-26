@@ -5,6 +5,42 @@ export const PASSWORD_LETTER_PATTERN = /[A-Za-z]/;
 export const PASSWORD_NUMBER_PATTERN = /\d/;
 export const PASSWORD_SPECIAL_PATTERN = /[!@#$%^&*]/;
 
+export type PasswordRuleId = "minLength" | "letter" | "number" | "special";
+
+export type PasswordRule = {
+  id: PasswordRuleId;
+  label: string;
+  test: (password: string) => boolean;
+};
+
+export const PASSWORD_RULES: PasswordRule[] = [
+  {
+    id: "minLength",
+    label: "8자 이상",
+    test: (password) => password.length >= PASSWORD_MIN_LENGTH,
+  },
+  {
+    id: "letter",
+    label: "영문자 포함",
+    test: (password) => PASSWORD_LETTER_PATTERN.test(password),
+  },
+  {
+    id: "number",
+    label: "숫자 포함",
+    test: (password) => PASSWORD_NUMBER_PATTERN.test(password),
+  },
+  {
+    id: "special",
+    label: `특수문자 포함 (${PASSWORD_ALLOWED_SPECIALS})`,
+    test: (password) =>
+      PASSWORD_SPECIAL_PATTERN.test(password) &&
+      PASSWORD_ALLOWED_PATTERN.test(password),
+  },
+];
+
+export const isPasswordValid = (password: string): boolean =>
+  PASSWORD_RULES.every((rule) => rule.test(password));
+
 export const getPasswordValidationError = (password: string): string | null => {
   if (!password) return "비밀번호를 입력해주세요.";
   if (password.length < PASSWORD_MIN_LENGTH) {

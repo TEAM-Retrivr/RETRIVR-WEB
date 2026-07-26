@@ -4,101 +4,100 @@ import axios from "axios";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import CommonInput from "../../components/CommonInput";
-import Button from "../../components/Button";
-import ConfirmModal from "../../components/modals/ConfirmModal";
 import EmailChangeBottomSheet, {
   type EmailChangeBottomSheetHandle,
 } from "../../components/modals/admin/account/EmailChangeBottomSheet";
-import { getPasswordValidationError } from "../../utils/passwordValidation";
+import IdentityVerificationBottomSheet from "../../components/modals/admin/account/IdentityVerificationBottomSheet";
+import PasswordChangeBottomSheet from "../../components/modals/admin/account/PasswordChangeBottomSheet";
+import AdminCodeChangeBottomSheet from "../../components/modals/admin/account/AdminCodeChangeBottomSheet";
+import ProfileChangeCompleteModal from "../../components/modals/admin/account/ProfileChangeCompleteModal";
 import {
   useAdminProfile,
   useUpdateAdminProfile,
 } from "../../hooks/queries/useAuthQueries";
 import type { UpdateAdminProfileErrorResponse } from "../../api/auth/auth.type";
 
+type ChangeTarget = "email" | "password" | "adminCode";
+
 const ProfileEditPage = () => {
   const navigate = useNavigate();
   const { data: profile } = useAdminProfile();
-  const { mutate: updateProfile, isPending: isUpdating } =
+  const { mutate: updateProfile, isPending: isUpdatingName } =
     useUpdateAdminProfile();
   const emailSheetRef = useRef<EmailChangeBottomSheetHandle>(null);
 
   const [organizationName, setOrganizationName] = useState("");
+  const [savedOrganizationName, setSavedOrganizationName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [passwordCheck, setPasswordCheck] = useState("");
-  const [adminCode, setAdminCode] = useState("");
-  const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
+  const [pendingChangeTarget, setPendingChangeTarget] =
+    useState<ChangeTarget | null>(null);
+  const [isIdentitySheetOpen, setIsIdentitySheetOpen] = useState(false);
   const [isEmailSheetOpen, setIsEmailSheetOpen] = useState(false);
-  /** 이메일 변경 인증 성공 시 발급되는 토큰 (프로필 PATCH용) */
-  const [emailVerificationToken, setEmailVerificationToken] = useState("");
+  const [isPasswordSheetOpen, setIsPasswordSheetOpen] = useState(false);
+  const [isAdminCodeSheetOpen, setIsAdminCodeSheetOpen] = useState(false);
+  const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
 
-  /** 프로필 최초 로드 시에만 폼을 채운다. refetch로 입력/이메일 인증 상태를 덮어쓰지 않는다. */
   const hasHydratedProfileRef = useRef(false);
 
   useEffect(() => {
     if (!profile || hasHydratedProfileRef.current) return;
-    setOrganizationName(profile.organizationName ?? "");
+    const name = profile.organizationName ?? "";
+    setOrganizationName(name);
+    setSavedOrganizationName(name);
     setEmail(profile.email ?? "");
     hasHydratedProfileRef.current = true;
   }, [profile]);
 
-  const handleEditEmail = () => {
-    setIsEmailSheetOpen(true);
-  };
+  const anySheetOpen =
+    isIdentitySheetOpen ||
+    isEmailSheetOpen ||
+    isPasswordSheetOpen ||
+    isAdminCodeSheetOpen;
 
   const handleHeaderBack = () => {
     if (isEmailSheetOpen) {
       emailSheetRef.current?.requestClose();
       return;
     }
+    if (anySheetOpen) return;
     navigate("/account");
   };
 
-  const handleSubmit = () => {
-    if (!organizationName.trim()) return alert("이름(단체명)을 입력해주세요.");
-    if (!email.trim()) return alert("이메일을 입력해주세요.");
+  const showCompleteModal = () => {
+    setIsCompleteModalOpen(true);
+  };
 
-    const passwordError = getPasswordValidationError(password);
-    if (passwordError) return alert(passwordError);
+  const openIdentityFor = (target: ChangeTarget) => {
+    setPendingChangeTarget(target);
+    setIsIdentitySheetOpen(true);
+  };
 
-    if (!passwordCheck) return alert("비밀번호 확인을 위해 재입력해주세요.");
-    if (password !== passwordCheck) {
-      return alert("비밀번호가 일치하지 않습니다. 다시 입력해주세요.");
+  const handleIdentityVerified = () => {
+    setIsIdentitySheetOpen(false);
+    if (pendingChangeTarget === "email") {
+      setIsEmailSheetOpen(true);
+    } else if (pendingChangeTarget === "password") {
+      setIsPasswordSheetOpen(true);
+    } else if (pendingChangeTarget === "adminCode") {
+      setIsAdminCodeSheetOpen(true);
     }
+    setPendingChangeTarget(null);
+  };
 
-    if (!adminCode.trim()) return alert("관리자 코드를 입력해주세요.");
-    if (!/^\d{6}$/.test(adminCode)) {
-      return alert("관리자 코드는 6자리 숫자여야 합니다.");
-    }
-
-    const emailChanged = Boolean(
-      profile?.email && email.trim() !== profile.email,
-    );
-    if (emailChanged && !emailVerificationToken) {
-      return alert("이메일 변경 시 인증이 필요해요. 이메일 수정을 완료해주세요.");
+  const handleSaveOrganizationName = () => {
+    const nextName = organizationName.trim();
+    if (!nextName || nextName === savedOrganizationName || isUpdatingName) {
+      return;
     }
 
     updateProfile(
-      {
-        newEmail: email.trim(),
-        newPassword: password,
-        confirmPassword: passwordCheck,
-        newOrganizationName: organizationName.trim(),
-        newAdminCode: adminCode.trim(),
-        ...(emailChanged && emailVerificationToken
-          ? { adminCodeVerificationToken: emailVerificationToken }
-          : {}),
-      },
+      { newOrganizationName: nextName },
       {
         onSuccess: (data) => {
-          setEmail(data.email);
-          setOrganizationName(data.organizationName);
-          setEmailVerificationToken("");
-          setPassword("");
-          setPasswordCheck("");
-          setAdminCode("");
-          setIsCompleteModalOpen(true);
+          const saved = data.organizationName ?? nextName;
+          setOrganizationName(saved);
+          setSavedOrganizationName(saved);
+          showCompleteModal();
         },
         onError: (error) => {
           if (axios.isAxiosError(error)) {
@@ -110,7 +109,8 @@ const ProfileEditPage = () => {
               return;
             }
           }
-          alert("개인정보 수정에 실패했습니다. 다시 시도해주세요.");
+          alert("이름(단체명) 저장에 실패했습니다. 다시 시도해주세요.");
+          setOrganizationName(savedOrganizationName);
         },
       },
     );
@@ -118,10 +118,13 @@ const ProfileEditPage = () => {
 
   return (
     <Layout>
-      <Header pageName="개인정보 수정" onBackClick={handleHeaderBack} />
+      <Header
+        name="계정관리"
+        pageName="개인정보 수정"
+        onBackClick={handleHeaderBack}
+      />
 
       <div className="flex w-full flex-col items-start gap-6 px-8 pt-8.75 font-[Pretendard] text-neutral-gray-1">
-        {/* 이름(단체명) */}
         <div className="flex w-full flex-col gap-2.5">
           <div className="flex items-center">
             <p className="px-0.5 text-14px font-bold">이름(단체명)</p>
@@ -130,47 +133,42 @@ const ProfileEditPage = () => {
           <CommonInput
             type="text"
             value={organizationName}
-            onChange={(e) => setOrganizationName(e.target.value)}
+            onChange={(event) => setOrganizationName(event.target.value)}
+            onBlur={handleSaveOrganizationName}
             placeholder="한국대 총학생회"
-            className="h-12 rounded-xl px-3.5 placeholder:text-14px placeholder:font-normal placeholder:leading-[140%]"
+            className="h-12 rounded-xl px-3.5 text-neutral-gray-1 placeholder:text-14px placeholder:font-normal placeholder:leading-[140%]"
           />
         </div>
 
-        {/* 이메일 */}
         <div className="flex w-full flex-col gap-2.5">
           <div className="flex items-center">
             <p className="px-0.5 text-14px font-bold">이메일</p>
             <p className="text-14px font-bold text-primary">*</p>
           </div>
-          <div className="flex w-full items-center gap-1">
-            <div className="min-w-0 flex-1">
-              <CommonInput
-                type="email"
-                value={email}
-                readOnly
-                tabIndex={-1}
-                onFocus={(e) => e.currentTarget.blur()}
-                aria-readonly="true"
-                placeholder="retrivr@gmail.com"
-                className="h-12 max-w-none cursor-default rounded-xl px-3.5 placeholder:text-14px placeholder:font-normal placeholder:leading-[140%] placeholder:text-neutral-gray-3 focus:ring-0"
-              />
-            </div>
-            <Button
+          <div className="relative w-full">
+            <CommonInput
+              type="email"
+              value={email}
+              readOnly
+              tabIndex={-1}
+              onFocus={(event) => event.currentTarget.blur()}
+              aria-readonly="true"
+              placeholder="retrivr@gmail.com"
+              className="h-12 max-w-none cursor-default rounded-xl px-3.5 pr-24 text-neutral-gray-3 placeholder:text-14px placeholder:font-normal placeholder:leading-[140%] placeholder:text-neutral-gray-3 focus:ring-0"
+            />
+            <button
               type="button"
-              variant="primary"
-              size="sm"
-              className="h-11.5 w-25 shrink-0 rounded-xl text-14px font-semibold"
-              onClick={handleEditEmail}
+              onClick={() => openIdentityFor("email")}
+              className="absolute right-2.5 top-1/2 flex h-[27px] -translate-y-1/2 items-center justify-center rounded-[6px] border border-neutral-gray-4 bg-neutral-white px-3 text-12px font-normal leading-[1.4] text-neutral-gray-3 cursor-pointer"
             >
-              수정하기
-            </Button>
+              변경하기
+            </button>
           </div>
           <p className="px-0.5 text-12px font-normal leading-[130%] text-secondary-2">
             이메일 변경 시 새로 인증이 필요해요
           </p>
         </div>
 
-        {/* 비밀번호 */}
         <div className="flex w-full flex-col gap-2.5">
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center">
@@ -178,39 +176,29 @@ const ProfileEditPage = () => {
               <p className="text-14px font-bold text-primary">*</p>
             </div>
             <p className="px-0.5 text-12px font-normal leading-[130%] text-neutral-gray-3">
-              영문자, 숫자, 특수문자를 포함한 8자 이상으로 설정해주세요.
+              영문, 숫자, 특수문자를 포함해 8자 이상으로 설정해주세요.
             </p>
           </div>
-          <CommonInput
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="비밀번호 입력"
-            className="h-12 rounded-xl px-3.5 placeholder:text-14px placeholder:font-normal placeholder:leading-[140%]"
-          />
-        </div>
-
-        {/* 비밀번호 재입력 */}
-        <div className="flex w-full flex-col gap-2.5">
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center">
-              <p className="px-0.5 text-14px font-bold">비밀번호 재입력</p>
-              <p className="text-14px font-bold text-primary">*</p>
-            </div>
-            <p className="px-0.5 text-12px font-normal leading-[130%] text-neutral-gray-3">
-              비밀번호 확인을 위해 재입력해주세요
-            </p>
+          <div className="relative w-full">
+            <CommonInput
+              type="text"
+              value="*******"
+              readOnly
+              tabIndex={-1}
+              onFocus={(event) => event.currentTarget.blur()}
+              aria-readonly="true"
+              className="h-12 max-w-none cursor-default rounded-xl px-3.5 pr-24 text-neutral-gray-3 focus:ring-0"
+            />
+            <button
+              type="button"
+              onClick={() => openIdentityFor("password")}
+              className="absolute right-2.5 top-1/2 flex h-[27px] -translate-y-1/2 items-center justify-center rounded-[6px] border border-neutral-gray-4 bg-neutral-white px-3 text-12px font-normal leading-[1.4] text-neutral-gray-3 cursor-pointer"
+            >
+              변경하기
+            </button>
           </div>
-          <CommonInput
-            type="password"
-            value={passwordCheck}
-            onChange={(e) => setPasswordCheck(e.target.value)}
-            placeholder="비밀번호 재입력"
-            className="h-12 rounded-xl px-3.5 placeholder:text-14px placeholder:font-normal placeholder:leading-[140%]"
-          />
         </div>
 
-        {/* 관리자 코드 */}
         <div className="flex w-full flex-col gap-2.5">
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center">
@@ -218,49 +206,68 @@ const ProfileEditPage = () => {
               <p className="text-14px font-bold text-primary">*</p>
             </div>
             <p className="px-0.5 text-12px font-normal leading-[130%] text-neutral-gray-3">
-              물품 관리 등 중요할 때 쓰이는 코드로, 숫자만 입력가능해요.
+              물품 관리 등 관리자 권한이 필요한 작업에 사용하는 코드예요.
+              <br />
+              숫자만 입력할 수 있어요.
             </p>
           </div>
-          <CommonInput
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            maxLength={6}
-            value={adminCode}
-            onChange={(e) => setAdminCode(e.target.value.replace(/\D/g, ""))}
-            placeholder="관리자 코드 입력"
-            className="h-12 rounded-xl px-3.5 placeholder:text-14px placeholder:font-normal placeholder:leading-[140%]"
-          />
+          <div className="relative flex w-full items-center">
+            <div className="flex gap-1" aria-hidden>
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="flex size-[34px] items-center justify-center rounded-[6px] bg-neutral-gray-5 text-14px text-neutral-gray-3"
+                >
+                  *
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => openIdentityFor("adminCode")}
+              className="absolute right-0 flex h-[27px] items-center justify-center rounded-[6px] border border-neutral-gray-4 bg-neutral-white px-3 text-12px font-normal leading-[1.4] text-neutral-gray-3 cursor-pointer"
+            >
+              변경하기
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="mt-auto mb-10 flex w-full flex-col items-center px-8">
-        <Button
-          variant="primary"
-          size="lg"
-          className="h-12.5 w-full max-w-[338px] rounded-[23.164px] shadow-primary"
-          onClick={handleSubmit}
-          disabled={isUpdating}
-        >
-          {isUpdating ? "저장 중..." : "확인"}
-        </Button>
-      </div>
-
-      <ConfirmModal
-        isOpen={isCompleteModalOpen}
-        onClose={() => setIsCompleteModalOpen(false)}
-        message="개인정보 수정이 완료되었어요"
-        confirmText="확인"
-        onConfirm={() => navigate("/account")}
+      <IdentityVerificationBottomSheet
+        isOpen={isIdentitySheetOpen}
+        email={email || profile?.email || ""}
+        onClose={() => {
+          setIsIdentitySheetOpen(false);
+          setPendingChangeTarget(null);
+        }}
+        onVerified={handleIdentityVerified}
       />
+
       <EmailChangeBottomSheet
         ref={emailSheetRef}
         isOpen={isEmailSheetOpen}
         onClose={() => setIsEmailSheetOpen(false)}
-        onVerified={({ email: nextEmail, token }) => {
+        onChanged={(nextEmail) => {
           setEmail(nextEmail);
-          setEmailVerificationToken(token);
+          showCompleteModal();
         }}
+      />
+
+      <PasswordChangeBottomSheet
+        isOpen={isPasswordSheetOpen}
+        onClose={() => setIsPasswordSheetOpen(false)}
+        onChanged={showCompleteModal}
+      />
+
+      <AdminCodeChangeBottomSheet
+        isOpen={isAdminCodeSheetOpen}
+        onClose={() => setIsAdminCodeSheetOpen(false)}
+        onChanged={showCompleteModal}
+      />
+
+      <ProfileChangeCompleteModal
+        isOpen={isCompleteModalOpen}
+        onClose={() => setIsCompleteModalOpen(false)}
       />
     </Layout>
   );
