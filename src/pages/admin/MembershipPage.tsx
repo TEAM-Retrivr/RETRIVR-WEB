@@ -1,13 +1,25 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import ConfirmModal from "../../components/modals/ConfirmModal";
-import { lookupCouponPreview } from "../../components/modals/membership/CouponRegistrationModal";
+import CouponAlertModal from "../../components/modals/membership/CouponAlertModal";
+import CouponRegistrationModal from "../../components/modals/membership/CouponRegistrationModal";
+import CouponSuccessModal from "../../components/modals/membership/CouponSuccessModal";
 import MembershipCouponCard from "../../components/membership/MembershipCouponCard";
 import MembershipProBadge from "../../components/membership/MembershipProBadge";
+import {
+  useRegisterAdminCoupon,
+  useRequestAdminCoupon,
+} from "../../hooks/queries/useAdminQueries";
+import type {
+  AdminCouponErrorResponse,
+  AdminCouponLookupResponse,
+} from "../../api/admin/admin.type";
 
 type BillingCycle = "monthly" | "yearly";
+type CouponAlertType = "notFound" | "alreadyUsed";
 
 const ACTIVE_PLAN = {
   title: "월간 이용권",
@@ -15,6 +27,11 @@ const ACTIVE_PLAN = {
   priceUnit: "/월",
   nextBillingDate: "26. 05. 01",
   usageType: "월간 이용권",
+};
+
+const COUPON_ALERT_MESSAGES: Record<CouponAlertType, string> = {
+  notFound: "쿠폰 번호를\n다시 확인해주세요.",
+  alreadyUsed: "이미 사용된 쿠폰이예요.",
 };
 
 const SUBSCRIPTION_PLANS: Record<
@@ -40,17 +57,37 @@ const MENU_ITEMS = [
 
 const COMING_SOON_MESSAGE = "개발 예정입니다.";
 
+const getCouponErrorMessage = (error: unknown, fallback: string) => {
+  if (axios.isAxiosError(error)) {
+    const data = error.response?.data as AdminCouponErrorResponse | undefined;
+    if (data?.message) return data.message;
+  }
+  return fallback;
+};
+
 const MembershipPage = () => {
   const navigate = useNavigate();
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
   const [couponCode, setCouponCode] = useState("");
+  const [lookedUpCouponCode, setLookedUpCouponCode] = useState("");
+  const [lookedUpCoupon, setLookedUpCoupon] =
+    useState<AdminCouponLookupResponse | null>(null);
+  const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
+  const [couponAlertType, setCouponAlertType] =
+    useState<CouponAlertType | null>(null);
+  const [isCouponSuccessModalOpen, setIsCouponSuccessModalOpen] =
+    useState(false);
   const [confirmModalMessage, setConfirmModalMessage] = useState<string | null>(
     null,
   );
 
+  const lookupCouponMutation = useRequestAdminCoupon();
+  const registerCouponMutation = useRegisterAdminCoupon();
+
   const selectedPlan = SUBSCRIPTION_PLANS[billingCycle];
-  const couponPreview = lookupCouponPreview(couponCode);
-  const canRegisterCoupon = couponPreview !== null;
+  const trimmedCouponCode = couponCode.trim();
+  const canLookupCoupon =
+    trimmedCouponCode.length > 0 && !lookupCouponMutation.isPending;
 
   const handleComingSoon = () => {
     alert(COMING_SOON_MESSAGE);
@@ -72,13 +109,58 @@ const MembershipPage = () => {
     handleComingSoon();
   };
 
+  const handleCloseCouponModal = () => {
+    if (registerCouponMutation.isPending) return;
+    setIsCouponModalOpen(false);
+    setLookedUpCoupon(null);
+    setLookedUpCouponCode("");
+  };
+
+  const handleLookupCoupon = () => {
+    if (!trimmedCouponCode || lookupCouponMutation.isPending) return;
+
+    lookupCouponMutation.mutate(trimmedCouponCode, {
+      onSuccess: (coupon) => {
+        if (!coupon.isExist) {
+          setCouponAlertType("notFound");
+          return;
+        }
+        if (coupon.isUsed) {
+          setCouponAlertType("alreadyUsed");
+          return;
+        }
+        setLookedUpCouponCode(trimmedCouponCode);
+        setLookedUpCoupon(coupon);
+        setIsCouponModalOpen(true);
+      },
+      onError: (error) => {
+        setConfirmModalMessage(
+          getCouponErrorMessage(error, "쿠폰 조회에 실패했어요"),
+        );
+      },
+    });
+  };
+
   const handleRegisterCoupon = () => {
-    if (!couponPreview) {
-      setConfirmModalMessage("유효하지 않은 쿠폰 번호예요");
-      return;
-    }
-    setCouponCode("");
-    setConfirmModalMessage("쿠폰이 등록되었어요");
+    if (!lookedUpCoupon || registerCouponMutation.isPending) return;
+
+    registerCouponMutation.mutate(lookedUpCoupon.couponId, {
+      onSuccess: () => {
+        setIsCouponModalOpen(false);
+        setLookedUpCoupon(null);
+        setLookedUpCouponCode("");
+        setCouponCode("");
+        setIsCouponSuccessModalOpen(true);
+      },
+      onError: (error) => {
+        setIsCouponModalOpen(false);
+        setLookedUpCoupon(null);
+        setLookedUpCouponCode("");
+        setConfirmModalMessage(
+          getCouponErrorMessage(error, "쿠폰 등록에 실패했어요"),
+        );
+      },
+    });
   };
 
   return (
@@ -235,16 +317,38 @@ const MembershipPage = () => {
               />
               <button
                 type="button"
-                onClick={handleRegisterCoupon}
-                disabled={!canRegisterCoupon}
+                onClick={handleLookupCoupon}
+                disabled={!canLookupCoupon}
                 className="flex h-12 w-20 shrink-0 items-center justify-center rounded-[12px] text-16px font-semibold text-neutral-white transition-colors enabled:cursor-pointer enabled:bg-primary enabled:hover:bg-secondary-2 disabled:cursor-not-allowed disabled:bg-neutral-gray-4"
               >
-                등록
+                {lookupCouponMutation.isPending ? "조회중" : "등록"}
               </button>
             </div>
           </div>
         </section>
       </div>
+
+      <CouponRegistrationModal
+        isOpen={isCouponModalOpen}
+        couponCode={lookedUpCouponCode}
+        coupon={lookedUpCoupon}
+        isRegistering={registerCouponMutation.isPending}
+        onClose={handleCloseCouponModal}
+        onRegister={handleRegisterCoupon}
+      />
+
+      <CouponAlertModal
+        isOpen={couponAlertType !== null}
+        message={
+          couponAlertType ? COUPON_ALERT_MESSAGES[couponAlertType] : ""
+        }
+        onClose={() => setCouponAlertType(null)}
+      />
+
+      <CouponSuccessModal
+        isOpen={isCouponSuccessModalOpen}
+        onClose={() => setIsCouponSuccessModalOpen(false)}
+      />
 
       <ConfirmModal
         isOpen={confirmModalMessage !== null}
