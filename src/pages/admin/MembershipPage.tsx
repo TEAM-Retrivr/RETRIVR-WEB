@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
-import ConfirmModal from "../../components/modals/ConfirmModal";
 import CouponAlertModal from "../../components/modals/membership/CouponAlertModal";
 import CouponRegistrationModal from "../../components/modals/membership/CouponRegistrationModal";
 import CouponSuccessModal from "../../components/modals/membership/CouponSuccessModal";
@@ -13,13 +11,14 @@ import {
   useRegisterAdminCoupon,
   useRequestAdminCoupon,
 } from "../../hooks/queries/useAdminQueries";
-import type {
-  AdminCouponErrorResponse,
-  AdminCouponLookupResponse,
-} from "../../api/admin/admin.type";
+import type { AdminCouponLookupResponse } from "../../api/admin/admin.type";
 
 type BillingCycle = "monthly" | "yearly";
-type CouponAlertType = "notFound" | "alreadyUsed";
+type CouponAlertType =
+  | "notFound"
+  | "alreadyUsed"
+  | "lookupFailed"
+  | "registerFailed";
 
 const ACTIVE_PLAN = {
   title: "월간 이용권",
@@ -32,6 +31,8 @@ const ACTIVE_PLAN = {
 const COUPON_ALERT_MESSAGES: Record<CouponAlertType, string> = {
   notFound: "쿠폰 번호를\n다시 확인해주세요.",
   alreadyUsed: "이미 사용된 쿠폰이예요.",
+  lookupFailed: "쿠폰 조회에 실패했습니다.\n다시 시도해주세요.",
+  registerFailed: "쿠폰 등록에 실패했습니다.\n다시 시도해주세요.",
 };
 
 const SUBSCRIPTION_PLANS: Record<
@@ -57,14 +58,6 @@ const MENU_ITEMS = [
 
 const COMING_SOON_MESSAGE = "개발 예정입니다.";
 
-const getCouponErrorMessage = (error: unknown, fallback: string) => {
-  if (axios.isAxiosError(error)) {
-    const data = error.response?.data as AdminCouponErrorResponse | undefined;
-    if (data?.message) return data.message;
-  }
-  return fallback;
-};
-
 const MembershipPage = () => {
   const navigate = useNavigate();
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
@@ -77,9 +70,6 @@ const MembershipPage = () => {
     useState<CouponAlertType | null>(null);
   const [isCouponSuccessModalOpen, setIsCouponSuccessModalOpen] =
     useState(false);
-  const [confirmModalMessage, setConfirmModalMessage] = useState<string | null>(
-    null,
-  );
 
   const lookupCouponMutation = useRequestAdminCoupon();
   const registerCouponMutation = useRegisterAdminCoupon();
@@ -133,10 +123,8 @@ const MembershipPage = () => {
         setLookedUpCoupon(coupon);
         setIsCouponModalOpen(true);
       },
-      onError: (error) => {
-        setConfirmModalMessage(
-          getCouponErrorMessage(error, "쿠폰 조회에 실패했어요"),
-        );
+      onError: () => {
+        setCouponAlertType("lookupFailed");
       },
     });
   };
@@ -152,13 +140,11 @@ const MembershipPage = () => {
         setCouponCode("");
         setIsCouponSuccessModalOpen(true);
       },
-      onError: (error) => {
+      onError: () => {
         setIsCouponModalOpen(false);
         setLookedUpCoupon(null);
         setLookedUpCouponCode("");
-        setConfirmModalMessage(
-          getCouponErrorMessage(error, "쿠폰 등록에 실패했어요"),
-        );
+        setCouponAlertType("registerFailed");
       },
     });
   };
@@ -348,13 +334,6 @@ const MembershipPage = () => {
       <CouponSuccessModal
         isOpen={isCouponSuccessModalOpen}
         onClose={() => setIsCouponSuccessModalOpen(false)}
-      />
-
-      <ConfirmModal
-        isOpen={confirmModalMessage !== null}
-        onClose={() => setConfirmModalMessage(null)}
-        message={confirmModalMessage ?? ""}
-        confirmText="확인"
       />
     </Layout>
   );
