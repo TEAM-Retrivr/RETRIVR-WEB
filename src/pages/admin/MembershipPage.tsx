@@ -56,6 +56,10 @@ const MembershipPage = () => {
     alert(COMING_SOON_MESSAGE);
   };
 
+  const handleStartSubscription = () => {
+    navigate(`/membership/subscribe?cycle=${billingCycle}`);
+  };
+
   const handleMenuClick = (menuId: (typeof MENU_ITEMS)[number]["id"]) => {
     if (menuId === "payment-manage") {
       navigate("/membership/payment-methods");
@@ -200,7 +204,7 @@ const MembershipPage = () => {
 
             <button
               type="button"
-              onClick={handleComingSoon}
+              onClick={handleStartSubscription}
               className="flex h-12 w-full items-center justify-center rounded-[12px] bg-primary text-18px font-bold text-neutral-white shadow-primary cursor-pointer"
             >
               구독 시작하기

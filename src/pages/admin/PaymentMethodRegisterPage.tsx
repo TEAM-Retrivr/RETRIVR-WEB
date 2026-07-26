@@ -1,13 +1,17 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
-import { addPaymentMethod } from "../../store/paymentMethodsStore";
+import {
+  addPaymentMethod,
+  setPrimaryPaymentMethod,
+} from "../../store/paymentMethodsStore";
 import {
   REGISTER_OPTION_LABEL,
   createRegisteredPaymentMethod,
   type PaymentMethodRegisterOption,
 } from "../../types/paymentMethod";
+import { resolveMembershipReturnTo } from "../../utils/safeReturnTo";
 
 const REGISTER_OPTIONS: PaymentMethodRegisterOption[] = [
   "kakao",
@@ -17,12 +21,21 @@ const REGISTER_OPTIONS: PaymentMethodRegisterOption[] = [
 
 const PaymentMethodRegisterPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnTo = resolveMembershipReturnTo(searchParams.get("returnTo"));
+  const shouldSetPrimaryOnRegister = returnTo.startsWith(
+    "/membership/subscribe",
+  );
   const [selectedOption, setSelectedOption] =
     useState<PaymentMethodRegisterOption>("card");
 
   const handleRegister = () => {
-    addPaymentMethod(createRegisteredPaymentMethod(selectedOption));
-    navigate("/membership/payment-methods");
+    const method = createRegisteredPaymentMethod(selectedOption);
+    addPaymentMethod(method);
+    if (shouldSetPrimaryOnRegister) {
+      setPrimaryPaymentMethod(method.id);
+    }
+    navigate(returnTo);
   };
 
   return (
@@ -30,7 +43,7 @@ const PaymentMethodRegisterPage = () => {
       <Header
         name="결제 수단 관리"
         pageName="결제 수단 등록"
-        backTo="/membership/payment-methods"
+        backTo={returnTo}
       />
 
       <div className="relative flex flex-1 flex-col overflow-y-auto no-scrollbar px-8 pb-28 pt-8 font-[Pretendard]">
