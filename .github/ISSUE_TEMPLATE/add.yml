@@ -1,0 +1,27 @@
+name: Add
+description: 기능 완성 전 코드/에셋 추가 (이미지, 스캐폴딩 등)
+title: "[RTR-] "
+labels: ["Add"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Task Description
+      description: 추가할 코드·에셋과 목적을 적어주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: todo
+    attributes:
+      label: TO-DO
+      value: |
+        - [ ] 추가 대상 정리
+        - [ ] 반영
+    validations:
+      required: false
+  - type: textarea
+    id: etc
+    attributes:
+      label: ETC
+    validations:
+      required: false

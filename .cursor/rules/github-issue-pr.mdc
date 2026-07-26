@@ -1,0 +1,24 @@
+---
+description: GitHub 이슈/PR 생성 시 업무 유형 라벨(Feature, Fix, Refactor, Docs, Design, Add)을 자동 지정. 이슈·PR 생성, 라벨, gh issue/pr create 요청 시 적용.
+alwaysApply: false
+---
+
+# GitHub Issue / PR + Labels
+
+이슈·PR을 만들거나 라벨을 달 때는 프로젝트 스킬 `.cursor/skills/retrivr-github-issue-pr/SKILL.md`를 따른다.
+
+## 라벨 (저장소에 존재하는 이름만 사용)
+
+| 업무 | Label | 브랜치 prefix |
+|------|-------|---------------|
+| 기능 추가 | `Feature` | `feature/` |
+| 버그 수정 | `Fix` | `fix/` |
+| 리팩터링 | `Refactor` | `refactor/` |
+| 문서 | `Docs` | `docs/` |
+| UI/CSS | `Design` | `design/` |
+| 코드·에셋 추가 | `Add` | `add/` |
+
+- 업무 유형 라벨은 **하나만** 붙인다.
+- UI/레이아웃 비중이 크면 `feature/`여도 `Design`을 쓴다 (기존 PR 관례).
+- `gh issue create` / `gh pr create` 시 `--label`을 반드시 포함한다.
+- PR 생성 후에도 Actions(`pr-auto-label`)가 보강할 수 있다. 채팅으로 만들 때는 에이전트가 먼저 라벨을 넣는다.

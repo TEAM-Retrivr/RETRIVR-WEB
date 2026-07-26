@@ -1,0 +1,27 @@
+name: Docs
+description: 문서 작업
+title: "[RTR-] "
+labels: ["Docs"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Task Description
+      description: 추가/수정할 문서를 적어주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: todo
+    attributes:
+      label: TO-DO
+      value: |
+        - [ ] 문서 작성/수정
+        - [ ] 링크·오타 확인
+    validations:
+      required: false
+  - type: textarea
+    id: etc
+    attributes:
+      label: ETC
+    validations:
+      required: false

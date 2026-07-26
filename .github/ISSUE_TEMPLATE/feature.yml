@@ -1,0 +1,30 @@
+name: Feature
+description: 새 기능 추가 / 기능 요청
+title: "[RTR-] "
+labels: ["Feature"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Task Description
+      description: 구현할 기능과 배경을 적어주세요.
+      placeholder: 무엇을 / 왜 필요한지
+    validations:
+      required: true
+  - type: textarea
+    id: todo
+    attributes:
+      label: TO-DO
+      description: 작업 체크리스트
+      value: |
+        - [ ] 해야 할 일 1
+        - [ ] 해야 할 일 2
+    validations:
+      required: false
+  - type: textarea
+    id: etc
+    attributes:
+      label: ETC
+      description: 참고 링크, 제약사항 등
+    validations:
+      required: false
