@@ -30,23 +30,6 @@ export const SUBSCRIPTION_VOUCHER = {
   priceUnit: "/연",
 };
 
-export const COUPON_VOUCHERS = [
-  {
-    id: "coupon-active",
-    title: "2개월 이용권 쿠폰",
-    eventName: "Retrivr 출시 이벤트",
-    status: "active" as const,
-    footerText: "사용 기간: 26. 05. 01 ~ 26. 06. 30",
-  },
-  {
-    id: "coupon-pending",
-    title: "2개월 이용권 쿠폰",
-    eventName: "Retrivr 출시 이벤트",
-    status: "pending" as const,
-    footerText: "26. 07. 01 활성화 예정",
-  },
-];
-
 export const SUBSCRIPTION_USAGE_GUIDE = [
   "쿠폰 코드를 등록하면 쿠폰 이용권을 사용할 수 있습니다.",
   "쿠폰 이용권은 등록 즉시 활성화됩니다.",

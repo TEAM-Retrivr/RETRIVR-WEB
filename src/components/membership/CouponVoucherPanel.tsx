@@ -7,13 +7,27 @@ import UsageGuideCard from "./UsageGuideCard";
 
 const EMPTY_MEMBERSHIP_MESSAGE = "현재 이용 중인 이용권이 없습니다.";
 
-const resolveCouponStatus = (subscribed: boolean): MembershipCouponStatus =>
-  subscribed ? "active" : "pending";
+const resolveCouponStatus = ({
+  subscribed,
+  hasSubscription,
+}: {
+  subscribed: boolean;
+  hasSubscription: boolean;
+}): MembershipCouponStatus => {
+  // 구독 이용권이 함께 있으면 쿠폰은 대기, 아니면 구독 여부로 사용중/대기 구분
+  if (hasSubscription) return "pending";
+  return subscribed ? "active" : "pending";
+};
 
 const CouponVoucherPanel = () => {
   const { data, isLoading, isError, isSuccess } = useAdminMembership();
 
-  const showEmptyState = !isLoading && (isError || !isSuccess);
+  const couponInfo = data?.couponInfo;
+  const hasCoupon =
+    Boolean(couponInfo?.couponName) || Boolean(couponInfo?.couponDescription);
+  const showEmptyState =
+    !isLoading && (isError || !isSuccess || (isSuccess && !hasCoupon));
+
   const usagePeriod =
     data?.startAt && data?.endAt
       ? formatCouponValidityPeriod(data.startAt, data.endAt)
@@ -37,17 +51,17 @@ const CouponVoucherPanel = () => {
         </div>
       ) : null}
 
-      {isSuccess && data ? (
+      {isSuccess && data && hasCoupon && couponInfo ? (
         <div className="flex flex-col gap-2.5">
           <MembershipCouponCard
-            title={
-              data.couponInfo?.couponName ||
-              data.subscriptionInfo?.subscriptionName ||
-              data.passType ||
-              "이용권"
-            }
-            eventName={data.couponInfo?.couponDescription}
-            status={resolveCouponStatus(data.subscribed)}
+            title={couponInfo.couponName || "쿠폰 이용권"}
+            eventName={couponInfo.couponDescription}
+            status={resolveCouponStatus({
+              subscribed: data.subscribed,
+              hasSubscription: Boolean(
+                data.subscriptionInfo?.subscriptionName,
+              ),
+            })}
             footerText={
               usagePeriod ? `사용 기간: ${usagePeriod}` : undefined
             }
