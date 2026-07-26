@@ -1,0 +1,27 @@
+name: Design
+description: 레이아웃 / UI / CSS 디자인 작업
+title: "[RTR-] "
+labels: ["Design"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Task Description
+      description: 디자인 변경 범위와 참고(피그마 등)를 적어주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: todo
+    attributes:
+      label: TO-DO
+      value: |
+        - [ ] 디자인 반영
+        - [ ] 반응형/상태 확인
+    validations:
+      required: false
+  - type: textarea
+    id: etc
+    attributes:
+      label: ETC
+    validations:
+      required: false
