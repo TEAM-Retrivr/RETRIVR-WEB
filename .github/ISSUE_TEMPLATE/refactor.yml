@@ -1,0 +1,28 @@
+name: Refactor
+description: 동작 변경 없는 코드 구조 개선
+title: "[RTR-] "
+labels: ["Refactor"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Task Description
+      description: 리팩터링 범위와 목표를 적어주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: todo
+    attributes:
+      label: TO-DO
+      value: |
+        - [ ] 대상 범위 정리
+        - [ ] 리팩터링
+        - [ ] 회귀 확인
+    validations:
+      required: false
+  - type: textarea
+    id: etc
+    attributes:
+      label: ETC
+    validations:
+      required: false

@@ -1,0 +1,95 @@
+name: PR Auto Label
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Infer and apply work-type label
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_REF: ${{ github.head_ref }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+
+          infer_from_branch() {
+            case "$1" in
+              feature/*|feat/*) echo "Feature" ;;
+              fix/*|bugfix/*|hotfix/*) echo "Fix" ;;
+              refactor/*) echo "Refactor" ;;
+              docs/*|doc/*) echo "Docs" ;;
+              design/*|ui/*|style/*) echo "Design" ;;
+              add/*|chore/*) echo "Add" ;;
+              *) echo "" ;;
+            esac
+          }
+
+          git fetch origin "$BASE_REF" --depth=1 2>/dev/null || true
+          FILES="$(git diff --name-only "origin/${BASE_REF}...HEAD" 2>/dev/null || true)"
+          total=0
+          design_count=0
+          docs_count=0
+          if [[ -n "$FILES" ]]; then
+            while IFS= read -r f; do
+              [[ -z "$f" ]] && continue
+              total=$((total + 1))
+              case "$f" in
+                *.css|*.scss|*.sass|*.less|*.css.ts|*.css.js|*.module.css|*.module.scss)
+                  design_count=$((design_count + 1)) ;;
+                */styles/*|*/style/*|public/icons/*|public/images/*|*.svg)
+                  design_count=$((design_count + 1)) ;;
+                *.md|docs/*|.github/*.md)
+                  docs_count=$((docs_count + 1)) ;;
+              esac
+            done <<< "$FILES"
+          fi
+
+          label="$(infer_from_branch "$HEAD_REF")"
+
+          if [[ "$total" -gt 0 ]]; then
+            if [[ "$docs_count" -eq "$total" ]]; then
+              label="Docs"
+            elif [[ "$design_count" -gt 0 && $((design_count * 100 / total)) -ge 50 ]]; then
+              if [[ -z "$label" || "$label" == "Feature" ]]; then
+                label="Design"
+              fi
+            fi
+          fi
+
+          if [[ -z "$label" ]]; then
+            title_body="$(gh pr view "$PR_NUMBER" --json title,body --jq '.title + " " + (.body // "")' | tr '[:upper:]' '[:lower:]')"
+            case "$title_body" in
+              *fix*|*bug*|*hotfix*) label="Fix" ;;
+              *refactor*) label="Refactor" ;;
+              *docs*|*readme*) label="Docs" ;;
+              *design*|*ui*|*css*|*layout*) label="Design" ;;
+              *) label="Feature" ;;
+            esac
+          fi
+
+          echo "Inferred label: $label (branch=$HEAD_REF, files=$total, design=$design_count, docs=$docs_count)"
+
+          existing="$(gh pr view "$PR_NUMBER" --json labels --jq '[.labels[].name] | join(",")')"
+          for name in Feature Fix Refactor Docs Design Add; do
+            if [[ "$name" != "$label" && ",${existing}," == *",${name},"* ]]; then
+              gh pr edit "$PR_NUMBER" --remove-label "$name" || true
+            fi
+          done
+
+          if [[ ",${existing}," != *",${label},"* ]]; then
+            gh pr edit "$PR_NUMBER" --add-label "$label"
+          fi
