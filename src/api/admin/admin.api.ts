@@ -22,6 +22,8 @@ import type {
   PublicApproveRentalResponse,
   PublicRejectRentalRequestBody,
   PublicRejectRentalResponse,
+  AdminCouponLookupResponse,
+  AdminCouponRegistrationResponse,
 } from "./admin.type";
 import { apiClient } from "../core";
 import type { AxiosResponse } from "axios";
@@ -357,3 +359,31 @@ export const requestAdminLedgerExcelDownload =
       },
     });
   };
+
+// 쿠폰 조회
+// - 쿠폰 코드로 존재 여부·사용 여부·혜택 정보를 조회
+// - couponCode: 사용자가 입력한 쿠폰 코드 (path)
+// GET /api/admin/v1/coupons/{couponCode}
+export const requestAdminCoupon = async (
+  couponCode: string,
+): Promise<AdminCouponLookupResponse> => {
+  const response = await apiClient.get<AdminCouponLookupResponse>(
+    `/api/admin/v1/coupons/${encodeURIComponent(couponCode)}`,
+  );
+  return response.data;
+};
+
+// 쿠폰 등록
+// - 조회 API에서 받은 couponId로 이용권 등록
+// - couponId: 쿠폰 ID (path), body 없음
+// POST /api/admin/v1/coupons/{couponId}/registrations
+export const registerAdminCoupon = async ({
+  couponId,
+}: {
+  couponId: string;
+}): Promise<AdminCouponRegistrationResponse> => {
+  const response = await apiClient.post<AdminCouponRegistrationResponse>(
+    `/api/admin/v1/coupons/${encodeURIComponent(couponId)}/registrations`,
+  );
+  return response.data;
+};

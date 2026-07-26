@@ -23,6 +23,8 @@ import {
   requestAdminRentalSearch,
   approvePublicRental,
   rejectPublicRental,
+  requestAdminCoupon,
+  registerAdminCoupon,
 } from "../../api/admin/admin.api";
 import type {
   AdminCreateItemRequest,
@@ -366,5 +368,23 @@ export const useVerifyAdminCode = () => {
 export const useVerifyAdminCodeByAdmin = () => {
   return useMutation({
     mutationFn: (body: AdminVerifyCodeRequestBody) => verifyAdminCodeByAdmin(body),
+  });
+};
+
+// 쿠폰 조회
+// - 멤버십 페이지에서 쿠폰 코드로 미리보기/등록 모달 진입 전 검증
+// GET /api/admin/v1/coupons/{couponCode}
+export const useRequestAdminCoupon = () => {
+  return useMutation({
+    mutationFn: (couponCode: string) => requestAdminCoupon(couponCode),
+  });
+};
+
+// 쿠폰 등록
+// - 쿠폰 등록 모달에서 조회된 couponId로 이용권 등록
+// POST /api/admin/v1/coupons/{couponId}/registrations
+export const useRegisterAdminCoupon = () => {
+  return useMutation({
+    mutationFn: (couponId: string) => registerAdminCoupon({ couponId }),
   });
 };
