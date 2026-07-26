@@ -19,6 +19,7 @@ import MembershipPage from "./pages/admin/MembershipPage";
 import PaymentMethodsPage from "./pages/admin/PaymentMethodsPage";
 import PaymentMethodRegisterPage from "./pages/admin/PaymentMethodRegisterPage";
 import VoucherListPage from "./pages/admin/VoucherListPage";
+import VoucherPaymentPage from "./pages/admin/VoucherPaymentPage";
 import ProfileEditPage from "./pages/admin/ProfileEditPage";
 import LandingPage from "./pages/LandingPage";
 import RegisterPage from "./pages/admin/RegisterPage";
@@ -133,6 +134,10 @@ function App() {
             element={<PaymentMethodRegisterPage />}
           />
           <Route path="/membership/vouchers" element={<VoucherListPage />} />
+          <Route
+            path="/membership/subscribe"
+            element={<VoucherPaymentPage />}
+          />
           <Route path="/profile" element={<ProfileEditPage />} />
           <Route path="/item-manage" element={<ItemManagementPage />} />
           <Route path="/item-register" element={<ItemRegisterationPage />} />
