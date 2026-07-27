@@ -19,17 +19,6 @@ export const HISTORY_PERIOD_LABEL: Record<HistoryPeriodOption, string> = {
   custom: "직접입력",
 };
 
-export const SUBSCRIPTION_VOUCHER = {
-  title: "연간 이용권",
-  statusLabel: "일시중지",
-  description:
-    "등록된 쿠폰 이용권을 모두 사용하면\n26.09.01부터 자동 결제가 다시 진행돼요.",
-  durationLabel: "12개월",
-  originalPrice: "58,800",
-  priceAmount: "46,900₩",
-  priceUnit: "/연",
-};
-
 export const COUPON_VOUCHERS = [
   {
     id: "coupon-active",

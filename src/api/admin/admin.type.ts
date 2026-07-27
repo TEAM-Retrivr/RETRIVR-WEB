@@ -353,3 +353,35 @@ export interface AdminCouponErrorResponse {
   message: string;
   detail?: string;
 }
+
+// 현재 멤버십 상태 조회 응답
+// GET /api/admin/v1/membership
+export interface AdminMembershipCouponInfo {
+  couponName: string;
+  couponDescription: string;
+}
+
+export interface AdminMembershipSubscriptionInfo {
+  subscriptionName: string;
+}
+
+export interface AdminMembershipResponse {
+  subscribed: boolean;
+  level: string; // 예: "PREMIUM"
+  passType: string;
+  couponInfo?: AdminMembershipCouponInfo | null;
+  subscriptionInfo?: AdminMembershipSubscriptionInfo | null;
+  startAt: string; // YYYY-MM-DD
+  endAt: string; // YYYY-MM-DD
+  nextBillingAt?: string; // YYYY-MM-DD
+}
+
+// 멤버십 조회 실패 시 공통 에러 응답
+// - 400: code 12202 (이용권에서 구독 정보를 가져올 수 없음)
+// - 404: code 3004 (존재하지 않는 단체)
+export interface AdminMembershipErrorResponse {
+  status: string;
+  code: number;
+  message: string;
+  detail?: string;
+}

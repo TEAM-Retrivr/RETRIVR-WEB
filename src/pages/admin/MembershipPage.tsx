@@ -8,11 +8,18 @@ import CouponSuccessModal from "../../components/modals/membership/CouponSuccess
 import MembershipCouponCard from "../../components/membership/MembershipCouponCard";
 import MembershipProBadge from "../../components/membership/MembershipProBadge";
 import {
+  useAdminMembership,
   useRegisterAdminCoupon,
   useRequestAdminCoupon,
 } from "../../hooks/queries/useAdminQueries";
-import type { AdminCouponLookupResponse } from "../../api/admin/admin.type";
-
+import type {
+  AdminCouponLookupResponse,
+  AdminMembershipResponse,
+} from "../../api/admin/admin.type";
+import {
+  formatCouponDay,
+  formatCouponValidityPeriod,
+} from "../../utils/couponDisplay";
 type BillingCycle = "monthly" | "yearly";
 type CouponAlertType =
   | "notFound"
@@ -20,12 +27,38 @@ type CouponAlertType =
   | "lookupFailed"
   | "registerFailed";
 
-const ACTIVE_PLAN = {
-  title: "월간 이용권",
-  priceAmount: "4,900₩",
-  priceUnit: "/월",
-  nextBillingDate: "26. 05. 01",
-  usageType: "월간 이용권",
+const EMPTY_MEMBERSHIP_GUIDE =
+  "현재 이용 중인 이용권이 없습니다.\n하단의 '구독 시작하기' 버튼을 눌러 이용권을 구독해보세요.";
+
+const isCouponPassType = (passType?: string): boolean =>
+  Boolean(passType && /coupon/i.test(passType));
+
+const resolveActivePassTitle = (
+  data: AdminMembershipResponse,
+): string | undefined => {
+  if (isCouponPassType(data.passType)) {
+    return data.couponInfo?.couponName?.trim() || undefined;
+  }
+  return (
+    data.subscriptionInfo?.subscriptionName?.trim() ||
+    data.couponInfo?.couponName?.trim() ||
+    undefined
+  );
+};
+
+const resolveActivePassFooter = (
+  data: AdminMembershipResponse,
+): string | undefined => {
+  if (isCouponPassType(data.passType) && data.startAt && data.endAt) {
+    return `사용 기간: ${formatCouponValidityPeriod(data.startAt, data.endAt)}`;
+  }
+  if (data.nextBillingAt) {
+    return `다음 결제 예정일: ${formatCouponDay(data.nextBillingAt)}`;
+  }
+  if (data.startAt && data.endAt) {
+    return `사용 기간: ${formatCouponValidityPeriod(data.startAt, data.endAt)}`;
+  }
+  return undefined;
 };
 
 const COUPON_ALERT_MESSAGES: Record<CouponAlertType, string> = {
@@ -73,11 +106,31 @@ const MembershipPage = () => {
 
   const lookupCouponMutation = useRequestAdminCoupon();
   const registerCouponMutation = useRegisterAdminCoupon();
+  const {
+    data: membership,
+    isLoading: isMembershipLoading,
+    isError: isMembershipError,
+    isSuccess: isMembershipSuccess,
+  } = useAdminMembership();
 
   const selectedPlan = SUBSCRIPTION_PLANS[billingCycle];
   const trimmedCouponCode = couponCode.trim();
   const canLookupCoupon =
     trimmedCouponCode.length > 0 && !lookupCouponMutation.isPending;
+
+  const activePassTitle = membership
+    ? resolveActivePassTitle(membership)
+    : undefined;
+  const hasActivePass =
+    isMembershipSuccess &&
+    Boolean(
+      activePassTitle ||
+        membership?.subscriptionInfo?.subscriptionName ||
+        membership?.couponInfo?.couponName ||
+        membership?.subscribed,
+    );
+  const showEmptyMembership =
+    !isMembershipLoading && (isMembershipError || !hasActivePass);
 
   const handleComingSoon = () => {
     alert(COMING_SOON_MESSAGE);
@@ -154,27 +207,42 @@ const MembershipPage = () => {
       <Header name="계정 관리" pageName="Retrivr 프로" backTo="/account" />
 
       <div className="flex flex-1 flex-col overflow-y-auto no-scrollbar bg-gradient-to-b from-secondary-4 from-[14%] to-neutral-white to-[88%] font-[Pretendard]">
-        <section className="flex flex-col gap-3 px-12 pb-6 pt-10">
+        <section
+          className={`flex flex-col px-12 pb-6 pt-10 ${
+            showEmptyMembership ? "gap-5" : "gap-3"
+          }`}
+        >
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
               <h2 className="text-18px font-bold leading-normal text-neutral-gray-1">
                 이용 현황
               </h2>
-              <MembershipProBadge />
+              {hasActivePass ? <MembershipProBadge /> : null}
             </div>
-            <p className="text-12px font-bold leading-[1.5] text-secondary-2">
-              이용 방식: {ACTIVE_PLAN.usageType}
-            </p>
+            {isMembershipLoading ? null : showEmptyMembership ? (
+              <p className="whitespace-pre-line text-12px font-bold leading-[1.5] text-secondary-2">
+                {EMPTY_MEMBERSHIP_GUIDE}
+              </p>
+            ) : (
+              <p className="text-12px font-bold leading-[1.5] text-secondary-2">
+                이용 방식: {activePassTitle ?? "이용권"}
+              </p>
+            )}
           </div>
 
           <div className="flex flex-col gap-3">
-            <MembershipCouponCard
-              title={ACTIVE_PLAN.title}
-              status="active"
-              priceAmount={ACTIVE_PLAN.priceAmount}
-              priceUnit={ACTIVE_PLAN.priceUnit}
-              footerText={`다음 결제 예정일: ${ACTIVE_PLAN.nextBillingDate}`}
-            />
+            {hasActivePass && membership ? (
+              <MembershipCouponCard
+                title={activePassTitle ?? "이용권"}
+                status="active"
+                eventName={
+                  isCouponPassType(membership.passType)
+                    ? membership.couponInfo?.couponDescription
+                    : undefined
+                }
+                footerText={resolveActivePassFooter(membership)}
+              />
+            ) : null}
 
             <div className="flex flex-col gap-1.5">
               {MENU_ITEMS.map((item) => (

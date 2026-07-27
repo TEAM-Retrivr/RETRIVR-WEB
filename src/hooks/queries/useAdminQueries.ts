@@ -25,10 +25,12 @@ import {
   rejectPublicRental,
   requestAdminCoupon,
   registerAdminCoupon,
+  requestAdminMembership,
 } from "../../api/admin/admin.api";
 import type {
   AdminCreateItemRequest,
   AdminItemListResponse,
+  AdminMembershipResponse,
   AdminUpdateItemRequest,
   AdminUpdateReturnDueDateRequestBody,
   AdminVerifyCodeRequestBody,
@@ -384,7 +386,22 @@ export const useRequestAdminCoupon = () => {
 // - 쿠폰 등록 모달에서 조회된 couponId로 이용권 등록
 // POST /api/admin/v1/coupons/{couponId}/registrations
 export const useRegisterAdminCoupon = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (couponId: string) => registerAdminCoupon({ couponId }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["adminMembership"] });
+    },
+  });
+};
+
+// 현재 멤버십 상태 조회
+// - 멤버십 이용 현황, 이용권 목록 > 구독 이용권 탭 등에서 사용
+// GET /api/admin/v1/membership
+export const useAdminMembership = () => {
+  return useQuery<AdminMembershipResponse>({
+    queryKey: ["adminMembership"],
+    queryFn: requestAdminMembership,
+    retry: false,
   });
 };
