@@ -27,8 +27,8 @@ type CouponAlertType =
   | "lookupFailed"
   | "registerFailed";
 
-const EMPTY_USAGE_TYPE = "이용 중인 이용권이 없습니다.";
-const VOUCHER_CARD_PLACEHOLDER_CLASS = "min-h-[88px]";
+const EMPTY_MEMBERSHIP_GUIDE =
+  "현재 이용 중인 이용권이 없습니다.\n하단의 '구독 시작하기' 버튼을 눌러 이용권을 구독해보세요.";
 
 const isCouponPassType = (passType?: string): boolean =>
   Boolean(passType && /coupon/i.test(passType));
@@ -207,7 +207,11 @@ const MembershipPage = () => {
       <Header name="계정 관리" pageName="Retrivr 프로" backTo="/account" />
 
       <div className="flex flex-1 flex-col overflow-y-auto no-scrollbar bg-gradient-to-b from-secondary-4 from-[14%] to-neutral-white to-[88%] font-[Pretendard]">
-        <section className="flex flex-col gap-3 px-12 pb-6 pt-10">
+        <section
+          className={`flex flex-col px-12 pb-6 pt-10 ${
+            showEmptyMembership ? "gap-5" : "gap-3"
+          }`}
+        >
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
               <h2 className="text-18px font-bold leading-normal text-neutral-gray-1">
@@ -215,21 +219,18 @@ const MembershipPage = () => {
               </h2>
               {hasActivePass ? <MembershipProBadge /> : null}
             </div>
-            <p className="text-12px font-bold leading-[1.5] text-secondary-2">
-              이용 방식:{" "}
-              {isMembershipLoading
-                ? "조회 중"
-                : showEmptyMembership
-                  ? EMPTY_USAGE_TYPE
-                  : (activePassTitle ?? "이용권")}
-            </p>
+            {isMembershipLoading ? null : showEmptyMembership ? (
+              <p className="whitespace-pre-line text-12px font-bold leading-[1.5] text-secondary-2">
+                {EMPTY_MEMBERSHIP_GUIDE}
+              </p>
+            ) : (
+              <p className="text-12px font-bold leading-[1.5] text-secondary-2">
+                이용 방식: {activePassTitle ?? "이용권"}
+              </p>
+            )}
           </div>
 
           <div className="flex flex-col gap-3">
-            {isMembershipLoading || showEmptyMembership ? (
-              <div className={VOUCHER_CARD_PLACEHOLDER_CLASS} aria-hidden />
-            ) : null}
-
             {hasActivePass && membership ? (
               <MembershipCouponCard
                 title={activePassTitle ?? "이용권"}
