@@ -171,18 +171,13 @@ export interface SendAdminEmailCodeResponse {
   resendAvailableInSeconds: number;
 }
 
-// 6-2. 관리자 이메일 인증 코드 검증
+// 6-2. 관리자 이메일 인증 코드 검증 및 이메일 변경
 // 엔드포인트: "/api/admin/v1/email/verification/verify" (POST)
+// 성공 시 204 No Content (세션 만료)
 export interface VerifyAdminEmailCodeRequest {
   email: string;
-  purpose: EmailVerificationPurpose; // 이메일 변경: EMAIL_CHANGE
   code: string;
-}
-
-export interface VerifyAdminEmailCodeResponse {
-  tokenType: string;
-  token: string;
-  expiresInSeconds: number;
+  passwordVerificationToken: string; // EMAIL_CHANGE 목적 비밀번호 인증 토큰
 }
 
 // 관리자 이메일 인증 공통 에러 응답 (400/429 등)

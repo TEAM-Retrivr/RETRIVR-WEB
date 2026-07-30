@@ -12,13 +12,12 @@ import Button from "../../../Button";
 import ProfileChangeExitConfirmModal from "./ProfileChangeExitConfirmModal";
 import {
   useSendAdminEmailCode,
-  useUpdateAdminProfile,
   useVerifyAdminEmailCode,
 } from "../../../../hooks/queries/useAuthQueries";
 import type {
   AdminEmailVerificationErrorResponse,
-  UpdateAdminProfileErrorResponse,
 } from "../../../../api/auth/auth.type";
+import { ADMIN_EMAIL_VERIFICATION_ERROR_CODE } from "../../../../api/auth/auth.type";
 
 export type EmailChangeBottomSheetHandle = {
   requestClose: () => void;
@@ -27,6 +26,7 @@ export type EmailChangeBottomSheetHandle = {
 type EmailChangeBottomSheetProps = {
   isOpen: boolean;
   onClose: () => void;
+  /** 이메일 변경(검증) 성공 후 호출. 호출측에서 로그아웃 처리한다. */
   onChanged: (email: string) => void;
   /** EMAIL_CHANGE 목적 비밀번호 인증 토큰 (RTR-321에서 발급) */
   passwordVerificationToken: string;
@@ -53,17 +53,13 @@ const EmailChangeBottomSheet = forwardRef<
   const [hasRequestedCode, setHasRequestedCode] = useState(false);
   const [emailFormatError, setEmailFormatError] = useState(false);
   const [codeMismatchError, setCodeMismatchError] = useState(false);
-  const [verificationToken, setVerificationToken] = useState("");
   const [isExitModalOpen, setIsExitModalOpen] = useState(false);
   const sendRequestIdRef = useRef(0);
   const verifyRequestIdRef = useRef(0);
-  const updateRequestIdRef = useRef(0);
 
   const { mutate: sendCode, isPending: isSendingCode } = useSendAdminEmailCode();
   const { mutate: verifyCode, isPending: isVerifyingCode } =
     useVerifyAdminEmailCode();
-  const { mutate: updateProfile, isPending: isUpdating } =
-    useUpdateAdminProfile();
 
   const handleRequestClose = () => {
     setIsExitModalOpen(true);
@@ -77,7 +73,6 @@ const EmailChangeBottomSheet = forwardRef<
     if (!isOpen) {
       sendRequestIdRef.current += 1;
       verifyRequestIdRef.current += 1;
-      updateRequestIdRef.current += 1;
       setNewEmail("");
       setAuthCode("");
       setTimeLeft(0);
@@ -85,7 +80,6 @@ const EmailChangeBottomSheet = forwardRef<
       setHasRequestedCode(false);
       setEmailFormatError(false);
       setCodeMismatchError(false);
-      setVerificationToken("");
       setIsExitModalOpen(false);
     }
   }, [isOpen]);
@@ -106,7 +100,6 @@ const EmailChangeBottomSheet = forwardRef<
   const handleConfirmExit = () => {
     sendRequestIdRef.current += 1;
     verifyRequestIdRef.current += 1;
-    updateRequestIdRef.current += 1;
     setIsExitModalOpen(false);
     onClose();
   };
@@ -123,11 +116,9 @@ const EmailChangeBottomSheet = forwardRef<
     isTimerActive &&
     timeLeft > 0 &&
     authCode.trim().length > 0 &&
+    Boolean(passwordVerificationToken) &&
     !codeMismatchError &&
-    !isVerifyingCode &&
-    !verificationToken;
-  const canChange =
-    Boolean(verificationToken) && trimmedEmail.length > 0 && !isUpdating;
+    !isVerifyingCode;
 
   const handleSendCode = () => {
     if (!trimmedEmail) return;
@@ -142,7 +133,6 @@ const EmailChangeBottomSheet = forwardRef<
 
     const requestId = ++sendRequestIdRef.current;
     verifyRequestIdRef.current += 1;
-    setVerificationToken("");
     setCodeMismatchError(false);
 
     sendCode(
@@ -177,58 +167,49 @@ const EmailChangeBottomSheet = forwardRef<
 
   const handleVerifyCode = () => {
     const code = authCode.trim();
-    if (!code || !trimmedEmail) return;
+    if (!code || !trimmedEmail || !passwordVerificationToken) return;
 
     const requestId = ++verifyRequestIdRef.current;
 
+    // 검증 성공 시 이메일이 변경되고 세션이 만료되므로 호출측에서 로그아웃한다
     verifyCode(
-      { email: trimmedEmail, purpose: "EMAIL_CHANGE", code },
       {
-        onSuccess: (data) => {
-          if (requestId !== verifyRequestIdRef.current) return;
-          if (!data.token) {
-            alert("인증 토큰 발급에 실패했습니다. 다시 시도해주세요.");
-            return;
-          }
-          setIsTimerActive(false);
-          setCodeMismatchError(false);
-          setVerificationToken(data.token);
-        },
-        onError: () => {
-          if (requestId !== verifyRequestIdRef.current) return;
-          setCodeMismatchError(true);
-        },
+        email: trimmedEmail,
+        code,
+        passwordVerificationToken,
       },
-    );
-  };
-
-  const handleChangeEmail = () => {
-    if (!canChange) return;
-
-    const requestId = ++updateRequestIdRef.current;
-
-    // RTR-319/320에서 이메일 전용 API로 교체 예정 (현재 PATCH /profile은 organizationName만 허용)
-    updateProfile(
-      {
-        newEmail: trimmedEmail,
-        adminCodeVerificationToken: verificationToken,
-      } as unknown as Parameters<typeof updateProfile>[0],
       {
         onSuccess: () => {
-          if (requestId !== updateRequestIdRef.current) return;
+          // 세션을 만료시키는 성공은 시트 닫힘/취소와 무관하게 반드시 로그아웃한다
+          setIsTimerActive(false);
+          setCodeMismatchError(false);
           onChanged(trimmedEmail);
           onClose();
         },
         onError: (error) => {
-          if (requestId !== updateRequestIdRef.current) return;
+          if (requestId !== verifyRequestIdRef.current) return;
           if (axios.isAxiosError(error)) {
             const data = error.response?.data as
-              | UpdateAdminProfileErrorResponse
+              | AdminEmailVerificationErrorResponse
               | undefined;
-            if (data?.message) {
-              alert(data.message);
+            const code = data?.code;
+            const isKnownNonMismatch =
+              code ===
+                ADMIN_EMAIL_VERIFICATION_ERROR_CODE.REQUEST_NOT_FOUND ||
+              code ===
+                ADMIN_EMAIL_VERIFICATION_ERROR_CODE.TOO_MANY_REQUESTS;
+
+            if (isKnownNonMismatch || error.response?.status !== 400) {
+              alert(
+                data?.message ??
+                  "이메일 변경에 실패했습니다. 다시 시도해주세요.",
+              );
               return;
             }
+
+            // 400 중 인증번호 불일치로 취급
+            setCodeMismatchError(true);
+            return;
           }
           alert("이메일 변경에 실패했습니다. 다시 시도해주세요.");
         },
@@ -242,7 +223,7 @@ const EmailChangeBottomSheet = forwardRef<
         isOpen={isOpen}
         onClose={handleRequestClose}
         title="이메일 변경"
-        description="변경 시 이메일 인증이 필요해요"
+        description="변경 시 이메일 인증이 필요해요. 변경 후 다시 로그인해야 합니다."
         sheetClassName="h-[612px] max-h-full"
         footer={
           <Button
@@ -250,10 +231,10 @@ const EmailChangeBottomSheet = forwardRef<
             variant="primary"
             size="lg"
             className="h-12.5 w-full max-w-none rounded-[23.164px] shadow-primary text-18px"
-            disabled={!canChange}
-            onClick={handleChangeEmail}
+            disabled={!canVerifyCode}
+            onClick={handleVerifyCode}
           >
-            {isUpdating ? "변경 중..." : "변경하기"}
+            {isVerifyingCode ? "변경 중..." : "변경하기"}
           </Button>
         }
       >
@@ -268,7 +249,6 @@ const EmailChangeBottomSheet = forwardRef<
                 onChange={(event) => {
                   setNewEmail(event.target.value);
                   setEmailFormatError(false);
-                  setVerificationToken("");
                 }}
                 onBlur={() => {
                   if (trimmedEmail && !isEmailFormatValid) {
@@ -314,7 +294,7 @@ const EmailChangeBottomSheet = forwardRef<
                   setCodeMismatchError(false);
                 }}
                 placeholder="인증번호 입력"
-                disabled={!isTimerActive && !verificationToken}
+                disabled={!isTimerActive}
                 className="h-12 max-w-none rounded-xl px-3.5 pr-14 placeholder:text-14px placeholder:font-normal placeholder:leading-[140%] placeholder:text-neutral-gray-3"
               />
               {isTimerActive && timeLeft > 0 ? (
