@@ -46,6 +46,9 @@ const LoginPage = () => {
           if (organizationId != null) {
             localStorage.setItem("orgId", String(organizationId));
           }
+          // 프로필 API에서 email이 제거되어 로그인 이메일을 저장해 계정 화면에 사용한다
+          // 응답 email이 빈 문자열일 수 있어 폼 입력을 우선 폴백한다
+          localStorage.setItem("email", (data.email || email).trim());
           navigate("/home");
         },
         onError: () => {

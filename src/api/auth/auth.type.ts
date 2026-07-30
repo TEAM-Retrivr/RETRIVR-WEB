@@ -153,11 +153,10 @@ export const WITHDRAW_ERROR_CODE = {
 } as const;
 
 // 6. 관리자 프로필 조회
+// 엔드포인트: "/api/admin/v1/profile" (GET)
+// 응답은 organizationName만 반환한다.
 export interface AdminProfileResponse {
-  organizationId: number; // 관리자 고유 번호
   organizationName: string; // 관리자 이름 (단체명)
-  profileImageUrl?: string; // 프로필 사진 URL
-  email: string; // 관리자 이메일
 }
 
 // 6-1. 관리자 이메일 인증 코드 발송

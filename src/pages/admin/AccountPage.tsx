@@ -9,6 +9,7 @@ import LogoutConfirmModal from "../../components/modals/admin/account/LogoutConf
 import QRCodeDisplay from "../../components/qr/QRCodeDisplay";
 import { useAdminProfile, useLogout } from "../../hooks/queries/useAuthQueries";
 import { resetPaymentMethodsStore } from "../../store/paymentMethodsStore";
+import { getAdminEmail } from "../../utils/adminSession";
 
 const PRODUCTION_WEB_ORIGIN = "https://www.retrivr.kr";
 const PREVIEW_WEB_ORIGIN = "https://retrivr-web.vercel.app";
@@ -26,6 +27,7 @@ const clearAdminSession = () => {
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
   localStorage.removeItem("orgId");
+  localStorage.removeItem("email");
   resetPaymentMethodsStore();
 };
 
@@ -45,12 +47,14 @@ const AccountPage = () => {
     typeof window === "undefined"
       ? null
       : Number(localStorage.getItem("orgId") ?? "");
+  const storedEmail = getAdminEmail();
 
   const userProfile = {
-    organizationId: data?.organizationId,
+    organizationId,
     organizationName: data?.organizationName,
-    profileImageUrl: data?.profileImageUrl ?? "/icons/profile-default-icon.svg",
-    email: data?.email,
+    // 프로필 API에서 profileImageUrl이 제거되어 기본 아이콘을 사용한다
+    profileImageUrl: "/icons/profile-default-icon.svg",
+    email: storedEmail,
   };
 
   const rentalPageUrl = useMemo(() => {
@@ -59,7 +63,7 @@ const AccountPage = () => {
       return `${publicWebOrigin}/client-search`;
     }
     return `${publicWebOrigin}/client-home?organizationId=${encodeURIComponent(
-      String(userProfile.organizationId),
+      String(organizationId),
     )}`;
   }, [organizationId]);
 

@@ -10,7 +10,6 @@ import WithdrawExitConfirmModal from "../../components/modals/admin/account/With
 import WithdrawPasswordMismatchModal from "../../components/modals/admin/account/WithdrawPasswordMismatchModal";
 import WithdrawCompleteModal from "../../components/modals/admin/account/WithdrawCompleteModal";
 import {
-  useAdminProfile,
   useWithdraw,
 } from "../../hooks/queries/useAuthQueries";
 import type {
@@ -19,6 +18,7 @@ import type {
 } from "../../api/auth/auth.type";
 import { WITHDRAW_ERROR_CODE } from "../../api/auth/auth.type";
 import { resetPaymentMethodsStore } from "../../store/paymentMethodsStore";
+import { getAdminEmail } from "../../utils/adminSession";
 
 const NOTICE_ITEMS = [
   {
@@ -59,11 +59,9 @@ const clearAdminSession = () => {
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
   localStorage.removeItem("orgId");
+  localStorage.removeItem("email");
   resetPaymentMethodsStore();
 };
-
-const hasAccessToken = () =>
-  typeof window !== "undefined" && Boolean(localStorage.getItem("accessToken"));
 
 const StepIndicator = ({ step }: { step: WithdrawStep }) => {
   const circle = (n: WithdrawStep) => {
@@ -100,10 +98,6 @@ const WithdrawPage = () => {
   const [isWithdrawComplete, setIsWithdrawComplete] = useState(false);
   /** onError 등 비동기 콜백에서 최신 탈퇴 완료 여부를 읽기 위한 ref */
   const isWithdrawCompleteRef = useRef(false);
-  // 세션이 없거나 탈퇴 완료 후에는 프로필 API를 호출하지 않는다
-  const { data: profile } = useAdminProfile({
-    enabled: hasAccessToken() && !isWithdrawComplete,
-  });
   const { mutate: withdraw, isPending: isWithdrawing } = useWithdraw();
 
   const [step, setStep] = useState<WithdrawStep>(1);
@@ -129,7 +123,7 @@ const WithdrawPage = () => {
   const [isPasswordMismatchOpen, setIsPasswordMismatchOpen] = useState(false);
   const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
 
-  const email = profile?.email ?? "";
+  const email = getAdminEmail();
 
   const canGoNext = useMemo(() => {
     if (!agreedToWarning || selectedReasons.size === 0) return false;
