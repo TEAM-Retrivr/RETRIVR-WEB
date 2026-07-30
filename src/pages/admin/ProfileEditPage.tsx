@@ -375,8 +375,25 @@ const ProfileEditPage = () => {
       <PasswordChangeBottomSheet
         ref={passwordSheetRef}
         isOpen={isPasswordSheetOpen}
-        onClose={() => setIsPasswordSheetOpen(false)}
-        onChanged={showCompleteModal}
+        passwordVerificationToken={passwordVerificationToken}
+        onClose={() => {
+          setIsPasswordSheetOpen(false);
+          setPasswordVerificationToken("");
+        }}
+        onChanged={async () => {
+          flushSync(() => {
+            setIsSigningOut(true);
+          });
+          setIsPasswordSheetOpen(false);
+          setPasswordVerificationToken("");
+          clearAdminSession();
+          await queryClient.cancelQueries();
+          alert("비밀번호가 변경되었습니다. 다시 로그인해주세요.");
+          navigate("/login", { replace: true });
+          queueMicrotask(() => {
+            queryClient.clear();
+          });
+        }}
       />
 
       <AdminCodeChangeBottomSheet

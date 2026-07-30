@@ -19,6 +19,7 @@ import type {
   UpdateAdminProfileRequest,
   VerifyAdminPasswordRequest,
   VerifyAdminPasswordResponse,
+  UpdateAdminPasswordRequest,
   LoadHomeResponse,
   LogoutResponse,
   WithdrawRequest,
@@ -199,4 +200,14 @@ export const verifyAdminPassword = async (
     data,
   );
   return response.data;
+};
+
+//
+// 7-5. 관리자 비밀번호 변경 API (PATCH)
+// 엔드포인트 : "/api/admin/v1/profile/password"
+// 성공 시 204 No Content (세션 만료)
+export const updateAdminPassword = async (
+  data: UpdateAdminPasswordRequest,
+): Promise<void> => {
+  await apiClient.patch("/api/admin/v1/profile/password", data);
 };

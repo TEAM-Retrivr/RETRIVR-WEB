@@ -10,12 +10,12 @@ import BottomSheet from "../../../BottomSheet";
 import CommonInput from "../../../CommonInput";
 import Button from "../../../Button";
 import ProfileChangeExitConfirmModal from "./ProfileChangeExitConfirmModal";
-import { useUpdateAdminProfile } from "../../../../hooks/queries/useAuthQueries";
+import { useUpdateAdminPassword } from "../../../../hooks/queries/useAuthQueries";
 import {
   isPasswordValid,
   PASSWORD_RULES,
 } from "../../../../utils/passwordValidation";
-import type { UpdateAdminProfileErrorResponse } from "../../../../api/auth/auth.type";
+import type { UpdateAdminPasswordErrorResponse } from "../../../../api/auth/auth.type";
 
 export type PasswordChangeBottomSheetHandle = {
   requestClose: () => void;
@@ -24,19 +24,21 @@ export type PasswordChangeBottomSheetHandle = {
 type PasswordChangeBottomSheetProps = {
   isOpen: boolean;
   onClose: () => void;
+  /** 비밀번호 변경 성공 후 호출. 호출측에서 로그아웃 처리한다. */
   onChanged: () => void;
+  passwordVerificationToken: string;
 };
 
 const PasswordChangeBottomSheet = forwardRef<
   PasswordChangeBottomSheetHandle,
   PasswordChangeBottomSheetProps
->(({ isOpen, onClose, onChanged }, ref) => {
+>(({ isOpen, onClose, onChanged, passwordVerificationToken }, ref) => {
   const [password, setPassword] = useState("");
   const [passwordCheck, setPasswordCheck] = useState("");
   const [bounceKey, setBounceKey] = useState(0);
   const [isExitModalOpen, setIsExitModalOpen] = useState(false);
   const updateRequestIdRef = useRef(0);
-  const { mutate: updateProfile, isPending } = useUpdateAdminProfile();
+  const { mutate: updatePassword, isPending } = useUpdateAdminPassword();
 
   const handleRequestClose = () => {
     setIsExitModalOpen(true);
@@ -58,7 +60,11 @@ const PasswordChangeBottomSheet = forwardRef<
 
   const passwordMatches = password.length > 0 && password === passwordCheck;
   const rulesOk = isPasswordValid(password);
-  const canSubmit = rulesOk && passwordMatches && !isPending;
+  const canSubmit =
+    rulesOk &&
+    passwordMatches &&
+    Boolean(passwordVerificationToken) &&
+    !isPending;
 
   const handleConfirmExit = () => {
     updateRequestIdRef.current += 1;
@@ -78,15 +84,15 @@ const PasswordChangeBottomSheet = forwardRef<
 
     const requestId = ++updateRequestIdRef.current;
 
-    // RTR-323에서 비밀번호 전용 API로 교체 예정 (현재 PATCH /profile은 organizationName만 허용)
-    updateProfile(
+    updatePassword(
       {
         newPassword: password,
         confirmPassword: passwordCheck,
-      } as unknown as Parameters<typeof updateProfile>[0],
+        passwordVerificationToken,
+      },
       {
         onSuccess: () => {
-          if (requestId !== updateRequestIdRef.current) return;
+          // 세션을 만료시키는 성공은 시트 닫힘과 무관하게 반영한다
           onChanged();
           onClose();
         },
@@ -94,7 +100,7 @@ const PasswordChangeBottomSheet = forwardRef<
           if (requestId !== updateRequestIdRef.current) return;
           if (axios.isAxiosError(error)) {
             const data = error.response?.data as
-              | UpdateAdminProfileErrorResponse
+              | UpdateAdminPasswordErrorResponse
               | undefined;
             if (data?.message) {
               alert(data.message);
@@ -113,6 +119,7 @@ const PasswordChangeBottomSheet = forwardRef<
         isOpen={isOpen}
         onClose={handleRequestClose}
         title="비밀번호 변경"
+        description="변경 후 다시 로그인해야 합니다."
         sheetClassName="h-[612px] max-h-full"
         footer={
           <Button
