@@ -62,8 +62,11 @@ const AdminCodeChangeBottomSheet = forwardRef<
 
     const requestId = ++updateRequestIdRef.current;
 
+    // RTR-325에서 관리자코드 전용 API로 교체 예정 (현재 PATCH /profile은 organizationName만 허용)
     updateProfile(
-      { newAdminCode: adminCode },
+      { newAdminCode: adminCode } as unknown as Parameters<
+        typeof updateProfile
+      >[0],
       {
         onSuccess: () => {
           if (requestId !== updateRequestIdRef.current) return;

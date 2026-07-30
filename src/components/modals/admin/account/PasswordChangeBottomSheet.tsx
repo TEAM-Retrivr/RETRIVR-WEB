@@ -78,11 +78,12 @@ const PasswordChangeBottomSheet = forwardRef<
 
     const requestId = ++updateRequestIdRef.current;
 
+    // RTR-323에서 비밀번호 전용 API로 교체 예정 (현재 PATCH /profile은 organizationName만 허용)
     updateProfile(
       {
         newPassword: password,
         confirmPassword: passwordCheck,
-      },
+      } as unknown as Parameters<typeof updateProfile>[0],
       {
         onSuccess: () => {
           if (requestId !== updateRequestIdRef.current) return;

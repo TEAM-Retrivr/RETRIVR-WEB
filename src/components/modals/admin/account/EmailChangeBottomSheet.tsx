@@ -197,11 +197,12 @@ const EmailChangeBottomSheet = forwardRef<
 
     const requestId = ++updateRequestIdRef.current;
 
+    // RTR-319/320에서 이메일 전용 API로 교체 예정 (현재 PATCH /profile은 organizationName만 허용)
     updateProfile(
       {
         newEmail: trimmedEmail,
         adminCodeVerificationToken: verificationToken,
-      },
+      } as unknown as Parameters<typeof updateProfile>[0],
       {
         onSuccess: () => {
           if (requestId !== updateRequestIdRef.current) return;
