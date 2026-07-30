@@ -103,12 +103,14 @@ const ProfileEditPage = () => {
     showCompleteOnSuccess: boolean;
   }) => {
     updateProfile(
-      { newOrganizationName: nextName },
+      { organizationName: nextName },
       {
-        onSuccess: (data) => {
-          const saved = data.organizationName ?? nextName;
-          setOrganizationName(saved);
-          setSavedOrganizationName(saved);
+        onSuccess: () => {
+          // 204라 응답 본문이 없으므로 일단 요청값을 반영하고,
+          // invalidate 후 프로필을 다시 hydrate해 서버 정규화 값과 맞춘다
+          hasHydratedProfileRef.current = false;
+          setOrganizationName(nextName);
+          setSavedOrganizationName(nextName);
 
           const queuedTarget = openTargetAfter ?? pendingOpenTargetRef.current;
           pendingOpenTargetRef.current = null;

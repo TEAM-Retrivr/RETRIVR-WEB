@@ -18,7 +18,6 @@ import type {
   VerifyAdminEmailCodeRequest,
   VerifyAdminEmailCodeResponse,
   UpdateAdminProfileRequest,
-  UpdateAdminProfileResponse,
   LoadHomeResponse,
   LogoutResponse,
   WithdrawRequest,
@@ -182,14 +181,11 @@ export const verifyAdminEmailCode = async (
 };
 
 //
-// 7-3. 관리자 프로필 수정 API (PATCH)
+// 7-3. 관리자 프로필(단체명) 수정 API (PATCH)
 // 엔드포인트 : "/api/admin/v1/profile"
+// 성공 시 204 No Content (응답 본문 없음)
 export const updateAdminProfile = async (
   data: UpdateAdminProfileRequest,
-): Promise<UpdateAdminProfileResponse> => {
-  const response = await apiClient.patch<UpdateAdminProfileResponse>(
-    "/api/admin/v1/profile",
-    data,
-  );
-  return response.data;
+): Promise<void> => {
+  await apiClient.patch("/api/admin/v1/profile", data);
 };
