@@ -43,6 +43,8 @@ const ProfileEditPage = () => {
   const [email, setEmail] = useState("");
   const [pendingChangeTarget, setPendingChangeTarget] =
     useState<ChangeTarget | null>(null);
+  const [passwordVerificationToken, setPasswordVerificationToken] =
+    useState("");
   const [isIdentitySheetOpen, setIsIdentitySheetOpen] = useState(false);
   const [isEmailSheetOpen, setIsEmailSheetOpen] = useState(false);
   const [isPasswordSheetOpen, setIsPasswordSheetOpen] = useState(false);
@@ -90,6 +92,7 @@ const ProfileEditPage = () => {
 
   const openIdentitySheet = (target: ChangeTarget) => {
     setPendingChangeTarget(target);
+    setPasswordVerificationToken("");
     setIsIdentitySheetOpen(true);
   };
 
@@ -325,10 +328,15 @@ const ProfileEditPage = () => {
       <EmailChangeBottomSheet
         ref={emailSheetRef}
         isOpen={isEmailSheetOpen}
-        onClose={() => setIsEmailSheetOpen(false)}
+        passwordVerificationToken={passwordVerificationToken}
+        onClose={() => {
+          setIsEmailSheetOpen(false);
+          setPasswordVerificationToken("");
+        }}
         onChanged={(nextEmail) => {
           setEmail(nextEmail);
           localStorage.setItem("email", nextEmail);
+          setPasswordVerificationToken("");
           showCompleteModal();
         }}
       />

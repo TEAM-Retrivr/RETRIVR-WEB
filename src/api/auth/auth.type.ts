@@ -161,10 +161,15 @@ export interface AdminProfileResponse {
 
 // 6-1. 관리자 이메일 인증 코드 발송
 // 엔드포인트: "/api/admin/v1/email/verification" (POST)
-// 요청/응답 바디는 public 이메일 인증과 동일 형태 (purpose: EMAIL_CHANGE)
+export interface SendAdminEmailCodeRequest {
+  email: string;
+  passwordVerificationToken: string; // EMAIL_CHANGE 목적 비밀번호 인증 토큰
+}
 
-export type SendAdminEmailCodeRequest = SendEmailCodeRequest;
-export type SendAdminEmailCodeResponse = SendEmailCodeResponse;
+export interface SendAdminEmailCodeResponse {
+  expiresInSeconds: number;
+  resendAvailableInSeconds: number;
+}
 
 // 6-2. 관리자 이메일 인증 코드 검증
 // 엔드포인트: "/api/admin/v1/email/verification/verify" (POST)
