@@ -237,6 +237,22 @@ export interface VerifyAdminPasswordErrorResponse {
   detail?: string;
 }
 
+// 6-5. 관리자 비밀번호 변경
+// 엔드포인트: "/api/admin/v1/profile/password" (PATCH)
+// 성공 시 204 No Content (세션 만료)
+export interface UpdateAdminPasswordRequest {
+  newPassword: string;
+  confirmPassword: string;
+  passwordVerificationToken: string;
+}
+
+export interface UpdateAdminPasswordErrorResponse {
+  status: string;
+  code: number;
+  message: string;
+  detail?: string;
+}
+
 // 7. 홈 화면 출력 요청
 // 홈 화면 출력 요청 바디 없음
 
