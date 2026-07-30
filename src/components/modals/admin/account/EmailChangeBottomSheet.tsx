@@ -28,6 +28,8 @@ type EmailChangeBottomSheetProps = {
   isOpen: boolean;
   onClose: () => void;
   onChanged: (email: string) => void;
+  /** EMAIL_CHANGE 목적 비밀번호 인증 토큰 (RTR-321에서 발급) */
+  passwordVerificationToken: string;
 };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -43,7 +45,7 @@ const formatTime = (seconds: number) => {
 const EmailChangeBottomSheet = forwardRef<
   EmailChangeBottomSheetHandle,
   EmailChangeBottomSheetProps
->(({ isOpen, onClose, onChanged }, ref) => {
+>(({ isOpen, onClose, onChanged, passwordVerificationToken }, ref) => {
   const [newEmail, setNewEmail] = useState("");
   const [authCode, setAuthCode] = useState("");
   const [timeLeft, setTimeLeft] = useState(0);
@@ -114,6 +116,7 @@ const EmailChangeBottomSheet = forwardRef<
   const canSendCode =
     trimmedEmail.length > 0 &&
     isEmailFormatValid &&
+    Boolean(passwordVerificationToken) &&
     !isTimerActive &&
     !isSendingCode;
   const canVerifyCode =
@@ -132,6 +135,10 @@ const EmailChangeBottomSheet = forwardRef<
       setEmailFormatError(true);
       return;
     }
+    if (!passwordVerificationToken) {
+      alert("본인 확인이 필요합니다. 다시 시도해주세요.");
+      return;
+    }
 
     const requestId = ++sendRequestIdRef.current;
     verifyRequestIdRef.current += 1;
@@ -139,7 +146,10 @@ const EmailChangeBottomSheet = forwardRef<
     setCodeMismatchError(false);
 
     sendCode(
-      { email: trimmedEmail, purpose: "EMAIL_CHANGE" },
+      {
+        email: trimmedEmail,
+        passwordVerificationToken,
+      },
       {
         onSuccess: (data) => {
           if (requestId !== sendRequestIdRef.current) return;
