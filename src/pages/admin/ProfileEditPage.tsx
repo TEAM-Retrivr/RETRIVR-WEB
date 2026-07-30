@@ -22,6 +22,7 @@ import {
   useUpdateAdminProfile,
 } from "../../hooks/queries/useAuthQueries";
 import type { UpdateAdminProfileErrorResponse } from "../../api/auth/auth.type";
+import { getAdminEmail } from "../../utils/adminSession";
 
 type ChangeTarget = "email" | "password" | "adminCode";
 
@@ -51,11 +52,15 @@ const ProfileEditPage = () => {
   const hasHydratedProfileRef = useRef(false);
 
   useEffect(() => {
+    // 이메일은 프로필 API에 없으므로 마운트 시 세션에서 바로 채운다
+    setEmail(getAdminEmail());
+  }, []);
+
+  useEffect(() => {
     if (!profile || hasHydratedProfileRef.current) return;
     const name = profile.organizationName ?? "";
     setOrganizationName(name);
     setSavedOrganizationName(name);
-    setEmail(profile.email ?? "");
     hasHydratedProfileRef.current = true;
   }, [profile]);
 
@@ -307,7 +312,7 @@ const ProfileEditPage = () => {
       <IdentityVerificationBottomSheet
         ref={identitySheetRef}
         isOpen={isIdentitySheetOpen}
-        email={email || profile?.email || ""}
+        email={email || getAdminEmail()}
         onClose={() => {
           setIsIdentitySheetOpen(false);
           setPendingChangeTarget(null);
@@ -321,6 +326,7 @@ const ProfileEditPage = () => {
         onClose={() => setIsEmailSheetOpen(false)}
         onChanged={(nextEmail) => {
           setEmail(nextEmail);
+          localStorage.setItem("email", nextEmail);
           showCompleteModal();
         }}
       />
