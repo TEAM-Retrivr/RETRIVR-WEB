@@ -5,11 +5,16 @@ import {
   useRef,
   useState,
 } from "react";
+import axios from "axios";
 import BottomSheet from "../../../BottomSheet";
 import CommonInput from "../../../CommonInput";
 import Button from "../../../Button";
 import ProfileChangeExitConfirmModal from "./ProfileChangeExitConfirmModal";
-import { useLogin } from "../../../../hooks/queries/useAuthQueries";
+import { useVerifyAdminPassword } from "../../../../hooks/queries/useAuthQueries";
+import type {
+  AdminPasswordVerificationPurpose,
+  VerifyAdminPasswordErrorResponse,
+} from "../../../../api/auth/auth.type";
 
 export type IdentityVerificationBottomSheetHandle = {
   requestClose: () => void;
@@ -17,20 +22,20 @@ export type IdentityVerificationBottomSheetHandle = {
 
 type IdentityVerificationBottomSheetProps = {
   isOpen: boolean;
-  email: string;
+  purpose: AdminPasswordVerificationPurpose;
   onClose: () => void;
-  onVerified: () => void;
+  onVerified: (verificationToken: string, expiresIn: number) => void;
 };
 
 const IdentityVerificationBottomSheet = forwardRef<
   IdentityVerificationBottomSheetHandle,
   IdentityVerificationBottomSheetProps
->(({ isOpen, email, onClose, onVerified }, ref) => {
+>(({ isOpen, purpose, onClose, onVerified }, ref) => {
   const [password, setPassword] = useState("");
   const [isMismatch, setIsMismatch] = useState(false);
   const [isExitModalOpen, setIsExitModalOpen] = useState(false);
   const verifyRequestIdRef = useRef(0);
-  const { mutate: login, isPending } = useLogin();
+  const { mutate: verifyPassword, isPending } = useVerifyAdminPassword();
 
   const handleRequestClose = () => {
     setIsExitModalOpen(true);
@@ -57,27 +62,47 @@ const IdentityVerificationBottomSheet = forwardRef<
 
   const handleVerify = () => {
     const trimmed = password.trim();
-    if (!trimmed || !email || isPending) return;
+    if (!trimmed || isPending) return;
 
     const requestId = ++verifyRequestIdRef.current;
 
-    login(
-      { email, password: trimmed },
+    verifyPassword(
+      { password: trimmed, purpose },
       {
         onSuccess: (data) => {
           if (requestId !== verifyRequestIdRef.current) return;
-          if (data.accessToken) {
-            localStorage.setItem("accessToken", data.accessToken);
-          }
-          if (data.refreshToken) {
-            localStorage.setItem("refreshToken", data.refreshToken);
+          if (!data.verificationToken) {
+            alert("본인 확인에 실패했습니다. 다시 시도해주세요.");
+            return;
           }
           setIsMismatch(false);
-          onVerified();
+          onVerified(data.verificationToken, data.expiresIn);
         },
-        onError: () => {
+        onError: (error) => {
           if (requestId !== verifyRequestIdRef.current) return;
-          setIsMismatch(true);
+          if (axios.isAxiosError(error)) {
+            const status = error.response?.status;
+            const data = error.response?.data as
+              | VerifyAdminPasswordErrorResponse
+              | undefined;
+            if (status === 400) {
+              setIsMismatch(true);
+              return;
+            }
+            if (status === 401 || status === 403) {
+              alert(
+                data?.message ??
+                  "세션이 만료되었습니다. 다시 로그인한 뒤 시도해주세요.",
+              );
+              return;
+            }
+            alert(
+              data?.message ??
+                "본인 확인에 실패했습니다. 다시 시도해주세요.",
+            );
+            return;
+          }
+          alert("본인 확인에 실패했습니다. 다시 시도해주세요.");
         },
       },
     );

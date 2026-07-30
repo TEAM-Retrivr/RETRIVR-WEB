@@ -213,6 +213,30 @@ export const UPDATE_ADMIN_PROFILE_ERROR_CODE = {
   ORGANIZATION_NOT_FOUND: 3004, // 404: 존재하지 않는 단체입니다.
 } as const;
 
+// 6-4. 개인정보 변경용 현재 비밀번호 확인
+// 엔드포인트: "/api/admin/v1/profile/password/verify" (POST)
+export type AdminPasswordVerificationPurpose =
+  | "EMAIL_CHANGE"
+  | "PASSWORD_CHANGE"
+  | "ADMIN_CODE_CHANGE";
+
+export interface VerifyAdminPasswordRequest {
+  password: string;
+  purpose: AdminPasswordVerificationPurpose;
+}
+
+export interface VerifyAdminPasswordResponse {
+  verificationToken: string;
+  expiresIn: number; // 토큰 유효 시간(초)
+}
+
+export interface VerifyAdminPasswordErrorResponse {
+  status: string;
+  code: number;
+  message: string;
+  detail?: string;
+}
+
 // 7. 홈 화면 출력 요청
 // 홈 화면 출력 요청 바디 없음
 

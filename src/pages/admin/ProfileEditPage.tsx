@@ -23,10 +23,22 @@ import {
   useAdminProfile,
   useUpdateAdminProfile,
 } from "../../hooks/queries/useAuthQueries";
-import type { UpdateAdminProfileErrorResponse } from "../../api/auth/auth.type";
+import type {
+  AdminPasswordVerificationPurpose,
+  UpdateAdminProfileErrorResponse,
+} from "../../api/auth/auth.type";
 import { getAdminEmail, clearAdminSession } from "../../utils/adminSession";
 
 type ChangeTarget = "email" | "password" | "adminCode";
+
+const CHANGE_TARGET_PURPOSE: Record<
+  ChangeTarget,
+  AdminPasswordVerificationPurpose
+> = {
+  email: "EMAIL_CHANGE",
+  password: "PASSWORD_CHANGE",
+  adminCode: "ADMIN_CODE_CHANGE",
+};
 
 const ProfileEditPage = () => {
   const navigate = useNavigate();
@@ -173,7 +185,8 @@ const ProfileEditPage = () => {
     });
   };
 
-  const handleIdentityVerified = () => {
+  const handleIdentityVerified = (verificationToken: string) => {
+    setPasswordVerificationToken(verificationToken);
     setIsIdentitySheetOpen(false);
     if (pendingChangeTarget === "email") {
       setIsEmailSheetOpen(true);
@@ -321,10 +334,15 @@ const ProfileEditPage = () => {
       <IdentityVerificationBottomSheet
         ref={identitySheetRef}
         isOpen={isIdentitySheetOpen}
-        email={email || getAdminEmail()}
+        purpose={
+          pendingChangeTarget
+            ? CHANGE_TARGET_PURPOSE[pendingChangeTarget]
+            : "EMAIL_CHANGE"
+        }
         onClose={() => {
           setIsIdentitySheetOpen(false);
           setPendingChangeTarget(null);
+          setPasswordVerificationToken("");
         }}
         onVerified={handleIdentityVerified}
       />

@@ -17,6 +17,8 @@ import type {
   SendAdminEmailCodeResponse,
   VerifyAdminEmailCodeRequest,
   UpdateAdminProfileRequest,
+  VerifyAdminPasswordRequest,
+  VerifyAdminPasswordResponse,
   LoadHomeResponse,
   LogoutResponse,
   WithdrawRequest,
@@ -184,4 +186,17 @@ export const updateAdminProfile = async (
   data: UpdateAdminProfileRequest,
 ): Promise<void> => {
   await apiClient.patch("/api/admin/v1/profile", data);
+};
+
+//
+// 7-4. 개인정보 변경용 현재 비밀번호 확인 API (POST)
+// 엔드포인트 : "/api/admin/v1/profile/password/verify"
+export const verifyAdminPassword = async (
+  data: VerifyAdminPasswordRequest,
+): Promise<VerifyAdminPasswordResponse> => {
+  const response = await apiClient.post<VerifyAdminPasswordResponse>(
+    "/api/admin/v1/profile/password/verify",
+    data,
+  );
+  return response.data;
 };
