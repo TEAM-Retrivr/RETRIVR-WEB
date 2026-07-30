@@ -10,8 +10,8 @@ import BottomSheet from "../../../BottomSheet";
 import CommonInput from "../../../CommonInput";
 import Button from "../../../Button";
 import ProfileChangeExitConfirmModal from "./ProfileChangeExitConfirmModal";
-import { useUpdateAdminProfile } from "../../../../hooks/queries/useAuthQueries";
-import type { UpdateAdminProfileErrorResponse } from "../../../../api/auth/auth.type";
+import { useUpdateAdminCode } from "../../../../hooks/queries/useAuthQueries";
+import type { UpdateAdminCodeErrorResponse } from "../../../../api/auth/auth.type";
 
 export type AdminCodeChangeBottomSheetHandle = {
   requestClose: () => void;
@@ -21,18 +21,21 @@ type AdminCodeChangeBottomSheetProps = {
   isOpen: boolean;
   onClose: () => void;
   onChanged: () => void;
+  passwordVerificationToken: string;
 };
 
 const AdminCodeChangeBottomSheet = forwardRef<
   AdminCodeChangeBottomSheetHandle,
   AdminCodeChangeBottomSheetProps
->(({ isOpen, onClose, onChanged }, ref) => {
+>(({ isOpen, onClose, onChanged, passwordVerificationToken }, ref) => {
   const [adminCode, setAdminCode] = useState("");
   const [isExitModalOpen, setIsExitModalOpen] = useState(false);
   const updateRequestIdRef = useRef(0);
-  const { mutate: updateProfile, isPending } = useUpdateAdminProfile();
+  const { mutate: updateAdminCode, isPending } = useUpdateAdminCode();
 
   const handleRequestClose = () => {
+    // 요청 진행 중 닫으면 성공/실패 레이스가 생기므로 차단한다
+    if (isPending) return;
     setIsExitModalOpen(true);
   };
 
@@ -49,9 +52,11 @@ const AdminCodeChangeBottomSheet = forwardRef<
   }, [isOpen]);
 
   const isValidCode = /^\d{6}$/.test(adminCode);
-  const canSubmit = isValidCode && !isPending;
+  const canSubmit =
+    isValidCode && Boolean(passwordVerificationToken) && !isPending;
 
   const handleConfirmExit = () => {
+    if (isPending) return;
     updateRequestIdRef.current += 1;
     setIsExitModalOpen(false);
     onClose();
@@ -60,13 +65,15 @@ const AdminCodeChangeBottomSheet = forwardRef<
   const handleSubmit = () => {
     if (!canSubmit) return;
 
+    setIsExitModalOpen(false);
     const requestId = ++updateRequestIdRef.current;
 
-    // RTR-325에서 관리자코드 전용 API로 교체 예정 (현재 PATCH /profile은 organizationName만 허용)
-    updateProfile(
-      { newAdminCode: adminCode } as unknown as Parameters<
-        typeof updateProfile
-      >[0],
+    updateAdminCode(
+      {
+        newAdminCode: adminCode,
+        confirmAdminCode: adminCode,
+        passwordVerificationToken,
+      },
       {
         onSuccess: () => {
           if (requestId !== updateRequestIdRef.current) return;
@@ -77,7 +84,7 @@ const AdminCodeChangeBottomSheet = forwardRef<
           if (requestId !== updateRequestIdRef.current) return;
           if (axios.isAxiosError(error)) {
             const data = error.response?.data as
-              | UpdateAdminProfileErrorResponse
+              | UpdateAdminCodeErrorResponse
               | undefined;
             if (data?.message) {
               alert(data.message);

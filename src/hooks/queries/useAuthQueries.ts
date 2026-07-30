@@ -15,6 +15,7 @@ import {
   updateAdminProfile,
   verifyAdminPassword,
   updateAdminPassword,
+  updateAdminCode,
 } from "../../api/auth/auth.api";
 
 //
@@ -246,6 +247,21 @@ export const useUpdateAdminPassword = () => {
     },
     onError: (error) => {
       console.error("관리자 비밀번호 변경 실패:", error);
+    },
+  });
+};
+
+//
+// 7-6. 관리자 코드 변경 요청
+//
+export const useUpdateAdminCode = () => {
+  return useMutation({
+    mutationFn: updateAdminCode,
+    onSuccess: () => {
+      console.log("관리자 코드 변경 성공");
+    },
+    onError: (error) => {
+      console.error("관리자 코드 변경 실패:", error);
     },
   });
 };
