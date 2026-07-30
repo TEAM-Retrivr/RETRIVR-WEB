@@ -1,3 +1,5 @@
+import { resetPaymentMethodsStore } from "../store/paymentMethodsStore";
+
 /** 관리자 세션에 저장된 이메일을 반환한다. 없으면 JWT payload에서 복구를 시도한다. */
 export const getAdminEmail = (): string => {
   if (typeof window === "undefined") return "";
@@ -36,4 +38,13 @@ export const getAdminEmail = (): string => {
   } catch {
     return "";
   }
+};
+
+/** 관리자 클라이언트 세션(토큰·식별자·결제수단 스토어)을 정리한다. */
+export const clearAdminSession = () => {
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("orgId");
+  localStorage.removeItem("email");
+  resetPaymentMethodsStore();
 };

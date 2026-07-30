@@ -17,8 +17,7 @@ import type {
   WithdrawReasonCode,
 } from "../../api/auth/auth.type";
 import { WITHDRAW_ERROR_CODE } from "../../api/auth/auth.type";
-import { resetPaymentMethodsStore } from "../../store/paymentMethodsStore";
-import { getAdminEmail } from "../../utils/adminSession";
+import { clearAdminSession, getAdminEmail } from "../../utils/adminSession";
 
 const NOTICE_ITEMS = [
   {
@@ -54,14 +53,6 @@ const WITHDRAW_REASONS: { code: WithdrawReasonCode; label: string }[] = [
 
 type WithdrawStep = 1 | 2;
 type SlideDirection = "forward" | "back";
-
-const clearAdminSession = () => {
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("refreshToken");
-  localStorage.removeItem("orgId");
-  localStorage.removeItem("email");
-  resetPaymentMethodsStore();
-};
 
 const StepIndicator = ({ step }: { step: WithdrawStep }) => {
   const circle = (n: WithdrawStep) => {

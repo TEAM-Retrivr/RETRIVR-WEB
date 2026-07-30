@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useQueryClient } from "@tanstack/react-query";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import CommonInput from "../../components/CommonInput";
@@ -22,13 +24,15 @@ import {
   useUpdateAdminProfile,
 } from "../../hooks/queries/useAuthQueries";
 import type { UpdateAdminProfileErrorResponse } from "../../api/auth/auth.type";
-import { getAdminEmail } from "../../utils/adminSession";
+import { getAdminEmail, clearAdminSession } from "../../utils/adminSession";
 
 type ChangeTarget = "email" | "password" | "adminCode";
 
 const ProfileEditPage = () => {
   const navigate = useNavigate();
-  const { data: profile } = useAdminProfile();
+  const queryClient = useQueryClient();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const { data: profile } = useAdminProfile({ enabled: !isSigningOut });
   const { mutate: updateProfile, isPending: isUpdatingName } =
     useUpdateAdminProfile();
 
@@ -333,11 +337,20 @@ const ProfileEditPage = () => {
           setIsEmailSheetOpen(false);
           setPasswordVerificationToken("");
         }}
-        onChanged={(nextEmail) => {
-          setEmail(nextEmail);
-          localStorage.setItem("email", nextEmail);
+        onChanged={async () => {
+          // enabled=false가 clear() 전에 반영되도록 동기적으로 반영
+          flushSync(() => {
+            setIsSigningOut(true);
+          });
+          setIsEmailSheetOpen(false);
           setPasswordVerificationToken("");
-          showCompleteModal();
+          clearAdminSession();
+          await queryClient.cancelQueries();
+          alert("이메일이 변경되었습니다. 다시 로그인해주세요.");
+          navigate("/login", { replace: true });
+          queueMicrotask(() => {
+            queryClient.clear();
+          });
         }}
       />
 

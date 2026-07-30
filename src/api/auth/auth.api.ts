@@ -16,7 +16,6 @@ import type {
   SendAdminEmailCodeRequest,
   SendAdminEmailCodeResponse,
   VerifyAdminEmailCodeRequest,
-  VerifyAdminEmailCodeResponse,
   UpdateAdminProfileRequest,
   LoadHomeResponse,
   LogoutResponse,
@@ -168,16 +167,13 @@ export const sendAdminEmailCode = async (
 };
 
 //
-// 7-2. 관리자 이메일 인증 코드 검증 API (POST)
+// 7-2. 관리자 이메일 인증 코드 검증 및 이메일 변경 API (POST)
 // 엔드포인트 : "/api/admin/v1/email/verification/verify"
+// 성공 시 204 No Content (세션 만료)
 export const verifyAdminEmailCode = async (
   data: VerifyAdminEmailCodeRequest,
-): Promise<VerifyAdminEmailCodeResponse> => {
-  const response = await apiClient.post<VerifyAdminEmailCodeResponse>(
-    "/api/admin/v1/email/verification/verify",
-    data,
-  );
-  return response.data;
+): Promise<void> => {
+  await apiClient.post("/api/admin/v1/email/verification/verify", data);
 };
 
 //
