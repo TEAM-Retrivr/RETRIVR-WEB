@@ -399,8 +399,15 @@ const ProfileEditPage = () => {
       <AdminCodeChangeBottomSheet
         ref={adminCodeSheetRef}
         isOpen={isAdminCodeSheetOpen}
-        onClose={() => setIsAdminCodeSheetOpen(false)}
-        onChanged={showCompleteModal}
+        passwordVerificationToken={passwordVerificationToken}
+        onClose={() => {
+          setIsAdminCodeSheetOpen(false);
+          setPasswordVerificationToken("");
+        }}
+        onChanged={() => {
+          setPasswordVerificationToken("");
+          showCompleteModal();
+        }}
       />
 
       <ProfileChangeCompleteModal

@@ -253,6 +253,22 @@ export interface UpdateAdminPasswordErrorResponse {
   detail?: string;
 }
 
+// 6-6. 관리자 코드 변경
+// 엔드포인트: "/api/admin/v1/profile/admin-code" (PATCH)
+// 성공 시 204 No Content (로그아웃 불필요)
+export interface UpdateAdminCodeRequest {
+  newAdminCode: string;
+  confirmAdminCode: string;
+  passwordVerificationToken: string;
+}
+
+export interface UpdateAdminCodeErrorResponse {
+  status: string;
+  code: number;
+  message: string;
+  detail?: string;
+}
+
 // 7. 홈 화면 출력 요청
 // 홈 화면 출력 요청 바디 없음
 

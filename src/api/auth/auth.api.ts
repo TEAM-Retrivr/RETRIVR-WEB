@@ -20,6 +20,7 @@ import type {
   VerifyAdminPasswordRequest,
   VerifyAdminPasswordResponse,
   UpdateAdminPasswordRequest,
+  UpdateAdminCodeRequest,
   LoadHomeResponse,
   LogoutResponse,
   WithdrawRequest,
@@ -210,4 +211,14 @@ export const updateAdminPassword = async (
   data: UpdateAdminPasswordRequest,
 ): Promise<void> => {
   await apiClient.patch("/api/admin/v1/profile/password", data);
+};
+
+//
+// 7-6. 관리자 코드 변경 API (PATCH)
+// 엔드포인트 : "/api/admin/v1/profile/admin-code"
+// 성공 시 204 No Content (로그아웃 불필요)
+export const updateAdminCode = async (
+  data: UpdateAdminCodeRequest,
+): Promise<void> => {
+  await apiClient.patch("/api/admin/v1/profile/admin-code", data);
 };
