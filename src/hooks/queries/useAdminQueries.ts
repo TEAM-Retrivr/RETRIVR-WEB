@@ -26,11 +26,19 @@ import {
   requestAdminCoupon,
   registerAdminCoupon,
   requestAdminMembership,
+  requestAdminPaymentMethods,
+  createAdminPaymentMethod,
+  updateAdminDefaultPaymentMethod,
+  requestAdminPaymentMethod,
+  deleteAdminPaymentMethod,
 } from "../../api/admin/admin.api";
 import type {
   AdminCreateItemRequest,
   AdminItemListResponse,
   AdminMembershipResponse,
+  AdminPaymentMethodCreateRequest,
+  AdminPaymentMethodListResponse,
+  AdminPaymentMethodResponse,
   AdminUpdateItemRequest,
   AdminUpdateReturnDueDateRequestBody,
   AdminVerifyCodeRequestBody,
@@ -403,5 +411,87 @@ export const useAdminMembership = () => {
     queryKey: ["adminMembership"],
     queryFn: requestAdminMembership,
     retry: false,
+  });
+};
+
+// 결제수단 목록 조회
+// GET /api/admin/v1/payment-methods
+export const useAdminPaymentMethods = () => {
+  return useQuery<AdminPaymentMethodListResponse>({
+    queryKey: ["adminPaymentMethods"],
+    queryFn: requestAdminPaymentMethods,
+    retry: false,
+  });
+};
+
+// 결제수단 단건 조회
+// GET /api/admin/v1/payment-methods/{paymentMethodId}
+export const useAdminPaymentMethod = (
+  paymentMethodId: string,
+  options?: { enabled?: boolean },
+) => {
+  const idOk = paymentMethodId.length > 0;
+  const enabled =
+    options?.enabled !== undefined ? options.enabled && idOk : idOk;
+
+  return useQuery<AdminPaymentMethodResponse>({
+    queryKey: ["adminPaymentMethod", paymentMethodId],
+    queryFn: () => requestAdminPaymentMethod(paymentMethodId),
+    enabled,
+    retry: false,
+  });
+};
+
+// 결제수단 추가
+// POST /api/admin/v1/payment-methods
+export const useCreateAdminPaymentMethod = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: AdminPaymentMethodCreateRequest) =>
+      createAdminPaymentMethod(body),
+    onSuccess: async (data) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["adminPaymentMethods"] }),
+        queryClient.invalidateQueries({
+          queryKey: ["adminPaymentMethod", data.paymentMethodId],
+        }),
+      ]);
+    },
+  });
+};
+
+// 기본 결제수단 변경
+// PATCH /api/admin/v1/payment-methods/{paymentMethodId}/default
+export const useUpdateAdminDefaultPaymentMethod = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (paymentMethodId: string) =>
+      updateAdminDefaultPaymentMethod({ paymentMethodId }),
+    onSuccess: async (_data, paymentMethodId) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["adminPaymentMethods"] }),
+        queryClient.invalidateQueries({
+          queryKey: ["adminPaymentMethod", paymentMethodId],
+        }),
+      ]);
+    },
+  });
+};
+
+// 결제수단 삭제
+// DELETE /api/admin/v1/payment-methods/{paymentMethodId}
+export const useDeleteAdminPaymentMethod = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (paymentMethodId: string) =>
+      deleteAdminPaymentMethod({ paymentMethodId }),
+    onSuccess: async (_data, paymentMethodId) => {
+      queryClient.removeQueries({
+        queryKey: ["adminPaymentMethod", paymentMethodId],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["adminPaymentMethods"],
+      });
+    },
   });
 };

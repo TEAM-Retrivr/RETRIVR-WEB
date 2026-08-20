@@ -5,6 +5,7 @@ import type { PaymentMethod } from "../../../types/paymentMethod";
 type PaymentMethodDeleteModalProps = {
   isOpen: boolean;
   paymentMethod: PaymentMethod | null;
+  isPending?: boolean;
   onClose: () => void;
   onConfirm: () => void;
 };
@@ -12,6 +13,7 @@ type PaymentMethodDeleteModalProps = {
 const PaymentMethodDeleteModal = ({
   isOpen,
   paymentMethod,
+  isPending = false,
   onClose,
   onConfirm,
 }: PaymentMethodDeleteModalProps) => {
@@ -46,6 +48,7 @@ const PaymentMethodDeleteModal = ({
             variant="outline"
             size="md"
             className="h-12 max-w-none flex-1 rounded-[12px] text-18px"
+            disabled={isPending}
             onClick={onClose}
           >
             취소
@@ -54,9 +57,10 @@ const PaymentMethodDeleteModal = ({
             variant="primary"
             size="md"
             className="h-12 max-w-none flex-1 rounded-[12px] text-18px shadow-[0_0_4px_rgba(181,244,255,0.5)]"
+            disabled={isPending}
             onClick={onConfirm}
           >
-            삭제하기
+            {isPending ? "삭제 중..." : "삭제하기"}
           </Button>
         </div>
       </div>

@@ -25,6 +25,10 @@ import type {
   AdminCouponLookupResponse,
   AdminCouponRegistrationResponse,
   AdminMembershipResponse,
+  AdminPaymentMethodCreateRequest,
+  AdminPaymentMethodDeleteResponse,
+  AdminPaymentMethodListResponse,
+  AdminPaymentMethodResponse,
 } from "./admin.type";
 import { apiClient } from "../core";
 import type { AxiosResponse } from "axios";
@@ -399,3 +403,62 @@ export const requestAdminMembership =
     );
     return response.data;
   };
+
+// 결제수단 목록 조회
+// GET /api/admin/v1/payment-methods
+export const requestAdminPaymentMethods =
+  async (): Promise<AdminPaymentMethodListResponse> => {
+    const response = await apiClient.get<AdminPaymentMethodListResponse>(
+      "/api/admin/v1/payment-methods",
+    );
+    return response.data;
+  };
+
+// 결제수단 추가
+// POST /api/admin/v1/payment-methods
+export const createAdminPaymentMethod = async (
+  body: AdminPaymentMethodCreateRequest,
+): Promise<AdminPaymentMethodResponse> => {
+  const response = await apiClient.post<AdminPaymentMethodResponse>(
+    "/api/admin/v1/payment-methods",
+    body,
+  );
+  return response.data;
+};
+
+// 기본 결제수단 변경
+// PATCH /api/admin/v1/payment-methods/{paymentMethodId}/default
+export const updateAdminDefaultPaymentMethod = async ({
+  paymentMethodId,
+}: {
+  paymentMethodId: string;
+}): Promise<AdminPaymentMethodResponse> => {
+  const response = await apiClient.patch<AdminPaymentMethodResponse>(
+    `/api/admin/v1/payment-methods/${encodeURIComponent(paymentMethodId)}/default`,
+  );
+  return response.data;
+};
+
+// 결제수단 단건 조회
+// GET /api/admin/v1/payment-methods/{paymentMethodId}
+export const requestAdminPaymentMethod = async (
+  paymentMethodId: string,
+): Promise<AdminPaymentMethodResponse> => {
+  const response = await apiClient.get<AdminPaymentMethodResponse>(
+    `/api/admin/v1/payment-methods/${encodeURIComponent(paymentMethodId)}`,
+  );
+  return response.data;
+};
+
+// 결제수단 삭제
+// DELETE /api/admin/v1/payment-methods/{paymentMethodId}
+export const deleteAdminPaymentMethod = async ({
+  paymentMethodId,
+}: {
+  paymentMethodId: string;
+}): Promise<AdminPaymentMethodDeleteResponse> => {
+  const response = await apiClient.delete<AdminPaymentMethodDeleteResponse>(
+    `/api/admin/v1/payment-methods/${encodeURIComponent(paymentMethodId)}`,
+  );
+  return response.data;
+};

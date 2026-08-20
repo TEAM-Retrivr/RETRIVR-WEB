@@ -1,41 +1,31 @@
 import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
-import {
-  addPaymentMethod,
-  setPrimaryPaymentMethod,
-} from "../../store/paymentMethodsStore";
+import ConfirmModal from "../../components/modals/ConfirmModal";
 import {
   REGISTER_OPTION_LABEL,
-  createRegisteredPaymentMethod,
   type PaymentMethodRegisterOption,
 } from "../../types/paymentMethod";
 import { resolveMembershipReturnTo } from "../../utils/safeReturnTo";
 
 const REGISTER_OPTIONS: PaymentMethodRegisterOption[] = [
   "kakao",
-  "naver",
+  "toss",
   "card",
 ];
 
 const PaymentMethodRegisterPage = () => {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const returnTo = resolveMembershipReturnTo(searchParams.get("returnTo"));
-  const shouldSetPrimaryOnRegister = returnTo.startsWith(
-    "/membership/subscribe",
-  );
   const [selectedOption, setSelectedOption] =
     useState<PaymentMethodRegisterOption>("card");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleRegister = () => {
-    const method = createRegisteredPaymentMethod(selectedOption);
-    addPaymentMethod(method);
-    if (shouldSetPrimaryOnRegister) {
-      setPrimaryPaymentMethod(method.id);
-    }
-    navigate(returnTo);
+    setErrorMessage(
+      "결제 수단 등록은 PortOne billingKey 발급 연동 후 사용할 수 있습니다.",
+    );
   };
 
   return (
@@ -87,6 +77,13 @@ const PaymentMethodRegisterPage = () => {
           </button>
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={errorMessage !== null}
+        onClose={() => setErrorMessage(null)}
+        message={errorMessage ?? ""}
+        confirmText="확인"
+      />
     </Layout>
   );
 };

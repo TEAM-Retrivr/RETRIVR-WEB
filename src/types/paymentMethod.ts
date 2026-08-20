@@ -1,79 +1,64 @@
-export type PaymentMethodKind = "card" | "bank" | "kakao" | "naver";
+import type { AdminPaymentMethodProvider } from "../api/admin/admin.type";
+
+export type PaymentMethodProvider = AdminPaymentMethodProvider;
+
+export type PaymentMethodRegisterOption = "kakao" | "toss" | "card";
 
 export type PaymentMethod = {
   id: string;
   name: string;
   maskedNumber?: string;
-  kind: PaymentMethodKind;
+  provider: PaymentMethodProvider;
+  isDefault: boolean;
 };
 
-export type PaymentMethodRegisterOption = "kakao" | "naver" | "card";
-
-export const INITIAL_PAYMENT_METHODS: PaymentMethod[] = [
-  {
-    id: "shinhan-card",
-    name: "신한카드",
-    maskedNumber: "348313*******123",
-    kind: "card",
-  },
-  {
-    id: "woori-bank",
-    name: "우리은행",
-    maskedNumber: "**********26123",
-    kind: "bank",
-  },
-  {
-    id: "kb-bank",
-    name: "국민은행",
-    maskedNumber: "**********26123",
-    kind: "bank",
-  },
-  {
-    id: "kakao-pay",
-    name: "카카오페이",
-    kind: "kakao",
-  },
-  {
-    id: "naver-pay",
-    name: "네이버페이",
-    kind: "naver",
-  },
-];
-
-export const INITIAL_PRIMARY_PAYMENT_METHOD_ID = "shinhan-card";
+export const PAYMENT_PROVIDER_LABEL: Record<PaymentMethodProvider, string> = {
+  KAKAOPAY: "카카오페이",
+  TOSSPAY: "토스페이",
+  KGINICIS: "카드",
+};
 
 export const REGISTER_OPTION_LABEL: Record<PaymentMethodRegisterOption, string> =
   {
     kakao: "카카오페이",
-    naver: "네이버페이",
+    toss: "토스페이",
     card: "카드 등록",
   };
 
-export const createRegisteredPaymentMethod = (
-  option: PaymentMethodRegisterOption,
-): PaymentMethod => {
-  const id = `${option}-${Date.now()}`;
+export const REGISTER_OPTION_PROVIDER: Record<
+  PaymentMethodRegisterOption,
+  PaymentMethodProvider
+> = {
+  kakao: "KAKAOPAY",
+  toss: "TOSSPAY",
+  card: "KGINICIS",
+};
 
-  if (option === "card") {
-    return {
-      id,
-      name: "신한카드",
-      maskedNumber: "348313*******123",
-      kind: "card",
-    };
-  }
-
-  if (option === "kakao") {
-    return {
-      id,
-      name: "카카오페이",
-      kind: "kakao",
-    };
-  }
-
+export const toPaymentMethodView = (item: {
+  paymentMethodId: string;
+  provider: PaymentMethodProvider | string;
+  isDefault: boolean;
+}): PaymentMethod => {
+  const provider = item.provider as PaymentMethodProvider;
   return {
-    id,
-    name: "네이버페이",
-    kind: "naver",
+    id: item.paymentMethodId,
+    name: PAYMENT_PROVIDER_LABEL[provider] ?? item.provider,
+    provider,
+    isDefault: item.isDefault,
   };
 };
+
+export const toActivePaymentMethods = (
+  items?: Array<{
+    paymentMethodId: string;
+    provider: PaymentMethodProvider | string;
+    status?: string;
+    isDefault: boolean;
+  }>,
+): PaymentMethod[] =>
+  (items ?? [])
+    .filter((item) => item.status !== "DISABLED")
+    .map(toPaymentMethodView);
+
+export const getPrimaryPaymentMethodId = (methods: PaymentMethod[]) =>
+  methods.find((method) => method.isDefault)?.id ?? methods[0]?.id ?? "";
