@@ -2,7 +2,7 @@ import type { AdminPaymentMethodProvider } from "../api/admin/admin.type";
 
 export type PaymentMethodProvider = AdminPaymentMethodProvider;
 
-export type PaymentMethodRegisterOption = "kakao" | "toss" | "card";
+export type PaymentMethodRegisterOption = "kakao" | "card";
 
 export type PaymentMethod = {
   id: string;
@@ -21,7 +21,6 @@ export const PAYMENT_PROVIDER_LABEL: Record<PaymentMethodProvider, string> = {
 export const REGISTER_OPTION_LABEL: Record<PaymentMethodRegisterOption, string> =
   {
     kakao: "카카오페이",
-    toss: "토스페이",
     card: "카드 등록",
   };
 
@@ -30,7 +29,6 @@ export const REGISTER_OPTION_PROVIDER: Record<
   PaymentMethodProvider
 > = {
   kakao: "KAKAOPAY",
-  toss: "TOSSPAY",
   card: "KGINICIS",
 };
 
