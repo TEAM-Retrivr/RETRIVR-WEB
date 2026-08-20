@@ -397,7 +397,7 @@ export const useRegisterAdminCoupon = () => {
 
 // 현재 멤버십 상태 조회
 // - 멤버십 이용 현황, 이용권 목록 > 구독 이용권 탭 등에서 사용
-// GET /api/admin/v1/membership
+// GET /api/admin/v1/memberships/current
 export const useAdminMembership = () => {
   return useQuery<AdminMembershipResponse>({
     queryKey: ["adminMembership"],

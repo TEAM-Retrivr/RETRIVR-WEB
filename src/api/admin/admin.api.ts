@@ -391,11 +391,11 @@ export const registerAdminCoupon = async ({
 
 // 현재 멤버십 상태 조회
 // - 이용권 목록(쿠폰/구독) 화면에서 현재 이용권 정보를 표시
-// GET /api/admin/v1/membership
+// GET /api/admin/v1/memberships/current
 export const requestAdminMembership =
   async (): Promise<AdminMembershipResponse> => {
     const response = await apiClient.get<AdminMembershipResponse>(
-      "/api/admin/v1/membership",
+      "/api/admin/v1/memberships/current",
     );
     return response.data;
   };
