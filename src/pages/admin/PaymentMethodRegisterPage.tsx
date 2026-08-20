@@ -16,13 +16,16 @@ import {
 import { getAdminEmail } from "../../utils/adminSession";
 import { resolveMembershipReturnTo } from "../../utils/safeReturnTo";
 import {
+  claimPortoneBillingKeySave,
   clearPortoneRegisterOption,
   closePortoneOverlay,
   getPortoneProvider,
   getPortoneRedirectResult,
   isPortoneMobileDevice,
   issuePortoneBillingKey,
+  markPortoneBillingKeySaved,
   readPortoneRegisterOption,
+  releasePortoneBillingKeySave,
   type PortoneCheckoutDevice,
 } from "../../lib/portoneBilling";
 
@@ -92,16 +95,26 @@ const PaymentMethodRegisterPage = () => {
   }) => {
     if (abortedRef.current) return;
 
+    const claim = claimPortoneBillingKeySave(billingKey);
+    if (claim === "in-flight") return;
+    if (claim === "already-saved") {
+      clearPortoneRegisterOption();
+      setSuccessMessage(SUCCESS_MESSAGE);
+      return;
+    }
+
     try {
       await createPaymentMethod({
         provider: getPortoneProvider(option),
         billingKey,
         isDefault: shouldSetPrimaryOnRegister,
       });
+      markPortoneBillingKeySaved(billingKey);
       if (abortedRef.current) return;
       clearPortoneRegisterOption();
       setSuccessMessage(SUCCESS_MESSAGE);
     } catch (error) {
+      releasePortoneBillingKeySave(billingKey);
       if (abortedRef.current) return;
       setErrorMessage(
         getPaymentMethodErrorMessage(
@@ -165,7 +178,6 @@ const PaymentMethodRegisterPage = () => {
     const organizationId = localStorage.getItem("orgId")?.trim();
     const result = await issuePortoneBillingKey({
       option: selectedOption,
-      checkoutDevice,
       customer: {
         customerId: organizationId || undefined,
         fullName: cachedProfile?.organizationName || "Retrivr 관리자",

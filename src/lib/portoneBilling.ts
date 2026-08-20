@@ -7,6 +7,7 @@ import {
 
 const ISSUE_NAME = "Retrivr 정기결제 수단 등록";
 const OPTION_STORAGE_KEY = "retrivr.portone.paymentMethodOption";
+const BILLING_KEY_SAVE_STORAGE_KEY = "retrivr.portone.billingKeySave";
 const PORTONE_OVERLAY_ID = "imp-iframe-wrapper";
 
 type PortoneMethodConfig = {
@@ -60,6 +61,54 @@ export const readPortoneRegisterOption = () => {
 
 export const clearPortoneRegisterOption = () => {
   sessionStorage.removeItem(OPTION_STORAGE_KEY);
+};
+
+type BillingKeySaveState = {
+  billingKey: string;
+  status: "saving" | "saved";
+};
+
+const readBillingKeySaveState = (): BillingKeySaveState | null => {
+  const stored = sessionStorage.getItem(BILLING_KEY_SAVE_STORAGE_KEY);
+  if (!stored) return null;
+  try {
+    const parsed = JSON.parse(stored) as BillingKeySaveState;
+    if (
+      typeof parsed.billingKey === "string" &&
+      (parsed.status === "saving" || parsed.status === "saved")
+    ) {
+      return parsed;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+};
+
+export const claimPortoneBillingKeySave = (billingKey: string) => {
+  const current = readBillingKeySaveState();
+  if (current?.billingKey === billingKey) {
+    return current.status === "saved" ? "already-saved" : "in-flight";
+  }
+  sessionStorage.setItem(
+    BILLING_KEY_SAVE_STORAGE_KEY,
+    JSON.stringify({ billingKey, status: "saving" } satisfies BillingKeySaveState),
+  );
+  return "claimed";
+};
+
+export const markPortoneBillingKeySaved = (billingKey: string) => {
+  sessionStorage.setItem(
+    BILLING_KEY_SAVE_STORAGE_KEY,
+    JSON.stringify({ billingKey, status: "saved" } satisfies BillingKeySaveState),
+  );
+};
+
+export const releasePortoneBillingKeySave = (billingKey: string) => {
+  const current = readBillingKeySaveState();
+  if (current?.billingKey === billingKey) {
+    sessionStorage.removeItem(BILLING_KEY_SAVE_STORAGE_KEY);
+  }
 };
 
 export const closePortoneOverlay = () => {
@@ -118,7 +167,6 @@ export type PortoneCheckoutDevice = "desktop" | "mobile";
 export const issuePortoneBillingKey = async ({
   option,
   customer,
-  checkoutDevice,
 }: {
   option: PaymentMethodRegisterOption;
   customer?: {
@@ -127,7 +175,6 @@ export const issuePortoneBillingKey = async ({
     email?: string;
     phoneNumber?: string;
   };
-  checkoutDevice?: PortoneCheckoutDevice;
 }): Promise<PortoneIssueResult> => {
   const storeId = readEnv("VITE_PORTONE_STORE_ID");
   const config = METHOD_CONFIG[option];
@@ -151,9 +198,9 @@ export const issuePortoneBillingKey = async ({
     ...(customer?.phoneNumber ? { phoneNumber: customer.phoneNumber } : {}),
   };
 
-  const useMobileCheckout =
-    checkoutDevice === "mobile" ||
-    (checkoutDevice !== "desktop" && isPortoneMobileDevice());
+  // 포트원 창 타입은 SDK가 User-Agent로 고른다. PC iframe에 redirectUrl을 넣으면
+  // 프로미스 성공과 쿼리 복귀가 겹쳐 같은 빌링키로 POST가 두 번 갈 수 있다.
+  const useMobileRedirect = isPortoneMobileDevice();
 
   const response = await PortOne.requestIssueBillingKey({
     storeId,
@@ -161,9 +208,7 @@ export const issuePortoneBillingKey = async ({
     billingKeyMethod: config.billingKeyMethod,
     issueId: `retrivr-${crypto.randomUUID()}`,
     issueName: ISSUE_NAME,
-    // 노트북/PC는 리디렉션하지 않는다. 카카오페이는 PC iframe에서 QR을 보여 주고,
-    // 휴대폰만 카카오톡으로 보낸다. 화면 너비(402px 셸)는 쓰지 않는다.
-    ...(useMobileCheckout ? { redirectUrl: buildRedirectUrl() } : {}),
+    ...(useMobileRedirect ? { redirectUrl: buildRedirectUrl() } : {}),
     windowType: {
       pc: "IFRAME",
       mobile: "REDIRECTION",
