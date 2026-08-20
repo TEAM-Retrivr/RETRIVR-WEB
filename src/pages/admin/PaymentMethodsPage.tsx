@@ -1,38 +1,91 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import PaymentMethodDeleteModal from "../../components/modals/membership/PaymentMethodDeleteModal";
 import {
-  removePaymentMethod,
-  setPrimaryPaymentMethod,
-  usePaymentMethodsStore,
-} from "../../store/paymentMethodsStore";
-import type { PaymentMethod } from "../../types/paymentMethod";
+  useAdminPaymentMethod,
+  useAdminPaymentMethods,
+  useDeleteAdminPaymentMethod,
+  useUpdateAdminDefaultPaymentMethod,
+} from "../../hooks/queries/useAdminQueries";
+import type { AdminPaymentMethodErrorResponse } from "../../api/admin/admin.type";
+import {
+  getPrimaryPaymentMethodId,
+  toActivePaymentMethods,
+  toPaymentMethodView,
+  type PaymentMethod,
+} from "../../types/paymentMethod";
+
+const getPaymentMethodErrorMessage = (error: unknown, fallback: string) => {
+  if (axios.isAxiosError(error)) {
+    const data = error.response?.data as
+      | AdminPaymentMethodErrorResponse
+      | undefined;
+    if (data?.message) return data.message;
+  }
+  return fallback;
+};
 
 const PaymentMethodsPage = () => {
   const navigate = useNavigate();
-  const { methods, primaryId } = usePaymentMethodsStore();
+  const { data, isLoading, isError } = useAdminPaymentMethods();
+  const { mutate: updateDefault, isPending: isUpdatingDefault } =
+    useUpdateAdminDefaultPaymentMethod();
+  const { mutate: deleteMethod, isPending: isDeleting } =
+    useDeleteAdminPaymentMethod();
+  const methods = toActivePaymentMethods(data);
+  const primaryId = getPrimaryPaymentMethodId(methods);
   const [deleteTarget, setDeleteTarget] = useState<PaymentMethod | null>(null);
   const [confirmMessage, setConfirmMessage] = useState<string | null>(null);
+  const { data: deleteDetail } = useAdminPaymentMethod(deleteTarget?.id ?? "", {
+    enabled: Boolean(deleteTarget?.id),
+  });
 
   const primaryMethod =
-    methods.find((method) => method.id === primaryId) ?? methods[0] ?? null;
+    methods.find((method) => method.id === primaryId) ?? null;
   const otherMethods = methods.filter(
     (method) => method.id !== primaryMethod?.id,
   );
+  const deleteMethodView =
+    deleteDetail && deleteDetail.status !== "DISABLED"
+      ? toPaymentMethodView(deleteDetail)
+      : deleteTarget;
 
   const handleChangePrimary = (methodId: string) => {
-    if (methodId === primaryId) return;
-    setPrimaryPaymentMethod(methodId);
-    setConfirmMessage("대표 결제 수단 변경이 완료되었어요.");
+    if (methodId === primaryId || isUpdatingDefault) return;
+    updateDefault(methodId, {
+      onSuccess: () => {
+        setConfirmMessage("대표 결제 수단 변경이 완료되었어요.");
+      },
+      onError: (error) => {
+        setConfirmMessage(
+          getPaymentMethodErrorMessage(
+            error,
+            "대표 결제 수단 변경에 실패했습니다. 다시 시도해주세요.",
+          ),
+        );
+      },
+    });
   };
 
   const handleDeleteConfirm = () => {
-    if (!deleteTarget) return;
-    removePaymentMethod(deleteTarget.id);
-    setDeleteTarget(null);
+    if (!deleteTarget || isDeleting) return;
+    deleteMethod(deleteTarget.id, {
+      onSuccess: () => {
+        setDeleteTarget(null);
+      },
+      onError: (error) => {
+        setConfirmMessage(
+          getPaymentMethodErrorMessage(
+            error,
+            "결제 수단 삭제에 실패했습니다. 다시 시도해주세요.",
+          ),
+        );
+      },
+    });
   };
 
   return (
@@ -49,7 +102,15 @@ const PaymentMethodsPage = () => {
             대표 결제 수단
           </h2>
 
-          {primaryMethod ? (
+          {isLoading ? (
+            <p className="text-12px font-normal leading-[1.4] text-neutral-gray-3">
+              결제 수단을 불러오는 중이에요
+            </p>
+          ) : isError ? (
+            <p className="text-12px font-normal leading-[1.4] text-neutral-gray-3">
+              결제 수단을 불러오지 못했어요
+            </p>
+          ) : primaryMethod ? (
             <div className="flex flex-col gap-0.5 text-secondary-1">
               <p className="text-12px font-bold leading-[1.5]">
                 {primaryMethod.name}
@@ -73,7 +134,7 @@ const PaymentMethodsPage = () => {
 
         <section className="mt-6 flex flex-col">
           <div className="border-t border-[#e6eaed]" />
-          {otherMethods.length === 0 ? (
+          {isLoading || isError ? null : otherMethods.length === 0 ? (
             <p className="py-8 text-center text-12px font-normal text-neutral-gray-3">
               추가 등록된 결제 수단이 없어요
             </p>
@@ -107,8 +168,9 @@ const PaymentMethodsPage = () => {
 
                   <button
                     type="button"
+                    disabled={isUpdatingDefault}
                     onClick={() => handleChangePrimary(method.id)}
-                    className="flex h-[27px] w-[113px] shrink-0 items-center justify-center rounded-[10px] border border-neutral-gray-2 bg-neutral-white text-12px font-normal leading-[1.4] text-neutral-gray-2 cursor-pointer"
+                    className="flex h-[27px] w-[113px] shrink-0 items-center justify-center rounded-[10px] border border-neutral-gray-2 bg-neutral-white text-12px font-normal leading-[1.4] text-neutral-gray-2 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     대표 수단으로 변경
                   </button>
@@ -131,8 +193,12 @@ const PaymentMethodsPage = () => {
 
       <PaymentMethodDeleteModal
         isOpen={deleteTarget !== null}
-        paymentMethod={deleteTarget}
-        onClose={() => setDeleteTarget(null)}
+        paymentMethod={deleteMethodView}
+        isPending={isDeleting}
+        onClose={() => {
+          if (isDeleting) return;
+          setDeleteTarget(null);
+        }}
         onConfirm={handleDeleteConfirm}
       />
       <ConfirmModal

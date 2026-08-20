@@ -5,10 +5,11 @@ import CommonInput from "../../components/CommonInput";
 import Button from "../../components/Button";
 import { useLogin } from "../../hooks/queries/useAuthQueries";
 import ErrorModal from "../../components/modals/ErrorModal";
-import { resetPaymentMethodsStore } from "../../store/paymentMethodsStore";
+import { useQueryClient } from "@tanstack/react-query";
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   {
     /* 상태변수 */
@@ -36,7 +37,8 @@ const LoginPage = () => {
       { email, password },
       {
         onSuccess: (data) => {
-          resetPaymentMethodsStore();
+          queryClient.removeQueries({ queryKey: ["adminPaymentMethods"] });
+          queryClient.removeQueries({ queryKey: ["adminPaymentMethod"] });
           localStorage.setItem("accessToken", data.accessToken);
           // 서버가 refreshToken을 HttpOnly 쿠키로 내려주는 경우 바디에 없을 수 있음
           if (data.refreshToken) {

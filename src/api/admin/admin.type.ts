@@ -387,3 +387,38 @@ export interface AdminMembershipErrorResponse {
   message: string;
   detail?: string;
 }
+
+// 조직 결제수단 목록 조회
+// GET /api/admin/v1/payment-methods
+export type AdminPaymentMethodProvider = "TOSSPAY" | "KAKAOPAY" | "KGINICIS";
+export type AdminPaymentMethodStatus = "ACTIVE" | "DISABLED";
+
+export interface AdminPaymentMethodResponse {
+  paymentMethodId: string;
+  provider: AdminPaymentMethodProvider;
+  status: AdminPaymentMethodStatus;
+  isDefault: boolean;
+  registeredAt?: string;
+  disabledAt?: string;
+}
+
+export type AdminPaymentMethodListResponse = AdminPaymentMethodResponse[];
+
+export interface AdminPaymentMethodCreateRequest {
+  provider: AdminPaymentMethodProvider;
+  billingKey: string;
+  isDefault?: boolean;
+}
+
+export interface AdminPaymentMethodDeleteResponse {
+  paymentMethodId: string;
+  status: AdminPaymentMethodStatus;
+  disabledAt?: string;
+}
+
+export interface AdminPaymentMethodErrorResponse {
+  status: string;
+  code: number;
+  message: string;
+  detail?: string;
+}
