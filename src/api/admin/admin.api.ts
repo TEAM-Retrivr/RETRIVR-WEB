@@ -31,6 +31,7 @@ import type {
   AdminSubscriptionStartResponse,
   AdminSubscriptionPlanChangeRequest,
   AdminSubscriptionPlanChangeResponse,
+  AdminSubscriptionCancelResponse,
   AdminMembershipHistoryResponse,
   AdminMembershipResponse,
   AdminPaymentMethodCreateRequest,
@@ -458,6 +459,16 @@ export const changeAdminSubscriptionPlan = async (
   );
   return response.data;
 };
+
+// 구독 해지
+// PATCH /api/admin/v1/subscriptions/me/cancel
+export const cancelAdminSubscription =
+  async (): Promise<AdminSubscriptionCancelResponse> => {
+    const response = await apiClient.patch<AdminSubscriptionCancelResponse>(
+      "/api/admin/v1/subscriptions/me/cancel",
+    );
+    return response.data;
+  };
 
 // 현재 멤버십 상태 조회
 // - 이용권 목록(쿠폰/구독) 화면에서 현재 이용권 정보를 표시

@@ -441,6 +441,15 @@ export interface AdminSubscriptionPlanChangeResponse {
   nextBillingAt?: string;
 }
 
+// 구독 해지
+// PATCH /api/admin/v1/subscriptions/me/cancel
+export interface AdminSubscriptionCancelResponse {
+  subscriptionId: string;
+  status: AdminSubscriptionStatus;
+  canceledAt?: string;
+  currentPassExpireAt?: string;
+}
+
 // 쿠폰 이용권 목록 조회
 // GET /api/admin/v1/memberships/coupons
 export interface AdminCouponMembershipPassResponse {

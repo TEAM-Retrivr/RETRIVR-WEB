@@ -32,6 +32,7 @@ import {
   requestAdminMembershipHistory,
   startAdminSubscription,
   changeAdminSubscriptionPlan,
+  cancelAdminSubscription,
   requestAdminPaymentMethods,
   createAdminPaymentMethod,
   updateAdminDefaultPaymentMethod,
@@ -507,6 +508,26 @@ export const useChangeAdminSubscriptionPlan = () => {
   return useMutation({
     mutationFn: (body: AdminSubscriptionPlanChangeRequest) =>
       changeAdminSubscriptionPlan(body),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["adminMembership"] }),
+        queryClient.invalidateQueries({
+          queryKey: ["adminCurrentSubscription"],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["adminMembershipHistory"],
+        }),
+      ]);
+    },
+  });
+};
+
+// 구독 해지
+// PATCH /api/admin/v1/subscriptions/me/cancel
+export const useCancelAdminSubscription = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => cancelAdminSubscription(),
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["adminMembership"] }),
