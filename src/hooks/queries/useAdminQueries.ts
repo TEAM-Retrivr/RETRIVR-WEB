@@ -4,6 +4,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import axios from "axios";
 import {
   requestAdminItemList,
   requestAdminRentalItemSummaryList,
@@ -26,6 +27,7 @@ import {
   requestAdminCoupon,
   registerAdminCoupon,
   requestAdminCouponMemberships,
+  requestAdminCurrentSubscription,
   requestAdminMembership,
   requestAdminMembershipHistory,
   requestAdminPaymentMethods,
@@ -38,6 +40,7 @@ import type {
   AdminCreateItemRequest,
   AdminItemListResponse,
   AdminCouponMembershipPassListResponse,
+  AdminCurrentSubscriptionResponse,
   AdminMembershipHistoryResponse,
   AdminMembershipResponse,
   AdminPaymentMethodCreateRequest,
@@ -406,6 +409,9 @@ export const useRegisterAdminCoupon = () => {
       await queryClient.invalidateQueries({
         queryKey: ["adminCouponMemberships"],
       });
+      await queryClient.invalidateQueries({
+        queryKey: ["adminCurrentSubscription"],
+      });
     },
   });
 };
@@ -417,6 +423,26 @@ export const useAdminCouponMemberships = () => {
   return useQuery<AdminCouponMembershipPassListResponse>({
     queryKey: ["adminCouponMemberships"],
     queryFn: requestAdminCouponMemberships,
+    retry: false,
+  });
+};
+
+// 현재 이용 중인 구독 이용권 조회
+// - 이용권 목록 > 구독 이용권 탭
+// GET /api/admin/v1/memberships/current/subscription
+export const useAdminCurrentSubscription = () => {
+  return useQuery<AdminCurrentSubscriptionResponse | null>({
+    queryKey: ["adminCurrentSubscription"],
+    queryFn: async () => {
+      try {
+        return await requestAdminCurrentSubscription();
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 404) {
+          return null;
+        }
+        throw error;
+      }
+    },
     retry: false,
   });
 };

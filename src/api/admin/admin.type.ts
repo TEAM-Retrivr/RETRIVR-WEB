@@ -388,6 +388,22 @@ export interface AdminMembershipErrorResponse {
   detail?: string;
 }
 
+// 현재 이용 중인 구독 이용권 조회
+// GET /api/admin/v1/memberships/current/subscription
+export type AdminSubscriptionPlan = "MONTHLY" | "YEARLY";
+export type AdminMembershipPassStatus = "REGISTERED" | "ACTIVE" | "EXPIRED";
+
+export interface AdminCurrentSubscriptionResponse {
+  membershipPassId: string;
+  plan: AdminSubscriptionPlan;
+  membershipPassStatus: AdminMembershipPassStatus;
+  durationDays: number;
+  paidAmount: number;
+  startAt: string;
+  endAt: string;
+  nextBillingAt?: string | null;
+}
+
 // 쿠폰 이용권 목록 조회
 // GET /api/admin/v1/memberships/coupons
 export interface AdminCouponMembershipPassResponse {
