@@ -1,26 +1,32 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
+import ConfirmModal from "../../components/modals/ConfirmModal";
 import CouponAlertModal from "../../components/modals/membership/CouponAlertModal";
 import CouponRegistrationModal from "../../components/modals/membership/CouponRegistrationModal";
 import CouponSuccessModal from "../../components/modals/membership/CouponSuccessModal";
 import MembershipCouponCard from "../../components/membership/MembershipCouponCard";
 import MembershipProBadge from "../../components/membership/MembershipProBadge";
 import {
+  useAdminCurrentSubscription,
   useAdminMembership,
+  useChangeAdminSubscriptionPlan,
   useRegisterAdminCoupon,
   useRequestAdminCoupon,
 } from "../../hooks/queries/useAdminQueries";
 import type {
   AdminCouponLookupResponse,
   AdminMembershipResponse,
+  AdminSubscriptionErrorResponse,
 } from "../../api/admin/admin.type";
 import {
   formatCouponDay,
   formatCouponValidityPeriod,
   isValidCouponCode,
 } from "../../utils/couponDisplay";
+import { toAdminSubscriptionPlan, toVoucherBillingCycle } from "../../types/voucherPayment";
 type BillingCycle = "monthly" | "yearly";
 type CouponAlertType =
   | "notFound"
@@ -92,6 +98,16 @@ const MENU_ITEMS = [
 
 const COMING_SOON_MESSAGE = "개발 예정입니다.";
 
+const getSubscriptionErrorMessage = (error: unknown, fallback: string) => {
+  if (axios.isAxiosError(error)) {
+    const data = error.response?.data as
+      | AdminSubscriptionErrorResponse
+      | undefined;
+    if (data?.message) return data.message;
+  }
+  return fallback;
+};
+
 const MembershipPage = () => {
   const navigate = useNavigate();
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
@@ -104,15 +120,40 @@ const MembershipPage = () => {
     useState<CouponAlertType | null>(null);
   const [isCouponSuccessModalOpen, setIsCouponSuccessModalOpen] =
     useState(false);
+  const [planChangeMessage, setPlanChangeMessage] = useState<string | null>(
+    null,
+  );
+  const didSyncBillingCycleRef = useRef(false);
 
   const lookupCouponMutation = useRequestAdminCoupon();
   const registerCouponMutation = useRegisterAdminCoupon();
+  const changePlanMutation = useChangeAdminSubscriptionPlan();
+  const {
+    data: currentSubscription,
+    isLoading: isSubscriptionLoading,
+    isFetched: isSubscriptionFetched,
+  } = useAdminCurrentSubscription();
   const {
     data: membership,
     isLoading: isMembershipLoading,
     isError: isMembershipError,
     isSuccess: isMembershipSuccess,
   } = useAdminMembership();
+
+  useEffect(() => {
+    if (didSyncBillingCycleRef.current || !isSubscriptionFetched) return;
+    didSyncBillingCycleRef.current = true;
+    if (
+      currentSubscription?.plan &&
+      currentSubscription.membershipPassStatus !== "EXPIRED"
+    ) {
+      setBillingCycle(toVoucherBillingCycle(currentSubscription.plan));
+    }
+  }, [
+    isSubscriptionFetched,
+    currentSubscription?.plan,
+    currentSubscription?.membershipPassStatus,
+  ]);
 
   const selectedPlan = SUBSCRIPTION_PLANS[billingCycle];
   const trimmedCouponCode = couponCode.trim();
@@ -132,13 +173,52 @@ const MembershipPage = () => {
     );
   const showEmptyMembership =
     !isMembershipLoading && (isMembershipError || !hasActivePass);
+  const hasChangeableSubscription =
+    isSubscriptionFetched &&
+    Boolean(currentSubscription?.plan) &&
+    currentSubscription?.membershipPassStatus !== "EXPIRED";
 
   const handleComingSoon = () => {
     alert(COMING_SOON_MESSAGE);
   };
 
   const handleStartSubscription = () => {
-    navigate(`/membership/subscribe?cycle=${billingCycle}`);
+    if (isSubscriptionLoading || !isSubscriptionFetched) return;
+    if (!hasChangeableSubscription) {
+      navigate(`/membership/subscribe?cycle=${billingCycle}`);
+      return;
+    }
+
+    const nextPlan = toAdminSubscriptionPlan(billingCycle);
+    if (currentSubscription?.plan === nextPlan) {
+      setPlanChangeMessage("이미 이용 중인 플랜입니다.");
+      return;
+    }
+    if (changePlanMutation.isPending) return;
+
+    changePlanMutation.mutate(
+      { plan: nextPlan },
+      {
+        onSuccess: (data) => {
+          const billingDay = data.nextBillingAt
+            ? formatCouponDay(data.nextBillingAt)
+            : undefined;
+          setPlanChangeMessage(
+            billingDay
+              ? `${selectedPlan.durationLabel} 플랜으로 변경되었어요. 다음 결제일: ${billingDay}`
+              : `${selectedPlan.durationLabel} 플랜으로 변경되었어요.`,
+          );
+        },
+        onError: (error) => {
+          setPlanChangeMessage(
+            getSubscriptionErrorMessage(
+              error,
+              "플랜 변경에 실패했습니다. 다시 시도해주세요.",
+            ),
+          );
+        },
+      },
+    );
   };
 
   const handleMenuClick = (menuId: (typeof MENU_ITEMS)[number]["id"]) => {
@@ -308,6 +388,7 @@ const MembershipPage = () => {
                   role="tab"
                   aria-selected={billingCycle === "monthly"}
                   onClick={() => setBillingCycle("monthly")}
+                  disabled={isSubscriptionLoading}
                   className={`relative z-10 flex h-full flex-1 items-center justify-center rounded-md text-12px cursor-pointer ${
                     billingCycle === "monthly"
                       ? "bg-neutral-white font-bold text-neutral-gray-1 shadow-[0px_0px_8px_-4px_rgba(0,0,0,0.3)]"
@@ -321,6 +402,7 @@ const MembershipPage = () => {
                   role="tab"
                   aria-selected={billingCycle === "yearly"}
                   onClick={() => setBillingCycle("yearly")}
+                  disabled={isSubscriptionLoading}
                   className={`relative z-10 flex h-full flex-1 items-center justify-center rounded-md text-12px cursor-pointer ${
                     billingCycle === "yearly"
                       ? "bg-neutral-white font-bold text-neutral-gray-1 shadow-[0px_0px_8px_-4px_rgba(0,0,0,0.3)]"
@@ -347,9 +429,12 @@ const MembershipPage = () => {
             <button
               type="button"
               onClick={handleStartSubscription}
-              className="flex h-12 w-full items-center justify-center rounded-[12px] bg-primary text-18px font-bold text-neutral-white shadow-primary cursor-pointer"
+              disabled={
+                changePlanMutation.isPending || isSubscriptionLoading
+              }
+              className="flex h-12 w-full items-center justify-center rounded-[12px] bg-primary text-18px font-bold text-neutral-white shadow-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
             >
-              구독 시작하기
+              {hasChangeableSubscription ? "플랜 변경하기" : "구독 시작하기"}
             </button>
           </div>
 
@@ -408,6 +493,13 @@ const MembershipPage = () => {
       <CouponSuccessModal
         isOpen={isCouponSuccessModalOpen}
         onClose={() => setIsCouponSuccessModalOpen(false)}
+      />
+
+      <ConfirmModal
+        isOpen={planChangeMessage !== null}
+        onClose={() => setPlanChangeMessage(null)}
+        message={planChangeMessage ?? ""}
+        confirmText="확인"
       />
     </Layout>
   );

@@ -429,6 +429,18 @@ export interface AdminSubscriptionErrorResponse {
   detail?: string;
 }
 
+// 구독 플랜 변경
+// PATCH /api/admin/v1/subscriptions/plans
+export interface AdminSubscriptionPlanChangeRequest {
+  plan: AdminSubscriptionPlan;
+}
+
+export interface AdminSubscriptionPlanChangeResponse {
+  subscriptionId: string;
+  plan: AdminSubscriptionPlan;
+  nextBillingAt?: string;
+}
+
 // 쿠폰 이용권 목록 조회
 // GET /api/admin/v1/memberships/coupons
 export interface AdminCouponMembershipPassResponse {
