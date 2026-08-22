@@ -388,6 +388,22 @@ export interface AdminMembershipErrorResponse {
   detail?: string;
 }
 
+// 쿠폰 이용권 목록 조회
+// GET /api/admin/v1/memberships/coupons
+export interface AdminCouponMembershipPassResponse {
+  membershipPassId: string;
+  couponName: string;
+  description: string;
+  durationDays: number;
+  status: string;
+  startAt: string;
+  endAt: string;
+}
+
+export interface AdminCouponMembershipPassListResponse {
+  coupons: AdminCouponMembershipPassResponse[];
+}
+
 // 조직 결제수단 목록 조회
 // GET /api/admin/v1/payment-methods
 export type AdminPaymentMethodProvider = "TOSSPAY" | "KAKAOPAY" | "KGINICIS";

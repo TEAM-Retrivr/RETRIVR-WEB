@@ -25,6 +25,7 @@ import {
   rejectPublicRental,
   requestAdminCoupon,
   registerAdminCoupon,
+  requestAdminCouponMemberships,
   requestAdminMembership,
   requestAdminPaymentMethods,
   createAdminPaymentMethod,
@@ -35,6 +36,7 @@ import {
 import type {
   AdminCreateItemRequest,
   AdminItemListResponse,
+  AdminCouponMembershipPassListResponse,
   AdminMembershipResponse,
   AdminPaymentMethodCreateRequest,
   AdminPaymentMethodListResponse,
@@ -399,7 +401,21 @@ export const useRegisterAdminCoupon = () => {
     mutationFn: (couponId: string) => registerAdminCoupon({ couponId }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["adminMembership"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["adminCouponMemberships"],
+      });
     },
+  });
+};
+
+// 쿠폰 이용권 목록 조회
+// - 이용권 목록 > 쿠폰 이용권 탭
+// GET /api/admin/v1/memberships/coupons
+export const useAdminCouponMemberships = () => {
+  return useQuery<AdminCouponMembershipPassListResponse>({
+    queryKey: ["adminCouponMemberships"],
+    queryFn: requestAdminCouponMemberships,
+    retry: false,
   });
 };
 
