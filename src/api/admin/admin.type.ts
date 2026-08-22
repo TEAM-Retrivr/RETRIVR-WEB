@@ -391,6 +391,7 @@ export interface AdminMembershipErrorResponse {
 // 현재 이용 중인 구독 이용권 조회
 // GET /api/admin/v1/memberships/current/subscription
 export type AdminSubscriptionPlan = "MONTHLY" | "YEARLY";
+export type AdminSubscriptionStatus = "ACTIVE" | "CANCELED" | "PAYMENT_FAILED";
 export type AdminMembershipPassStatus = "REGISTERED" | "ACTIVE" | "EXPIRED";
 
 export interface AdminCurrentSubscriptionResponse {
@@ -402,6 +403,30 @@ export interface AdminCurrentSubscriptionResponse {
   startAt: string;
   endAt: string;
   nextBillingAt?: string | null;
+}
+
+// 구독 시작
+// POST /api/admin/v1/subscriptions
+export interface AdminSubscriptionStartRequest {
+  plan: AdminSubscriptionPlan;
+  paymentMethodId: string;
+}
+
+export interface AdminSubscriptionStartResponse {
+  subscriptionId: string;
+  plan: AdminSubscriptionPlan;
+  status: AdminSubscriptionStatus;
+  nextBillingAt?: string;
+  membershipPassId: string;
+  startAt: string;
+  expireAt: string;
+}
+
+export interface AdminSubscriptionErrorResponse {
+  status: string;
+  code: number;
+  message: string;
+  detail?: string;
 }
 
 // 쿠폰 이용권 목록 조회

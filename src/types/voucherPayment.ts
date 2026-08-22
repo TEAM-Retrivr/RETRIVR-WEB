@@ -1,3 +1,5 @@
+import type { AdminSubscriptionPlan } from "../api/admin/admin.type";
+
 export type VoucherBillingCycle = "monthly" | "yearly";
 
 export type VoucherPaymentPlan = {
@@ -34,3 +36,7 @@ export const VOUCHER_PAYMENT_PLANS: Record<
 export const parseVoucherBillingCycle = (
   value: string | null,
 ): VoucherBillingCycle => (value === "yearly" ? "yearly" : "monthly");
+
+export const toAdminSubscriptionPlan = (
+  cycle: VoucherBillingCycle,
+): AdminSubscriptionPlan => (cycle === "yearly" ? "YEARLY" : "MONTHLY");
