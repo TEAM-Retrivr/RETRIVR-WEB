@@ -25,6 +25,7 @@ import type {
   AdminCouponLookupResponse,
   AdminCouponMembershipPassListResponse,
   AdminCouponRegistrationResponse,
+  AdminCurrentSubscriptionResponse,
   AdminMembershipResponse,
   AdminPaymentMethodCreateRequest,
   AdminPaymentMethodDeleteResponse,
@@ -401,6 +402,17 @@ export const requestAdminCouponMemberships =
   async (): Promise<AdminCouponMembershipPassListResponse> => {
     const response = await apiClient.get<AdminCouponMembershipPassListResponse>(
       "/api/admin/v1/memberships/coupons",
+    );
+    return response.data;
+  };
+
+// 현재 이용 중인 구독 이용권 조회
+// - 활성화된 패스가 구독일 때만 200. 없으면 404
+// GET /api/admin/v1/memberships/current/subscription
+export const requestAdminCurrentSubscription =
+  async (): Promise<AdminCurrentSubscriptionResponse> => {
+    const response = await apiClient.get<AdminCurrentSubscriptionResponse>(
+      "/api/admin/v1/memberships/current/subscription",
     );
     return response.data;
   };
