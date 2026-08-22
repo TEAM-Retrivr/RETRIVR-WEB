@@ -29,6 +29,8 @@ import type {
   AdminMembershipHistoryParams,
   AdminSubscriptionStartRequest,
   AdminSubscriptionStartResponse,
+  AdminSubscriptionPlanChangeRequest,
+  AdminSubscriptionPlanChangeResponse,
   AdminMembershipHistoryResponse,
   AdminMembershipResponse,
   AdminPaymentMethodCreateRequest,
@@ -440,6 +442,18 @@ export const startAdminSubscription = async (
 ): Promise<AdminSubscriptionStartResponse> => {
   const response = await apiClient.post<AdminSubscriptionStartResponse>(
     "/api/admin/v1/subscriptions",
+    body,
+  );
+  return response.data;
+};
+
+// 구독 플랜 변경
+// PATCH /api/admin/v1/subscriptions/plans
+export const changeAdminSubscriptionPlan = async (
+  body: AdminSubscriptionPlanChangeRequest,
+): Promise<AdminSubscriptionPlanChangeResponse> => {
+  const response = await apiClient.patch<AdminSubscriptionPlanChangeResponse>(
+    "/api/admin/v1/subscriptions/plans",
     body,
   );
   return response.data;

@@ -40,3 +40,7 @@ export const parseVoucherBillingCycle = (
 export const toAdminSubscriptionPlan = (
   cycle: VoucherBillingCycle,
 ): AdminSubscriptionPlan => (cycle === "yearly" ? "YEARLY" : "MONTHLY");
+
+export const toVoucherBillingCycle = (
+  plan: AdminSubscriptionPlan,
+): VoucherBillingCycle => (plan === "YEARLY" ? "yearly" : "monthly");

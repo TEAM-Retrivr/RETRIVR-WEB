@@ -31,6 +31,7 @@ import {
   requestAdminMembership,
   requestAdminMembershipHistory,
   startAdminSubscription,
+  changeAdminSubscriptionPlan,
   requestAdminPaymentMethods,
   createAdminPaymentMethod,
   updateAdminDefaultPaymentMethod,
@@ -45,6 +46,7 @@ import type {
   AdminMembershipHistoryResponse,
   AdminMembershipResponse,
   AdminSubscriptionStartRequest,
+  AdminSubscriptionPlanChangeRequest,
   AdminPaymentMethodCreateRequest,
   AdminPaymentMethodListResponse,
   AdminPaymentMethodResponse,
@@ -484,6 +486,27 @@ export const useStartAdminSubscription = () => {
   return useMutation({
     mutationFn: (body: AdminSubscriptionStartRequest) =>
       startAdminSubscription(body),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["adminMembership"] }),
+        queryClient.invalidateQueries({
+          queryKey: ["adminCurrentSubscription"],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["adminMembershipHistory"],
+        }),
+      ]);
+    },
+  });
+};
+
+// 구독 플랜 변경
+// PATCH /api/admin/v1/subscriptions/plans
+export const useChangeAdminSubscriptionPlan = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: AdminSubscriptionPlanChangeRequest) =>
+      changeAdminSubscriptionPlan(body),
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["adminMembership"] }),
