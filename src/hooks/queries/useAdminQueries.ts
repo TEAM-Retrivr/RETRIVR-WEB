@@ -27,6 +27,7 @@ import {
   registerAdminCoupon,
   requestAdminCouponMemberships,
   requestAdminMembership,
+  requestAdminMembershipHistory,
   requestAdminPaymentMethods,
   createAdminPaymentMethod,
   updateAdminDefaultPaymentMethod,
@@ -37,6 +38,7 @@ import type {
   AdminCreateItemRequest,
   AdminItemListResponse,
   AdminCouponMembershipPassListResponse,
+  AdminMembershipHistoryResponse,
   AdminMembershipResponse,
   AdminPaymentMethodCreateRequest,
   AdminPaymentMethodListResponse,
@@ -415,6 +417,34 @@ export const useAdminCouponMemberships = () => {
   return useQuery<AdminCouponMembershipPassListResponse>({
     queryKey: ["adminCouponMemberships"],
     queryFn: requestAdminCouponMemberships,
+    retry: false,
+  });
+};
+
+// 이용권 및 결제 내역 조회
+// - 이용권 목록 > 이용 내역 탭
+// GET /api/admin/v1/memberships/history
+export const useAdminMembershipHistory = (params?: {
+  start?: string;
+  end?: string;
+}) => {
+  return useInfiniteQuery<AdminMembershipHistoryResponse>({
+    queryKey: ["adminMembershipHistory", params?.start, params?.end],
+    initialPageParam: undefined as number | undefined,
+    queryFn: ({ pageParam }) =>
+      requestAdminMembershipHistory({
+        cursor: pageParam as number | undefined,
+        size: 15,
+        start: params?.start,
+        end: params?.end,
+      }),
+    getNextPageParam: (lastPage) => {
+      const nextCursor = lastPage.nextCursor;
+      if (typeof nextCursor !== "number" || nextCursor <= 0) {
+        return undefined;
+      }
+      return nextCursor;
+    },
     retry: false,
   });
 };

@@ -404,6 +404,38 @@ export interface AdminCouponMembershipPassListResponse {
   coupons: AdminCouponMembershipPassResponse[];
 }
 
+// 이용권 및 결제 내역 조회
+// GET /api/admin/v1/memberships/history
+export type AdminMembershipHistoryType = "SUBSCRIPTION" | "COUPON";
+export type AdminMembershipHistoryPlan = "MONTHLY" | "YEARLY";
+export type AdminMembershipHistoryStatus =
+  | "REGISTERED"
+  | "ACTIVE"
+  | "EXPIRED";
+
+export interface AdminMembershipHistoryItemResponse {
+  membershipPassId: string;
+  type: AdminMembershipHistoryType;
+  title: string;
+  status: AdminMembershipHistoryStatus;
+  plan?: AdminMembershipHistoryPlan | null;
+  occurredAt: string;
+  amount: number;
+  receiptAvailable: boolean;
+}
+
+export interface AdminMembershipHistoryResponse {
+  items: AdminMembershipHistoryItemResponse[];
+  nextCursor?: number | null;
+}
+
+export interface AdminMembershipHistoryParams {
+  cursor?: number;
+  size?: number;
+  start?: string;
+  end?: string;
+}
+
 // 조직 결제수단 목록 조회
 // GET /api/admin/v1/payment-methods
 export type AdminPaymentMethodProvider = "TOSSPAY" | "KAKAOPAY" | "KGINICIS";
