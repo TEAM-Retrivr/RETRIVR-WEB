@@ -27,6 +27,8 @@ import type {
   AdminCouponRegistrationResponse,
   AdminCurrentSubscriptionResponse,
   AdminMembershipHistoryParams,
+  AdminSubscriptionStartRequest,
+  AdminSubscriptionStartResponse,
   AdminMembershipHistoryResponse,
   AdminMembershipResponse,
   AdminPaymentMethodCreateRequest,
@@ -427,6 +429,18 @@ export const requestAdminMembershipHistory = async (
   const response = await apiClient.get<AdminMembershipHistoryResponse>(
     "/api/admin/v1/memberships/history",
     { params },
+  );
+  return response.data;
+};
+
+// 구독 시작
+// POST /api/admin/v1/subscriptions
+export const startAdminSubscription = async (
+  body: AdminSubscriptionStartRequest,
+): Promise<AdminSubscriptionStartResponse> => {
+  const response = await apiClient.post<AdminSubscriptionStartResponse>(
+    "/api/admin/v1/subscriptions",
+    body,
   );
   return response.data;
 };

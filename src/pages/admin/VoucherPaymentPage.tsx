@@ -5,9 +5,13 @@ import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import SubscriptionPaymentMethodSelect from "../../components/membership/SubscriptionPaymentMethodSelect";
-import type { AdminPaymentMethodErrorResponse } from "../../api/admin/admin.type";
+import type {
+  AdminPaymentMethodErrorResponse,
+  AdminSubscriptionErrorResponse,
+} from "../../api/admin/admin.type";
 import {
   useAdminPaymentMethods,
+  useStartAdminSubscription,
   useUpdateAdminDefaultPaymentMethod,
 } from "../../hooks/queries/useAdminQueries";
 import {
@@ -16,6 +20,7 @@ import {
 } from "../../types/paymentMethod";
 import {
   parseVoucherBillingCycle,
+  toAdminSubscriptionPlan,
   VOUCHER_PAYMENT_PLANS,
 } from "../../types/voucherPayment";
 
@@ -29,6 +34,7 @@ const getPaymentMethodErrorMessage = (error: unknown, fallback: string) => {
   if (axios.isAxiosError(error)) {
     const data = error.response?.data as
       | AdminPaymentMethodErrorResponse
+      | AdminSubscriptionErrorResponse
       | undefined;
     if (data?.message) return data.message;
   }
@@ -43,6 +49,8 @@ const VoucherPaymentPage = () => {
   const { data, isLoading, isError } = useAdminPaymentMethods();
   const { mutate: updateDefault, isPending: isUpdatingDefault } =
     useUpdateAdminDefaultPaymentMethod();
+  const { mutate: startSubscription, isPending: isStarting } =
+    useStartAdminSubscription();
   const methods = toActivePaymentMethods(data);
   const primaryId = getPrimaryPaymentMethodId(methods);
   const [selectedId, setSelectedId] = useState("");
@@ -101,9 +109,22 @@ const VoucherPaymentPage = () => {
       setConfirmMessage("결제 수단을 먼저 등록해주세요.");
       return;
     }
-    if (selectedId !== primaryId) {
-      updateDefault(selectedId, {
-        onSuccess: () => {
+    if (isStarting || isUpdatingDefault) return;
+
+    startSubscription(
+      {
+        plan: toAdminSubscriptionPlan(plan.cycle),
+        paymentMethodId: selectedId,
+      },
+      {
+        onSuccess: (data) => {
+          if (data.status === "PAYMENT_FAILED") {
+            setShouldReturnToMembership(false);
+            setConfirmMessage(
+              "결제에 실패했습니다. 결제 수단을 확인한 뒤 다시 시도해주세요.",
+            );
+            return;
+          }
           setShouldReturnToMembership(true);
           setConfirmMessage(`${plan.planLabel}이 시작되었어요.`);
         },
@@ -112,15 +133,12 @@ const VoucherPaymentPage = () => {
           setConfirmMessage(
             getPaymentMethodErrorMessage(
               error,
-              "대표 결제 수단 변경에 실패했습니다. 다시 시도해주세요.",
+              "구독 시작에 실패했습니다. 다시 시도해주세요.",
             ),
           );
         },
-      });
-      return;
-    }
-    setShouldReturnToMembership(true);
-    setConfirmMessage(`${plan.planLabel}이 시작되었어요.`);
+      },
+    );
   };
 
   return (
@@ -191,7 +209,7 @@ const VoucherPaymentPage = () => {
         <div className="pointer-events-none absolute inset-x-0 bottom-0 px-8 pb-8">
           <button
             type="button"
-            disabled={isLoading || isError || isUpdatingDefault}
+            disabled={isLoading || isError || isUpdatingDefault || isStarting}
             onClick={handleStartSubscription}
             className="pointer-events-auto flex h-[50px] w-full items-center justify-center rounded-[12px] bg-primary text-18px font-bold text-neutral-white shadow-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
           >

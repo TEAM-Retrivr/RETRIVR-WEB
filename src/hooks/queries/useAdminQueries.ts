@@ -30,6 +30,7 @@ import {
   requestAdminCurrentSubscription,
   requestAdminMembership,
   requestAdminMembershipHistory,
+  startAdminSubscription,
   requestAdminPaymentMethods,
   createAdminPaymentMethod,
   updateAdminDefaultPaymentMethod,
@@ -43,6 +44,7 @@ import type {
   AdminCurrentSubscriptionResponse,
   AdminMembershipHistoryResponse,
   AdminMembershipResponse,
+  AdminSubscriptionStartRequest,
   AdminPaymentMethodCreateRequest,
   AdminPaymentMethodListResponse,
   AdminPaymentMethodResponse,
@@ -472,6 +474,27 @@ export const useAdminMembershipHistory = (params?: {
       return nextCursor;
     },
     retry: false,
+  });
+};
+
+// 구독 시작
+// POST /api/admin/v1/subscriptions
+export const useStartAdminSubscription = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: AdminSubscriptionStartRequest) =>
+      startAdminSubscription(body),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["adminMembership"] }),
+        queryClient.invalidateQueries({
+          queryKey: ["adminCurrentSubscription"],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["adminMembershipHistory"],
+        }),
+      ]);
+    },
   });
 };
 
