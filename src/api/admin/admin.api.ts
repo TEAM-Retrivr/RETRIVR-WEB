@@ -26,6 +26,8 @@ import type {
   AdminCouponMembershipPassListResponse,
   AdminCouponRegistrationResponse,
   AdminCurrentSubscriptionResponse,
+  AdminMembershipHistoryParams,
+  AdminMembershipHistoryResponse,
   AdminMembershipResponse,
   AdminPaymentMethodCreateRequest,
   AdminPaymentMethodDeleteResponse,
@@ -416,6 +418,18 @@ export const requestAdminCurrentSubscription =
     );
     return response.data;
   };
+
+// 이용권 및 결제 내역 조회
+// GET /api/admin/v1/memberships/history
+export const requestAdminMembershipHistory = async (
+  params?: AdminMembershipHistoryParams,
+): Promise<AdminMembershipHistoryResponse> => {
+  const response = await apiClient.get<AdminMembershipHistoryResponse>(
+    "/api/admin/v1/memberships/history",
+    { params },
+  );
+  return response.data;
+};
 
 // 현재 멤버십 상태 조회
 // - 이용권 목록(쿠폰/구독) 화면에서 현재 이용권 정보를 표시
