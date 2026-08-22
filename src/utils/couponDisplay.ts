@@ -1,5 +1,11 @@
 import type { AdminCouponLookupResponse } from "../api/admin/admin.type";
 
+/** 영대문자·숫자 4자리 3묶음. 예: YKQ3-SVC3-2JVB */
+export const COUPON_CODE_PATTERN = /^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
+
+export const isValidCouponCode = (couponCode: string): boolean =>
+  COUPON_CODE_PATTERN.test(couponCode);
+
 /** YYYY-MM-DD → YY. MM. DD */
 export const formatCouponDay = (day: string): string => {
   const [year, month, date] = day.split("-");

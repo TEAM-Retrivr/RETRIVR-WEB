@@ -19,6 +19,7 @@ import type {
 import {
   formatCouponDay,
   formatCouponValidityPeriod,
+  isValidCouponCode,
 } from "../../utils/couponDisplay";
 type BillingCycle = "monthly" | "yearly";
 type CouponAlertType =
@@ -161,6 +162,11 @@ const MembershipPage = () => {
 
   const handleLookupCoupon = () => {
     if (!trimmedCouponCode || lookupCouponMutation.isPending) return;
+
+    if (!isValidCouponCode(trimmedCouponCode)) {
+      setCouponAlertType("notFound");
+      return;
+    }
 
     lookupCouponMutation.mutate(trimmedCouponCode, {
       onSuccess: (coupon) => {
