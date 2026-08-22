@@ -18,11 +18,7 @@ const VoucherListPage = () => {
         <VoucherListTabs activeTab={activeTab} onChange={setActiveTab} />
 
         <div className="mt-8 flex flex-col gap-4">
-          {activeTab === "subscription" ? (
-            <SubscriptionVoucherPanel
-              onCancelSubscription={() => alert("개발 예정입니다.")}
-            />
-          ) : null}
+          {activeTab === "subscription" ? <SubscriptionVoucherPanel /> : null}
           {activeTab === "coupon" ? <CouponVoucherPanel /> : null}
           {activeTab === "history" ? <UsageHistoryPanel /> : null}
         </div>
