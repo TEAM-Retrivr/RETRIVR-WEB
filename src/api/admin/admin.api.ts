@@ -23,6 +23,7 @@ import type {
   PublicRejectRentalRequestBody,
   PublicRejectRentalResponse,
   AdminCouponLookupResponse,
+  AdminCouponMembershipPassListResponse,
   AdminCouponRegistrationResponse,
   AdminMembershipResponse,
   AdminPaymentMethodCreateRequest,
@@ -392,6 +393,17 @@ export const registerAdminCoupon = async ({
   );
   return response.data;
 };
+
+// 쿠폰 이용권 목록 조회
+// - 현재 사용 중·대기 중인 쿠폰 이용권
+// GET /api/admin/v1/memberships/coupons
+export const requestAdminCouponMemberships =
+  async (): Promise<AdminCouponMembershipPassListResponse> => {
+    const response = await apiClient.get<AdminCouponMembershipPassListResponse>(
+      "/api/admin/v1/memberships/coupons",
+    );
+    return response.data;
+  };
 
 // 현재 멤버십 상태 조회
 // - 이용권 목록(쿠폰/구독) 화면에서 현재 이용권 정보를 표시

@@ -8,9 +8,17 @@ export const isValidCouponCode = (couponCode: string): boolean =>
 
 /** YYYY-MM-DD → YY. MM. DD */
 export const formatCouponDay = (day: string): string => {
-  const [year, month, date] = day.split("-");
-  if (!year || !month || !date) return day;
-  return `${year.slice(-2)}. ${month}. ${date}`;
+  const isoMatch = day.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (isoMatch) {
+    return `${isoMatch[1].slice(-2)}. ${isoMatch[2]}. ${isoMatch[3]}`;
+  }
+
+  const dottedMatch = day.match(/^(\d{2})\.\s*(\d{2})\.\s*(\d{2})/);
+  if (dottedMatch) {
+    return `${dottedMatch[1]}. ${dottedMatch[2]}. ${dottedMatch[3]}`;
+  }
+
+  return day;
 };
 
 export const formatCouponValidityPeriod = (
