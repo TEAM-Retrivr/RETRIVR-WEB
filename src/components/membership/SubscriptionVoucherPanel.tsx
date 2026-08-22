@@ -1,35 +1,35 @@
-import {
-  SUBSCRIPTION_USAGE_GUIDE,
-} from "../../types/voucherList";
-import { useAdminMembership } from "../../hooks/queries/useAdminQueries";
+import { SUBSCRIPTION_USAGE_GUIDE } from "../../types/voucherList";
+import { useAdminCurrentSubscription } from "../../hooks/queries/useAdminQueries";
+import type { AdminSubscriptionPlan } from "../../api/admin/admin.type";
 import { formatCouponDay } from "../../utils/couponDisplay";
 import UsageGuideCard from "./UsageGuideCard";
 
 const EMPTY_MEMBERSHIP_MESSAGE = "현재 이용 중인 이용권이 없습니다.";
 
+const SUBSCRIPTION_PLAN_LABEL: Record<AdminSubscriptionPlan, string> = {
+  MONTHLY: "월간 이용권",
+  YEARLY: "연간 이용권",
+};
+
 type SubscriptionVoucherPanelProps = {
   onCancelSubscription?: () => void;
 };
 
-const isCouponPassType = (passType?: string): boolean =>
-  Boolean(passType && /coupon/i.test(passType));
-
-const resolveStatusLabel = (isPausedForCoupon: boolean): string =>
-  // 현재 패스가 쿠폰일 때만 구독 일시중지 (대기 쿠폰만 있는 경우는 이용중)
-  isPausedForCoupon ? "일시중지" : "이용중";
+const resolveStatusLabel = (status?: string): string =>
+  status === "REGISTERED" ? "일시중지" : "이용중";
 
 const resolveDescription = ({
-  isPausedForCoupon,
+  isPaused,
   nextBillingAt,
 }: {
-  isPausedForCoupon: boolean;
-  nextBillingAt?: string;
+  isPaused: boolean;
+  nextBillingAt?: string | null;
 }): string | undefined => {
   if (!nextBillingAt) return undefined;
 
   const billingDay = formatCouponDay(nextBillingAt);
 
-  if (isPausedForCoupon) {
+  if (isPaused) {
     return `등록된 쿠폰 이용권을 모두 사용하면\n${billingDay}부터 자동 결제가 다시 진행돼요.`;
   }
 
@@ -39,17 +39,18 @@ const resolveDescription = ({
 const SubscriptionVoucherPanel = ({
   onCancelSubscription,
 }: SubscriptionVoucherPanelProps) => {
-  const { data, isLoading, isError, isSuccess } = useAdminMembership();
+  const { data, isLoading, isError, isSuccess } = useAdminCurrentSubscription();
 
-  const subscriptionName = data?.subscriptionInfo?.subscriptionName?.trim();
-  const hasSubscription = Boolean(subscriptionName);
-  const isPausedForCoupon = isCouponPassType(data?.passType);
-  const showEmptyState =
-    !isLoading && (isError || !isSuccess || (isSuccess && !hasSubscription));
-
-  const statusLabel = resolveStatusLabel(isPausedForCoupon);
+  const hasSubscription =
+    isSuccess && Boolean(data) && data?.membershipPassStatus !== "EXPIRED";
+  const showEmptyState = !isLoading && (isError || !hasSubscription);
+  const isPaused = data?.membershipPassStatus === "REGISTERED";
+  const planLabel = data?.plan
+    ? SUBSCRIPTION_PLAN_LABEL[data.plan]
+    : undefined;
+  const statusLabel = resolveStatusLabel(data?.membershipPassStatus);
   const description = resolveDescription({
-    isPausedForCoupon,
+    isPaused,
     nextBillingAt: data?.nextBillingAt,
   });
 
@@ -71,11 +72,11 @@ const SubscriptionVoucherPanel = ({
         </div>
       ) : null}
 
-      {isSuccess && data && hasSubscription && subscriptionName ? (
+      {hasSubscription && data && planLabel ? (
         <article className="flex flex-col rounded-2xl bg-neutral-white px-[26px] py-6 shadow-[0px_0px_16px_-6px_rgba(0,0,0,0.2)]">
           <div className="flex items-center gap-[5px]">
             <h2 className="text-16px font-bold leading-normal text-neutral-gray-1">
-              {subscriptionName}
+              {planLabel}
             </h2>
             <span className="inline-flex h-[18px] items-center justify-center rounded-[9px] border-[0.5px] border-secondary-2 bg-neutral-gray-5 px-[7px]">
               <span className="text-10px font-bold leading-[1.3] text-secondary-2">
