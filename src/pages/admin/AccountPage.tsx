@@ -13,12 +13,14 @@ import {
   useAdminProfile,
   useLogout,
   useRequestAdminProfileImagePresignedUpload,
+  useUpdateAdminProfileImage,
 } from "../../hooks/queries/useAuthQueries";
 import type { AdminProfileImageErrorResponse } from "../../api/auth/auth.type";
 import { clearAdminSession, getAdminEmail } from "../../utils/adminSession";
 import {
   PROFILE_IMAGE_ACCEPT,
   PROFILE_IMAGE_MAX_BYTES,
+  extractProfileImageObjectKey,
   resolveProfileImageContentType,
   uploadProfileImageToPresignedUrl,
 } from "../../utils/profileImageUpload";
@@ -44,8 +46,14 @@ const AccountPage = () => {
   const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
   const {
     mutateAsync: requestImageUploadUrl,
-    isPending: isUploadingProfileImage,
+    isPending: isRequestingUploadUrl,
   } = useRequestAdminProfileImagePresignedUpload();
+  const {
+    mutateAsync: confirmProfileImage,
+    isPending: isConfirmingProfileImage,
+  } = useUpdateAdminProfileImage();
+  const isUpdatingProfileImage =
+    isRequestingUploadUrl || isConfirmingProfileImage;
   const qrCanvasRef = useRef<HTMLCanvasElement>(null);
   const profileImageInputRef = useRef<HTMLInputElement>(null);
   const previewUrlRef = useRef<string | null>(null);
@@ -63,7 +71,8 @@ const AccountPage = () => {
   const userProfile = {
     organizationId,
     organizationName: data?.organizationName,
-    profileImageUrl: previewUrl ?? "/icons/profile-default-icon.svg",
+    profileImageUrl:
+      previewUrl ?? data?.profileImageUrl ?? "/icons/profile-default-icon.svg",
     email: storedEmail,
   };
 
@@ -101,7 +110,7 @@ const AccountPage = () => {
   ) => {
     const file = event.target.files?.[0];
     event.target.value = "";
-    if (!file || isUploadingProfileImage) return;
+    if (!file || isUpdatingProfileImage) return;
 
     const contentType = resolveProfileImageContentType(file);
     if (!contentType) {
@@ -119,15 +128,24 @@ const AccountPage = () => {
       });
       await uploadProfileImageToPresignedUrl(uploadUrl, file, contentType);
 
+      const objectKey = extractProfileImageObjectKey(uploadUrl);
+      if (!objectKey) {
+        throw new Error("업로드한 이미지 키를 확인할 수 없습니다.");
+      }
+      const confirmed = await confirmProfileImage({ objectKey });
+
       if (previewUrlRef.current) {
         URL.revokeObjectURL(previewUrlRef.current);
+        previewUrlRef.current = null;
       }
-      const nextPreview = URL.createObjectURL(file);
-      previewUrlRef.current = nextPreview;
-      setPreviewUrl(nextPreview);
-      setConfirmModalMessage(
-        "사진을 저장 공간에 올렸어요. 프로필 반영은 다음 확정 단계에서 적용됩니다.",
-      );
+      if (confirmed.downloadUrl) {
+        setPreviewUrl(confirmed.downloadUrl);
+      } else {
+        const nextPreview = URL.createObjectURL(file);
+        previewUrlRef.current = nextPreview;
+        setPreviewUrl(nextPreview);
+      }
+      setConfirmModalMessage("프로필 사진이 변경되었어요.");
     } catch (error) {
       setConfirmModalMessage(
         getProfileImageErrorMessage(
@@ -230,7 +248,7 @@ const AccountPage = () => {
             />
             <button
               type="button"
-              disabled={isUploadingProfileImage}
+              disabled={isUpdatingProfileImage}
               onClick={() => profileImageInputRef.current?.click()}
               className="absolute right-0 bottom-0 flex items-center bg-neutral-white justify-center w-7 h-7 rounded-[50%] shadow-camera cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
             >

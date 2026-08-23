@@ -14,6 +14,7 @@ import {
   verifyAdminEmailCode,
   updateAdminProfile,
   requestAdminProfileImagePresignedUpload,
+  updateAdminProfileImage,
   verifyAdminPassword,
   updateAdminPassword,
   updateAdminCode,
@@ -228,6 +229,22 @@ export const useUpdateAdminProfile = () => {
 export const useRequestAdminProfileImagePresignedUpload = () => {
   return useMutation({
     mutationFn: requestAdminProfileImagePresignedUpload,
+  });
+};
+
+//
+// 7-3-2. 관리자 프로필 이미지 수정 확정
+//
+export const useUpdateAdminProfileImage = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateAdminProfileImage,
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["adminProfile"] }),
+        queryClient.invalidateQueries({ queryKey: ["home"] }),
+      ]);
+    },
   });
 };
 

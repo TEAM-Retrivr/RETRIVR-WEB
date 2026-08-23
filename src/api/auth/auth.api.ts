@@ -19,6 +19,8 @@ import type {
   UpdateAdminProfileRequest,
   AdminProfileImagePresignedUploadRequest,
   AdminProfileImagePresignedUploadResponse,
+  AdminProfileImageUpdateRequest,
+  AdminProfileImageUpdateResponse,
   VerifyAdminPasswordRequest,
   VerifyAdminPasswordResponse,
   UpdateAdminPasswordRequest,
@@ -203,6 +205,19 @@ export const requestAdminProfileImagePresignedUpload = async (
       "/api/admin/v1/profile/images/pre-signed-upload-url",
       data,
     );
+  return response.data;
+};
+
+//
+// 7-3-2. 관리자 프로필 이미지 수정 확정 API (PUT)
+// 엔드포인트 : "/api/admin/v1/profile/images"
+export const updateAdminProfileImage = async (
+  data: AdminProfileImageUpdateRequest,
+): Promise<AdminProfileImageUpdateResponse> => {
+  const response = await apiClient.put<AdminProfileImageUpdateResponse>(
+    "/api/admin/v1/profile/images",
+    data,
+  );
   return response.data;
 };
 
