@@ -28,7 +28,10 @@ import {
   formatCouponValidityPeriod,
   isValidCouponCode,
 } from "../../utils/couponDisplay";
-import { toAdminSubscriptionPlan, toVoucherBillingCycle } from "../../types/voucherPayment";
+import {
+  toAdminSubscriptionPlan,
+  toVoucherBillingCycle,
+} from "../../types/voucherPayment";
 type BillingCycle = "monthly" | "yearly";
 type CouponAlertType =
   | "notFound"
@@ -79,10 +82,20 @@ const COUPON_ALERT_MESSAGES: Record<CouponAlertType, string> = {
 
 const SUBSCRIPTION_PLANS: Record<
   BillingCycle,
-  { durationLabel: string; amount: string; unit: string }
+  {
+    durationLabel: string;
+    amount: string;
+    unit: string;
+    originalAmount?: string;
+  }
 > = {
   monthly: { durationLabel: "월간 구독", amount: "4,900₩", unit: "/월" },
-  yearly: { durationLabel: "연간 구독", amount: "52,900₩", unit: "/연" },
+  yearly: {
+    durationLabel: "연간 구독",
+    amount: "52,900₩",
+    unit: "/연",
+    originalAmount: "58,800",
+  },
 };
 
 const MENU_ITEMS = [
@@ -106,9 +119,7 @@ const formatKoreanDate = (day: string): string => {
 };
 
 const formatPaidAmount = (amount?: number) =>
-  typeof amount === "number"
-    ? `${amount.toLocaleString("ko-KR")}₩`
-    : undefined;
+  typeof amount === "number" ? `${amount.toLocaleString("ko-KR")}₩` : undefined;
 
 const COMING_SOON_MESSAGE = "개발 예정입니다.";
 
@@ -200,9 +211,9 @@ const MembershipPage = () => {
     isMembershipSuccess &&
     Boolean(
       activePassTitle ||
-        membership?.subscriptionInfo?.subscriptionName ||
-        membership?.couponInfo?.couponName ||
-        membership?.subscribed,
+      membership?.subscriptionInfo?.subscriptionName ||
+      membership?.couponInfo?.couponName ||
+      membership?.subscribed,
     );
   const showEmptyMembership =
     !isMembershipLoading && (isMembershipError || !hasActivePass);
@@ -220,7 +231,7 @@ const MembershipPage = () => {
   const subscriptionCtaLabel = !hasChangeableSubscription
     ? "구독 시작하기"
     : isCurrentPlanSelected
-      ? "현재 이용중"
+      ? "현재 이용 중"
       : isScheduledTargetSelected
         ? "변경 예약됨"
         : billingCycle === "yearly"
@@ -261,9 +272,7 @@ const MembershipPage = () => {
           setIsPlanChangeConfirmOpen(false);
           setScheduledCycle(planChangeTargetCycle);
           setPlanChangeSuccessDate(
-            data.nextBillingAt
-              ? formatKoreanDate(data.nextBillingAt)
-              : null,
+            data.nextBillingAt ? formatKoreanDate(data.nextBillingAt) : null,
           );
           setIsPlanChangeSuccessOpen(true);
         },
@@ -388,8 +397,8 @@ const MembershipPage = () => {
                 priceAmount={
                   isCouponPassType(membership.passType)
                     ? undefined
-                    : formatPaidAmount(membership.payedAmount) ??
-                      currentPlanDisplay?.amount
+                    : (formatPaidAmount(membership.payedAmount) ??
+                      currentPlanDisplay?.amount)
                 }
                 priceUnit={
                   isCouponPassType(membership.passType)
@@ -488,10 +497,17 @@ const MembershipPage = () => {
               <span className="text-16px font-semibold leading-normal text-primary">
                 {selectedPlan.durationLabel}
               </span>
-              <p className="text-14px font-bold leading-5 text-neutral-gray-1">
-                <span className="font-semibold">{selectedPlan.amount}</span>
-                <span className="font-medium text-neutral-gray-3">
-                  {selectedPlan.unit}
+              <p className="flex items-center justify-end gap-1 text-14px leading-5 text-neutral-gray-1">
+                {selectedPlan.originalAmount ? (
+                  <span className="text-12px font-normal leading-[1.4] text-neutral-gray-4 line-through decoration-solid">
+                    {selectedPlan.originalAmount}
+                  </span>
+                ) : null}
+                <span>
+                  <span className="font-semibold">{selectedPlan.amount}</span>
+                  <span className="font-medium text-neutral-gray-3">
+                    {selectedPlan.unit}
+                  </span>
                 </span>
               </p>
             </div>
@@ -504,10 +520,10 @@ const MembershipPage = () => {
                 isSubscriptionLoading ||
                 isSubscriptionCtaLocked
               }
-              className={`flex h-12 w-full items-center justify-center rounded-[12px] text-18px font-bold ${
+              className={`flex h-12 w-full items-center justify-center rounded-[12px] text-18px ${
                 isSubscriptionCtaLocked
-                  ? "cursor-not-allowed bg-neutral-gray-5 text-neutral-gray-3"
-                  : "cursor-pointer bg-primary text-neutral-white shadow-primary disabled:cursor-not-allowed disabled:opacity-60"
+                  ? "cursor-not-allowed bg-neutral-gray-5 font-semibold text-neutral-gray-3"
+                  : "cursor-pointer bg-primary font-bold text-neutral-white shadow-primary disabled:cursor-not-allowed disabled:opacity-60"
               }`}
             >
               {subscriptionCtaLabel}
@@ -560,9 +576,7 @@ const MembershipPage = () => {
 
       <CouponAlertModal
         isOpen={couponAlertType !== null}
-        message={
-          couponAlertType ? COUPON_ALERT_MESSAGES[couponAlertType] : ""
-        }
+        message={couponAlertType ? COUPON_ALERT_MESSAGES[couponAlertType] : ""}
         onClose={() => setCouponAlertType(null)}
       />
 
