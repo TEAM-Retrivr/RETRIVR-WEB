@@ -231,10 +231,11 @@ export const issuePortoneBillingKey = async ({
   }
 
   if (!hasIssuedBillingKey(response)) {
+    const message = response.message || "빌링키 발급에 실패했습니다.";
     return {
       ok: false,
-      reason: "failed",
-      message: response.message || "빌링키 발급에 실패했습니다.",
+      reason: /중단|취소/.test(message) ? "cancelled" : "failed",
+      message,
     };
   }
 

@@ -149,7 +149,9 @@ const PaymentMethodRegisterPage = () => {
 
     const option = readPortoneRegisterOption();
     if ("error" in redirectResult) {
-      setErrorMessage(redirectResult.error);
+      if (!/중단|취소/.test(redirectResult.error)) {
+        setErrorMessage(redirectResult.error);
+      }
       return;
     }
     if (!option) {
@@ -190,7 +192,9 @@ const PaymentMethodRegisterPage = () => {
     if (abortedRef.current) return;
 
     if (!result.ok) {
-      setErrorMessage(result.message);
+      if (result.reason !== "cancelled") {
+        setErrorMessage(result.message);
+      }
       return;
     }
 
