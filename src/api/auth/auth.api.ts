@@ -182,12 +182,12 @@ export const verifyAdminEmailCode = async (
 
 //
 // 7-3. 관리자 프로필(단체명) 수정 API (PATCH)
-// 엔드포인트 : "/api/admin/v1/profile"
+// 엔드포인트 : "/api/admin/v1/profile/organization-name"
 // 성공 시 204 No Content (응답 본문 없음)
 export const updateAdminProfile = async (
   data: UpdateAdminProfileRequest,
 ): Promise<void> => {
-  await apiClient.patch("/api/admin/v1/profile", data);
+  await apiClient.patch("/api/admin/v1/profile/organization-name", data);
 };
 
 //

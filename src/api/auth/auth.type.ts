@@ -195,7 +195,7 @@ export const ADMIN_EMAIL_VERIFICATION_ERROR_CODE = {
 } as const;
 
 // 6-3. 관리자 프로필(단체명) 수정
-// 엔드포인트: "/api/admin/v1/profile" (PATCH)
+// 엔드포인트: "/api/admin/v1/profile/organization-name" (PATCH)
 // - organizationName만 전달, 성공 시 204 No Content
 export interface UpdateAdminProfileRequest {
   organizationName: string;
