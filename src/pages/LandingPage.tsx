@@ -1,14 +1,13 @@
+import { useState } from "react";
 import { Layout } from "../components/Layout";
 import Button from "../components/Button";
 import { useNavigate } from "react-router-dom";
 
-const BUSINESS_INFO_URL =
-  "https://www.ftc.go.kr/bizCommPop.do?wrkr_no=8706400978";
-
-const footerLinkClass = "text-inherit underline";
+const footerUnderlineClass = "text-inherit underline";
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const [isBusinessInfoOpen, setIsBusinessInfoOpen] = useState(false);
 
   return (
     <Layout>
@@ -44,23 +43,23 @@ const LandingPage = () => {
             관리자로 로그인
           </Button>
         </div>
-        <p className="mt-[30px] w-full max-w-[322px] text-center text-10px font-normal leading-[1.3] text-neutral-gray-3 whitespace-pre-wrap">
+        <p className="mt-[30px] w-full px-4 text-center text-10px font-normal leading-[1.3] text-neutral-gray-3 whitespace-pre">
           Retrivr  |  대표자: 박다솔  |  사업자등록번호: 870-64-00978
           {"\n"}
-          <span className={footerLinkClass}>이용약관</span>
+          <span className={footerUnderlineClass}>이용약관</span>
           {"  |  "}
-          <span className={footerLinkClass}>개인정보처리방침</span>
+          <span className={footerUnderlineClass}>개인정보처리방침</span>
           {"  | E-mail: retrivr.service@gmail.com\n"}
           {"Instagram: @retrivr_official  |  "}
-          <a
-            href={BUSINESS_INFO_URL}
-            target="_blank"
-            rel="noreferrer"
-            className={footerLinkClass}
+          <button
+            type="button"
+            className={`${footerUnderlineClass} inline cursor-pointer bg-transparent p-0 font-[inherit] text-10px leading-[1.3]`}
+            aria-expanded={isBusinessInfoOpen}
+            onClick={() => setIsBusinessInfoOpen((open) => !open)}
           >
             사업자 추가 정보
-          </a>
-          {"  주소: 경기도 파주시 후곡로 77"}
+          </button>
+          {isBusinessInfoOpen ? "  주소: 경기도 파주시 후곡로 77" : null}
         </p>
       </div>
     </Layout>
