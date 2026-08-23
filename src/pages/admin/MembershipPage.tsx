@@ -7,6 +7,8 @@ import ConfirmModal from "../../components/modals/ConfirmModal";
 import CouponAlertModal from "../../components/modals/membership/CouponAlertModal";
 import CouponRegistrationModal from "../../components/modals/membership/CouponRegistrationModal";
 import CouponSuccessModal from "../../components/modals/membership/CouponSuccessModal";
+import PlanChangeConfirmModal from "../../components/modals/membership/PlanChangeConfirmModal";
+import PlanChangeSuccessModal from "../../components/modals/membership/PlanChangeSuccessModal";
 import MembershipCouponCard from "../../components/membership/MembershipCouponCard";
 import MembershipProBadge from "../../components/membership/MembershipProBadge";
 import {
@@ -26,7 +28,10 @@ import {
   formatCouponValidityPeriod,
   isValidCouponCode,
 } from "../../utils/couponDisplay";
-import { toAdminSubscriptionPlan, toVoucherBillingCycle } from "../../types/voucherPayment";
+import {
+  toAdminSubscriptionPlan,
+  toVoucherBillingCycle,
+} from "../../types/voucherPayment";
 type BillingCycle = "monthly" | "yearly";
 type CouponAlertType =
   | "notFound"
@@ -60,7 +65,7 @@ const resolveActivePassFooter = (
     return `사용 기간: ${formatCouponValidityPeriod(data.startAt, data.endAt)}`;
   }
   if (data.nextBillingAt) {
-    return `다음 결제 예정일: ${formatCouponDay(data.nextBillingAt)}`;
+    return `다음 결제일 ${formatCouponDay(data.nextBillingAt)}`;
   }
   if (data.startAt && data.endAt) {
     return `사용 기간: ${formatCouponValidityPeriod(data.startAt, data.endAt)}`;
@@ -77,17 +82,27 @@ const COUPON_ALERT_MESSAGES: Record<CouponAlertType, string> = {
 
 const SUBSCRIPTION_PLANS: Record<
   BillingCycle,
-  { durationLabel: string; amount: string; unit: string }
+  {
+    durationLabel: string;
+    amount: string;
+    unit: string;
+    originalAmount?: string;
+  }
 > = {
-  monthly: { durationLabel: "1개월", amount: "4,900₩", unit: "/월" },
-  yearly: { durationLabel: "12개월", amount: "49,000₩", unit: "/년" },
+  monthly: { durationLabel: "월간 구독", amount: "4,900₩", unit: "/월" },
+  yearly: {
+    durationLabel: "연간 구독",
+    amount: "52,900₩",
+    unit: "/연",
+    originalAmount: "58,800",
+  },
 };
 
 const MENU_ITEMS = [
   {
     id: "voucher-manage",
-    title: "이용권 관리",
-    description: "구독이용권, 쿠폰, 결제내역",
+    title: "구독 및 쿠폰 관리",
+    description: "구독 이용권, 쿠폰 이용권, 결제 내역",
   },
   {
     id: "payment-manage",
@@ -95,6 +110,16 @@ const MENU_ITEMS = [
     description: "이용권 결제수단 관리 및 등록",
   },
 ] as const;
+
+const formatKoreanDate = (day: string): string => {
+  const datePart = day.includes("T") ? day.slice(0, 10) : day;
+  const match = datePart.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!match) return formatCouponDay(day);
+  return `${match[1]}년 ${Number(match[2])}월 ${Number(match[3])}일`;
+};
+
+const formatPaidAmount = (amount?: number) =>
+  typeof amount === "number" ? `${amount.toLocaleString("ko-KR")}₩` : undefined;
 
 const COMING_SOON_MESSAGE = "개발 예정입니다.";
 
@@ -121,6 +146,16 @@ const MembershipPage = () => {
   const [isCouponSuccessModalOpen, setIsCouponSuccessModalOpen] =
     useState(false);
   const [planChangeMessage, setPlanChangeMessage] = useState<string | null>(
+    null,
+  );
+  const [isPlanChangeConfirmOpen, setIsPlanChangeConfirmOpen] = useState(false);
+  const [isPlanChangeSuccessOpen, setIsPlanChangeSuccessOpen] = useState(false);
+  const [planChangeTargetCycle, setPlanChangeTargetCycle] =
+    useState<BillingCycle>("yearly");
+  const [planChangeSuccessDate, setPlanChangeSuccessDate] = useState<
+    string | null
+  >(null);
+  const [scheduledCycle, setScheduledCycle] = useState<BillingCycle | null>(
     null,
   );
   const didSyncBillingCycleRef = useRef(false);
@@ -155,6 +190,15 @@ const MembershipPage = () => {
     currentSubscription?.membershipPassStatus,
   ]);
 
+  useEffect(() => {
+    if (
+      scheduledCycle &&
+      currentSubscription?.plan === toAdminSubscriptionPlan(scheduledCycle)
+    ) {
+      setScheduledCycle(null);
+    }
+  }, [scheduledCycle, currentSubscription?.plan]);
+
   const selectedPlan = SUBSCRIPTION_PLANS[billingCycle];
   const trimmedCouponCode = couponCode.trim();
   const canLookupCoupon =
@@ -167,9 +211,9 @@ const MembershipPage = () => {
     isMembershipSuccess &&
     Boolean(
       activePassTitle ||
-        membership?.subscriptionInfo?.subscriptionName ||
-        membership?.couponInfo?.couponName ||
-        membership?.subscribed,
+      membership?.subscriptionInfo?.subscriptionName ||
+      membership?.couponInfo?.couponName ||
+      membership?.subscribed,
     );
   const showEmptyMembership =
     !isMembershipLoading && (isMembershipError || !hasActivePass);
@@ -177,6 +221,26 @@ const MembershipPage = () => {
     isSubscriptionFetched &&
     Boolean(currentSubscription?.plan) &&
     currentSubscription?.membershipPassStatus !== "EXPIRED";
+  const isCurrentPlanSelected =
+    hasChangeableSubscription &&
+    currentSubscription?.plan === toAdminSubscriptionPlan(billingCycle);
+  const isScheduledTargetSelected =
+    scheduledCycle === billingCycle && !isCurrentPlanSelected;
+  const isSubscriptionCtaLocked =
+    isCurrentPlanSelected || isScheduledTargetSelected;
+  const subscriptionCtaLabel = !hasChangeableSubscription
+    ? "구독 시작하기"
+    : isCurrentPlanSelected
+      ? "현재 이용 중"
+      : isScheduledTargetSelected
+        ? "변경 예약됨"
+        : billingCycle === "yearly"
+          ? "연간 구독으로 변경"
+          : "월간 구독으로 변경";
+  const currentPlanDisplay =
+    hasChangeableSubscription && currentSubscription?.plan
+      ? SUBSCRIPTION_PLANS[toVoucherBillingCycle(currentSubscription.plan)]
+      : undefined;
 
   const handleComingSoon = () => {
     alert(COMING_SOON_MESSAGE);
@@ -188,28 +252,32 @@ const MembershipPage = () => {
       navigate(`/membership/subscribe?cycle=${billingCycle}`);
       return;
     }
-
-    const nextPlan = toAdminSubscriptionPlan(billingCycle);
-    if (currentSubscription?.plan === nextPlan) {
-      setPlanChangeMessage("이미 이용 중인 플랜입니다.");
-      return;
-    }
+    if (isCurrentPlanSelected || isScheduledTargetSelected) return;
     if (changePlanMutation.isPending) return;
+    setPlanChangeTargetCycle(billingCycle);
+    setIsPlanChangeConfirmOpen(true);
+  };
+
+  const handleConfirmPlanChange = () => {
+    if (!hasChangeableSubscription || changePlanMutation.isPending) return;
+
+    const nextPlan = toAdminSubscriptionPlan(planChangeTargetCycle);
+    if (currentSubscription?.plan === nextPlan) return;
+    if (scheduledCycle === planChangeTargetCycle) return;
 
     changePlanMutation.mutate(
       { plan: nextPlan },
       {
         onSuccess: (data) => {
-          const billingDay = data.nextBillingAt
-            ? formatCouponDay(data.nextBillingAt)
-            : undefined;
-          setPlanChangeMessage(
-            billingDay
-              ? `${selectedPlan.durationLabel} 플랜으로 변경되었어요. 다음 결제일: ${billingDay}`
-              : `${selectedPlan.durationLabel} 플랜으로 변경되었어요.`,
+          setIsPlanChangeConfirmOpen(false);
+          setScheduledCycle(planChangeTargetCycle);
+          setPlanChangeSuccessDate(
+            data.nextBillingAt ? formatKoreanDate(data.nextBillingAt) : null,
           );
+          setIsPlanChangeSuccessOpen(true);
         },
         onError: (error) => {
+          setIsPlanChangeConfirmOpen(false);
           setPlanChangeMessage(
             getSubscriptionErrorMessage(
               error,
@@ -326,6 +394,17 @@ const MembershipPage = () => {
                     ? membership.couponInfo?.couponDescription
                     : undefined
                 }
+                priceAmount={
+                  isCouponPassType(membership.passType)
+                    ? undefined
+                    : (formatPaidAmount(membership.payedAmount) ??
+                      currentPlanDisplay?.amount)
+                }
+                priceUnit={
+                  isCouponPassType(membership.passType)
+                    ? undefined
+                    : currentPlanDisplay?.unit
+                }
                 footerText={resolveActivePassFooter(membership)}
               />
             ) : null}
@@ -363,7 +442,7 @@ const MembershipPage = () => {
             <div className="flex items-start justify-between gap-3">
               <div className="flex flex-col gap-2">
                 <h3 className="text-18px font-bold leading-normal text-secondary-1">
-                  pro 이용권 구독
+                  Retrivr 프로 구독
                 </h3>
                 <div className="flex items-center gap-0.5">
                   <span
@@ -418,10 +497,17 @@ const MembershipPage = () => {
               <span className="text-16px font-semibold leading-normal text-primary">
                 {selectedPlan.durationLabel}
               </span>
-              <p className="text-14px font-bold leading-5 text-neutral-gray-1">
-                <span className="font-semibold">{selectedPlan.amount}</span>
-                <span className="font-medium text-neutral-gray-3">
-                  {selectedPlan.unit}
+              <p className="flex items-center justify-end gap-1 text-14px leading-5 text-neutral-gray-1">
+                {selectedPlan.originalAmount ? (
+                  <span className="text-12px font-normal leading-[1.4] text-neutral-gray-4 line-through decoration-solid">
+                    {selectedPlan.originalAmount}
+                  </span>
+                ) : null}
+                <span>
+                  <span className="font-semibold">{selectedPlan.amount}</span>
+                  <span className="font-medium text-neutral-gray-3">
+                    {selectedPlan.unit}
+                  </span>
                 </span>
               </p>
             </div>
@@ -430,11 +516,17 @@ const MembershipPage = () => {
               type="button"
               onClick={handleStartSubscription}
               disabled={
-                changePlanMutation.isPending || isSubscriptionLoading
+                changePlanMutation.isPending ||
+                isSubscriptionLoading ||
+                isSubscriptionCtaLocked
               }
-              className="flex h-12 w-full items-center justify-center rounded-[12px] bg-primary text-18px font-bold text-neutral-white shadow-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+              className={`flex h-12 w-full items-center justify-center rounded-[12px] text-18px ${
+                isSubscriptionCtaLocked
+                  ? "cursor-not-allowed bg-neutral-gray-5 font-semibold text-neutral-gray-3"
+                  : "cursor-pointer bg-primary font-bold text-neutral-white shadow-primary disabled:cursor-not-allowed disabled:opacity-60"
+              }`}
             >
-              {hasChangeableSubscription ? "플랜 변경하기" : "구독 시작하기"}
+              {subscriptionCtaLabel}
             </button>
           </div>
 
@@ -484,15 +576,38 @@ const MembershipPage = () => {
 
       <CouponAlertModal
         isOpen={couponAlertType !== null}
-        message={
-          couponAlertType ? COUPON_ALERT_MESSAGES[couponAlertType] : ""
-        }
+        message={couponAlertType ? COUPON_ALERT_MESSAGES[couponAlertType] : ""}
         onClose={() => setCouponAlertType(null)}
       />
 
       <CouponSuccessModal
         isOpen={isCouponSuccessModalOpen}
         onClose={() => setIsCouponSuccessModalOpen(false)}
+      />
+
+      <PlanChangeConfirmModal
+        isOpen={isPlanChangeConfirmOpen}
+        isPending={changePlanMutation.isPending}
+        targetCycle={planChangeTargetCycle}
+        amountLabel={SUBSCRIPTION_PLANS[planChangeTargetCycle].amount.replace(
+          "₩",
+          "원",
+        )}
+        onClose={() => {
+          if (changePlanMutation.isPending) return;
+          setIsPlanChangeConfirmOpen(false);
+        }}
+        onConfirm={handleConfirmPlanChange}
+      />
+
+      <PlanChangeSuccessModal
+        isOpen={isPlanChangeSuccessOpen}
+        targetCycle={planChangeTargetCycle}
+        startDateLabel={planChangeSuccessDate ?? undefined}
+        onClose={() => {
+          setIsPlanChangeSuccessOpen(false);
+          setPlanChangeSuccessDate(null);
+        }}
       />
 
       <ConfirmModal
