@@ -44,16 +44,11 @@ const AccountPage = () => {
   // 로그아웃/탈퇴 중에는 프로필 쿼리를 꺼서 clear() 시 refetch → 401을 막는다
   const { data } = useAdminProfile({ enabled: !isSigningOut });
   const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
-  const {
-    mutateAsync: requestImageUploadUrl,
-    isPending: isRequestingUploadUrl,
-  } = useRequestAdminProfileImagePresignedUpload();
-  const {
-    mutateAsync: confirmProfileImage,
-    isPending: isConfirmingProfileImage,
-  } = useUpdateAdminProfileImage();
-  const isUpdatingProfileImage =
-    isRequestingUploadUrl || isConfirmingProfileImage;
+  const { mutateAsync: requestImageUploadUrl } =
+    useRequestAdminProfileImagePresignedUpload();
+  const { mutateAsync: confirmProfileImage } = useUpdateAdminProfileImage();
+  const isUploadingProfileImageRef = useRef(false);
+  const [isUpdatingProfileImage, setIsUpdatingProfileImage] = useState(false);
   const qrCanvasRef = useRef<HTMLCanvasElement>(null);
   const profileImageInputRef = useRef<HTMLInputElement>(null);
   const previewUrlRef = useRef<string | null>(null);
@@ -110,7 +105,7 @@ const AccountPage = () => {
   ) => {
     const file = event.target.files?.[0];
     event.target.value = "";
-    if (!file || isUpdatingProfileImage) return;
+    if (!file || isUploadingProfileImageRef.current) return;
 
     const contentType = resolveProfileImageContentType(file);
     if (!contentType) {
@@ -122,6 +117,8 @@ const AccountPage = () => {
       return;
     }
 
+    isUploadingProfileImageRef.current = true;
+    setIsUpdatingProfileImage(true);
     try {
       const { uploadUrl } = await requestImageUploadUrl({
         imageContentType: contentType,
@@ -153,6 +150,9 @@ const AccountPage = () => {
           "사진 업로드에 실패했습니다. 다시 시도해주세요.",
         ),
       );
+    } finally {
+      isUploadingProfileImageRef.current = false;
+      setIsUpdatingProfileImage(false);
     }
   };
 
