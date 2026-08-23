@@ -213,6 +213,30 @@ export const UPDATE_ADMIN_PROFILE_ERROR_CODE = {
   ORGANIZATION_NOT_FOUND: 3004, // 404: 존재하지 않는 단체입니다.
 } as const;
 
+// 6-3-1. 관리자 프로필 사진 업로드용 Presigned URL 발급
+// 엔드포인트: "/api/admin/v1/profile/images/pre-signed-upload-url" (POST)
+export type AdminProfileImageContentType =
+  | "image/jpeg"
+  | "image/jpg"
+  | "image/png"
+  | "image/webp";
+
+export interface AdminProfileImagePresignedUploadRequest {
+  imageContentType: AdminProfileImageContentType;
+}
+
+export interface AdminProfileImagePresignedUploadResponse {
+  organizationId: number;
+  uploadUrl: string;
+}
+
+export interface AdminProfileImageErrorResponse {
+  status: string;
+  code: number;
+  message: string;
+  detail?: string;
+}
+
 // 6-4. 개인정보 변경용 현재 비밀번호 확인
 // 엔드포인트: "/api/admin/v1/profile/password/verify" (POST)
 export type AdminPasswordVerificationPurpose =

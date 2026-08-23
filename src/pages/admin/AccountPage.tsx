@@ -1,14 +1,27 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { ChangeEvent } from "react";
 import { flushSync } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import LogoutConfirmModal from "../../components/modals/admin/account/LogoutConfirmModal";
 import QRCodeDisplay from "../../components/qr/QRCodeDisplay";
-import { useAdminProfile, useLogout } from "../../hooks/queries/useAuthQueries";
+import {
+  useAdminProfile,
+  useLogout,
+  useRequestAdminProfileImagePresignedUpload,
+} from "../../hooks/queries/useAuthQueries";
+import type { AdminProfileImageErrorResponse } from "../../api/auth/auth.type";
 import { clearAdminSession, getAdminEmail } from "../../utils/adminSession";
+import {
+  PROFILE_IMAGE_ACCEPT,
+  PROFILE_IMAGE_MAX_BYTES,
+  resolveProfileImageContentType,
+  uploadProfileImageToPresignedUrl,
+} from "../../utils/profileImageUpload";
 
 const PRODUCTION_WEB_ORIGIN = "https://www.retrivr.kr";
 const PREVIEW_WEB_ORIGIN = "https://retrivr-web.vercel.app";
@@ -29,7 +42,14 @@ const AccountPage = () => {
   // 로그아웃/탈퇴 중에는 프로필 쿼리를 꺼서 clear() 시 refetch → 401을 막는다
   const { data } = useAdminProfile({ enabled: !isSigningOut });
   const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
+  const {
+    mutateAsync: requestImageUploadUrl,
+    isPending: isUploadingProfileImage,
+  } = useRequestAdminProfileImagePresignedUpload();
   const qrCanvasRef = useRef<HTMLCanvasElement>(null);
+  const profileImageInputRef = useRef<HTMLInputElement>(null);
+  const previewUrlRef = useRef<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [confirmModalMessage, setConfirmModalMessage] = useState<string | null>(
     null,
   );
@@ -43,8 +63,7 @@ const AccountPage = () => {
   const userProfile = {
     organizationId,
     organizationName: data?.organizationName,
-    // 프로필 API에서 profileImageUrl이 제거되어 기본 아이콘을 사용한다
-    profileImageUrl: "/icons/profile-default-icon.svg",
+    profileImageUrl: previewUrl ?? "/icons/profile-default-icon.svg",
     email: storedEmail,
   };
 
@@ -57,6 +76,67 @@ const AccountPage = () => {
       String(organizationId),
     )}`;
   }, [organizationId]);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
+      }
+    };
+  }, []);
+
+  const getProfileImageErrorMessage = (error: unknown, fallback: string) => {
+    if (axios.isAxiosError(error)) {
+      const data = error.response?.data as
+        | AdminProfileImageErrorResponse
+        | undefined;
+      if (data?.message) return data.message;
+    }
+    if (error instanceof Error && error.message) return error.message;
+    return fallback;
+  };
+
+  const handleProfileImageChange = async (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || isUploadingProfileImage) return;
+
+    const contentType = resolveProfileImageContentType(file);
+    if (!contentType) {
+      setConfirmModalMessage("jpg, png, webp 이미지만 올릴 수 있어요.");
+      return;
+    }
+    if (file.size > PROFILE_IMAGE_MAX_BYTES) {
+      setConfirmModalMessage("5MB 이하 이미지만 올릴 수 있어요.");
+      return;
+    }
+
+    try {
+      const { uploadUrl } = await requestImageUploadUrl({
+        imageContentType: contentType,
+      });
+      await uploadProfileImageToPresignedUrl(uploadUrl, file, contentType);
+
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
+      }
+      const nextPreview = URL.createObjectURL(file);
+      previewUrlRef.current = nextPreview;
+      setPreviewUrl(nextPreview);
+      setConfirmModalMessage(
+        "사진을 저장 공간에 올렸어요. 프로필 반영은 다음 확정 단계에서 적용됩니다.",
+      );
+    } catch (error) {
+      setConfirmModalMessage(
+        getProfileImageErrorMessage(
+          error,
+          "사진 업로드에 실패했습니다. 다시 시도해주세요.",
+        ),
+      );
+    }
+  };
 
   const getQRDataUrl = () => qrCanvasRef.current?.toDataURL("image/png");
 
@@ -137,14 +217,22 @@ const AccountPage = () => {
         <div className="flex flex-col items-center pt-11.5 gap-3.5">
           <div className="relative flex items-center justify-center w-25 h-25 rounded-[50%] shadow-account-profile">
             <img
-              className="object-cover"
+              className="h-full w-full rounded-[50%] object-cover"
               src={userProfile.profileImageUrl}
               alt="프로필 이미지"
             />
+            <input
+              ref={profileImageInputRef}
+              type="file"
+              accept={PROFILE_IMAGE_ACCEPT}
+              className="hidden"
+              onChange={handleProfileImageChange}
+            />
             <button
               type="button"
-              onClick={() => alert("개발 예정입니다.")}
-              className="absolute right-0 bottom-0 flex items-center bg-neutral-white justify-center w-7 h-7 rounded-[50%] shadow-camera cursor-pointer"
+              disabled={isUploadingProfileImage}
+              onClick={() => profileImageInputRef.current?.click()}
+              className="absolute right-0 bottom-0 flex items-center bg-neutral-white justify-center w-7 h-7 rounded-[50%] shadow-camera cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
             >
               <img src="/icons/camera.svg" alt="프로필 이미지 변경하기" />
             </button>

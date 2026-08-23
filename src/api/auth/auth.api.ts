@@ -17,6 +17,8 @@ import type {
   SendAdminEmailCodeResponse,
   VerifyAdminEmailCodeRequest,
   UpdateAdminProfileRequest,
+  AdminProfileImagePresignedUploadRequest,
+  AdminProfileImagePresignedUploadResponse,
   VerifyAdminPasswordRequest,
   VerifyAdminPasswordResponse,
   UpdateAdminPasswordRequest,
@@ -188,6 +190,20 @@ export const updateAdminProfile = async (
   data: UpdateAdminProfileRequest,
 ): Promise<void> => {
   await apiClient.patch("/api/admin/v1/profile/organization-name", data);
+};
+
+//
+// 7-3-1. 관리자 프로필 사진 업로드용 Presigned URL 발급 API (POST)
+// 엔드포인트 : "/api/admin/v1/profile/images/pre-signed-upload-url"
+export const requestAdminProfileImagePresignedUpload = async (
+  data: AdminProfileImagePresignedUploadRequest,
+): Promise<AdminProfileImagePresignedUploadResponse> => {
+  const response =
+    await apiClient.post<AdminProfileImagePresignedUploadResponse>(
+      "/api/admin/v1/profile/images/pre-signed-upload-url",
+      data,
+    );
+  return response.data;
 };
 
 //

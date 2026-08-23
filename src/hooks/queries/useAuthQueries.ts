@@ -13,6 +13,7 @@ import {
   sendAdminEmailCode,
   verifyAdminEmailCode,
   updateAdminProfile,
+  requestAdminProfileImagePresignedUpload,
   verifyAdminPassword,
   updateAdminPassword,
   updateAdminCode,
@@ -218,6 +219,15 @@ export const useUpdateAdminProfile = () => {
     onError: (error) => {
       console.error("관리자 프로필 수정 실패:", error);
     },
+  });
+};
+
+//
+// 7-3-1. 관리자 프로필 사진 업로드용 Presigned URL 발급
+//
+export const useRequestAdminProfileImagePresignedUpload = () => {
+  return useMutation({
+    mutationFn: requestAdminProfileImagePresignedUpload,
   });
 };
 
