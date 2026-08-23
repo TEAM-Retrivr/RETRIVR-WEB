@@ -13,6 +13,8 @@ import {
   sendAdminEmailCode,
   verifyAdminEmailCode,
   updateAdminProfile,
+  requestAdminProfileImagePresignedUpload,
+  updateAdminProfileImage,
   verifyAdminPassword,
   updateAdminPassword,
   updateAdminCode,
@@ -217,6 +219,31 @@ export const useUpdateAdminProfile = () => {
     },
     onError: (error) => {
       console.error("관리자 프로필 수정 실패:", error);
+    },
+  });
+};
+
+//
+// 7-3-1. 관리자 프로필 사진 업로드용 Presigned URL 발급
+//
+export const useRequestAdminProfileImagePresignedUpload = () => {
+  return useMutation({
+    mutationFn: requestAdminProfileImagePresignedUpload,
+  });
+};
+
+//
+// 7-3-2. 관리자 프로필 이미지 수정 확정
+//
+export const useUpdateAdminProfileImage = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateAdminProfileImage,
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["adminProfile"] }),
+        queryClient.invalidateQueries({ queryKey: ["home"] }),
+      ]);
     },
   });
 };

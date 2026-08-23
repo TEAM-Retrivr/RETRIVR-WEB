@@ -154,9 +154,11 @@ export const WITHDRAW_ERROR_CODE = {
 
 // 6. 관리자 프로필 조회
 // 엔드포인트: "/api/admin/v1/profile" (GET)
-// 응답은 organizationName만 반환한다.
 export interface AdminProfileResponse {
-  organizationName: string; // 관리자 이름 (단체명)
+  organizationName: string;
+  organizationId?: number;
+  email?: string;
+  profileImageUrl?: string | null;
 }
 
 // 6-1. 관리자 이메일 인증 코드 발송
@@ -212,6 +214,42 @@ export const UPDATE_ADMIN_PROFILE_ERROR_CODE = {
   INVALID_REQUEST: 2002, // 400: 올바르지 않은 요청 값입니다.
   ORGANIZATION_NOT_FOUND: 3004, // 404: 존재하지 않는 단체입니다.
 } as const;
+
+// 6-3-1. 관리자 프로필 사진 업로드용 Presigned URL 발급
+// 엔드포인트: "/api/admin/v1/profile/images/pre-signed-upload-url" (POST)
+export type AdminProfileImageContentType =
+  | "image/jpeg"
+  | "image/jpg"
+  | "image/png"
+  | "image/webp";
+
+export interface AdminProfileImagePresignedUploadRequest {
+  imageContentType: AdminProfileImageContentType;
+}
+
+export interface AdminProfileImagePresignedUploadResponse {
+  organizationId: number;
+  uploadUrl: string;
+}
+
+export interface AdminProfileImageErrorResponse {
+  status: string;
+  code: number;
+  message: string;
+  detail?: string;
+}
+
+// 6-3-2. 관리자 프로필 이미지 수정 확정
+// 엔드포인트: "/api/admin/v1/profile/images" (PUT)
+// objectKey가 null이면 이미지 삭제
+export interface AdminProfileImageUpdateRequest {
+  objectKey: string | null;
+}
+
+export interface AdminProfileImageUpdateResponse {
+  organizationId: number;
+  downloadUrl?: string | null;
+}
 
 // 6-4. 개인정보 변경용 현재 비밀번호 확인
 // 엔드포인트: "/api/admin/v1/profile/password/verify" (POST)
