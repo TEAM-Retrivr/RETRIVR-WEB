@@ -27,7 +27,10 @@ import {
   formatCouponValidityPeriod,
   isValidCouponCode,
 } from "../../utils/couponDisplay";
-import { toAdminSubscriptionPlan, toVoucherBillingCycle } from "../../types/voucherPayment";
+import {
+  toAdminSubscriptionPlan,
+  toVoucherBillingCycle,
+} from "../../types/voucherPayment";
 type BillingCycle = "monthly" | "yearly";
 type CouponAlertType =
   | "notFound"
@@ -44,34 +47,37 @@ const MEMBERSHIP_PASS = {
   coupon: "쿠폰 사용",
 } as const;
 
-const toBillingCycleFromPassType = (
-  passType?: string | null,
-): BillingCycle | null => {
-  if (passType === MEMBERSHIP_PASS.monthly) return "monthly";
-  if (passType === MEMBERSHIP_PASS.yearly) return "yearly";
-  return null;
-};
-
 const isCouponPassType = (passType?: string | null): boolean =>
   passType === MEMBERSHIP_PASS.coupon;
+
+const isCouponOnlyMembership = (data: AdminMembershipResponse): boolean =>
+  !data.subscriptionPlan &&
+  (isCouponPassType(data.passType) || Boolean(data.couponInfo));
 
 const resolveActivePassTitle = (
   data: AdminMembershipResponse,
 ): string | undefined => {
-  if (isCouponPassType(data.passType)) {
+  if (data.subscriptionPlan) {
+    return (
+      data.subscriptionInfo?.subscriptionName?.trim() ||
+      (data.subscriptionPlan === "YEARLY"
+        ? MEMBERSHIP_PASS.yearly
+        : MEMBERSHIP_PASS.monthly)
+    );
+  }
+  if (isCouponOnlyMembership(data)) {
     return data.couponInfo?.couponName?.trim() || undefined;
   }
-  return (
-    data.subscriptionInfo?.subscriptionName?.trim() ||
-    data.couponInfo?.couponName?.trim() ||
-    undefined
-  );
+  return undefined;
 };
 
 const resolveActivePassFooter = (
   data: AdminMembershipResponse,
 ): string | undefined => {
-  if (isCouponPassType(data.passType) && data.startAt && data.endAt) {
+  if (data.subscriptionPlan && data.nextBillingAt) {
+    return `다음 결제일 ${formatCouponDay(data.nextBillingAt)}`;
+  }
+  if (isCouponOnlyMembership(data) && data.startAt && data.endAt) {
     return `사용 기간: ${formatCouponValidityPeriod(data.startAt, data.endAt)}`;
   }
   if (data.nextBillingAt) {
@@ -213,6 +219,7 @@ const MembershipPage = () => {
   const hasActivePass =
     isMembershipSuccess &&
     Boolean(
+      membership?.subscriptionPlan ||
       activePassTitle ||
       membership?.subscriptionInfo?.subscriptionName ||
       membership?.couponInfo?.couponName ||
@@ -240,9 +247,8 @@ const MembershipPage = () => {
         : billingCycle === "yearly"
           ? "연간 구독으로 변경"
           : "월간 구독으로 변경";
-  const passCycle = toBillingCycleFromPassType(membership?.passType);
-  const currentPlanDisplay = passCycle
-    ? SUBSCRIPTION_PLANS[passCycle]
+  const currentPlanDisplay = currentCycle
+    ? SUBSCRIPTION_PLANS[currentCycle]
     : undefined;
 
   const handleComingSoon = () => {
@@ -393,18 +399,18 @@ const MembershipPage = () => {
                 title={activePassTitle ?? "이용권"}
                 status="active"
                 eventName={
-                  isCouponPassType(membership.passType)
+                  isCouponOnlyMembership(membership)
                     ? membership.couponInfo?.couponDescription
                     : undefined
                 }
                 priceAmount={
-                  isCouponPassType(membership.passType)
+                  isCouponOnlyMembership(membership)
                     ? undefined
                     : (formatPaidAmount(membership.payedAmount) ??
                       currentPlanDisplay?.amount)
                 }
                 priceUnit={
-                  isCouponPassType(membership.passType)
+                  isCouponOnlyMembership(membership)
                     ? undefined
                     : currentPlanDisplay?.unit
                 }
