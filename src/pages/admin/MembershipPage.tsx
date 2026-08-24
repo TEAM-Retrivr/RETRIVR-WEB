@@ -12,7 +12,6 @@ import PlanChangeSuccessModal from "../../components/modals/membership/PlanChang
 import MembershipCouponCard from "../../components/membership/MembershipCouponCard";
 import MembershipProBadge from "../../components/membership/MembershipProBadge";
 import {
-  useAdminCurrentSubscription,
   useAdminMembership,
   useChangeAdminSubscriptionPlan,
   useRegisterAdminCoupon,
@@ -28,10 +27,7 @@ import {
   formatCouponValidityPeriod,
   isValidCouponCode,
 } from "../../utils/couponDisplay";
-import {
-  toAdminSubscriptionPlan,
-  toVoucherBillingCycle,
-} from "../../types/voucherPayment";
+import { toAdminSubscriptionPlan } from "../../types/voucherPayment";
 type BillingCycle = "monthly" | "yearly";
 type CouponAlertType =
   | "notFound"
@@ -42,8 +38,25 @@ type CouponAlertType =
 const EMPTY_MEMBERSHIP_GUIDE =
   "현재 이용 중인 이용권이 없습니다.\n하단의 '구독 시작하기' 버튼을 눌러 이용권을 구독해보세요.";
 
-const isCouponPassType = (passType?: string): boolean =>
-  Boolean(passType && /coupon/i.test(passType));
+const MEMBERSHIP_PASS = {
+  monthly: "월간 구독",
+  yearly: "연간 구독",
+  coupon: "쿠폰 사용",
+} as const;
+
+const toBillingCycleFromPassType = (
+  passType?: string | null,
+): BillingCycle | null => {
+  if (passType === MEMBERSHIP_PASS.monthly) return "monthly";
+  if (passType === MEMBERSHIP_PASS.yearly) return "yearly";
+  return null;
+};
+
+const isCouponPassType = (passType?: string | null): boolean =>
+  passType === MEMBERSHIP_PASS.coupon;
+
+const isChangeablePassType = (passType?: string | null): boolean =>
+  passType === MEMBERSHIP_PASS.monthly || passType === MEMBERSHIP_PASS.yearly;
 
 const resolveActivePassTitle = (
   data: AdminMembershipResponse,
@@ -164,40 +177,30 @@ const MembershipPage = () => {
   const registerCouponMutation = useRegisterAdminCoupon();
   const changePlanMutation = useChangeAdminSubscriptionPlan();
   const {
-    data: currentSubscription,
-    isLoading: isSubscriptionLoading,
-    isFetched: isSubscriptionFetched,
-  } = useAdminCurrentSubscription();
-  const {
     data: membership,
     isLoading: isMembershipLoading,
     isError: isMembershipError,
     isSuccess: isMembershipSuccess,
+    isFetched: isMembershipFetched,
   } = useAdminMembership();
 
   useEffect(() => {
-    if (didSyncBillingCycleRef.current || !isSubscriptionFetched) return;
+    if (didSyncBillingCycleRef.current || !isMembershipFetched) return;
     didSyncBillingCycleRef.current = true;
-    if (
-      currentSubscription?.plan &&
-      currentSubscription.membershipPassStatus !== "EXPIRED"
-    ) {
-      setBillingCycle(toVoucherBillingCycle(currentSubscription.plan));
+    const syncedCycle = toBillingCycleFromPassType(membership?.passType);
+    if (membership?.subscribed && syncedCycle) {
+      setBillingCycle(syncedCycle);
     }
-  }, [
-    isSubscriptionFetched,
-    currentSubscription?.plan,
-    currentSubscription?.membershipPassStatus,
-  ]);
+  }, [isMembershipFetched, membership?.subscribed, membership?.passType]);
 
   useEffect(() => {
     if (
       scheduledCycle &&
-      currentSubscription?.plan === toAdminSubscriptionPlan(scheduledCycle)
+      toBillingCycleFromPassType(membership?.passType) === scheduledCycle
     ) {
       setScheduledCycle(null);
     }
-  }, [scheduledCycle, currentSubscription?.plan]);
+  }, [scheduledCycle, membership?.passType]);
 
   const selectedPlan = SUBSCRIPTION_PLANS[billingCycle];
   const trimmedCouponCode = couponCode.trim();
@@ -218,12 +221,12 @@ const MembershipPage = () => {
   const showEmptyMembership =
     !isMembershipLoading && (isMembershipError || !hasActivePass);
   const hasChangeableSubscription =
-    isSubscriptionFetched &&
-    Boolean(currentSubscription?.plan) &&
-    currentSubscription?.membershipPassStatus !== "EXPIRED";
+    isMembershipSuccess &&
+    membership?.subscribed === true &&
+    isChangeablePassType(membership.passType);
+  const currentCycle = toBillingCycleFromPassType(membership?.passType);
   const isCurrentPlanSelected =
-    hasChangeableSubscription &&
-    currentSubscription?.plan === toAdminSubscriptionPlan(billingCycle);
+    hasChangeableSubscription && currentCycle === billingCycle;
   const isScheduledTargetSelected =
     scheduledCycle === billingCycle && !isCurrentPlanSelected;
   const isSubscriptionCtaLocked =
@@ -237,17 +240,16 @@ const MembershipPage = () => {
         : billingCycle === "yearly"
           ? "연간 구독으로 변경"
           : "월간 구독으로 변경";
-  const currentPlanDisplay =
-    hasChangeableSubscription && currentSubscription?.plan
-      ? SUBSCRIPTION_PLANS[toVoucherBillingCycle(currentSubscription.plan)]
-      : undefined;
+  const currentPlanDisplay = currentCycle
+    ? SUBSCRIPTION_PLANS[currentCycle]
+    : undefined;
 
   const handleComingSoon = () => {
     alert(COMING_SOON_MESSAGE);
   };
 
   const handleStartSubscription = () => {
-    if (isSubscriptionLoading || !isSubscriptionFetched) return;
+    if (isMembershipLoading) return;
     if (!hasChangeableSubscription) {
       navigate(`/membership/subscribe?cycle=${billingCycle}`);
       return;
@@ -262,7 +264,7 @@ const MembershipPage = () => {
     if (!hasChangeableSubscription || changePlanMutation.isPending) return;
 
     const nextPlan = toAdminSubscriptionPlan(planChangeTargetCycle);
-    if (currentSubscription?.plan === nextPlan) return;
+    if (currentCycle === planChangeTargetCycle) return;
     if (scheduledCycle === planChangeTargetCycle) return;
 
     changePlanMutation.mutate(
@@ -467,7 +469,7 @@ const MembershipPage = () => {
                   role="tab"
                   aria-selected={billingCycle === "monthly"}
                   onClick={() => setBillingCycle("monthly")}
-                  disabled={isSubscriptionLoading}
+                  disabled={isMembershipLoading}
                   className={`relative z-10 flex h-full flex-1 items-center justify-center rounded-md text-12px cursor-pointer ${
                     billingCycle === "monthly"
                       ? "bg-neutral-white font-bold text-neutral-gray-1 shadow-[0px_0px_8px_-4px_rgba(0,0,0,0.3)]"
@@ -481,7 +483,7 @@ const MembershipPage = () => {
                   role="tab"
                   aria-selected={billingCycle === "yearly"}
                   onClick={() => setBillingCycle("yearly")}
-                  disabled={isSubscriptionLoading}
+                  disabled={isMembershipLoading}
                   className={`relative z-10 flex h-full flex-1 items-center justify-center rounded-md text-12px cursor-pointer ${
                     billingCycle === "yearly"
                       ? "bg-neutral-white font-bold text-neutral-gray-1 shadow-[0px_0px_8px_-4px_rgba(0,0,0,0.3)]"
@@ -517,7 +519,7 @@ const MembershipPage = () => {
               onClick={handleStartSubscription}
               disabled={
                 changePlanMutation.isPending ||
-                isSubscriptionLoading ||
+                isMembershipLoading ||
                 isSubscriptionCtaLocked
               }
               className={`flex h-12 w-full items-center justify-center rounded-[12px] text-18px ${
