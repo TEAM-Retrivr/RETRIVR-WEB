@@ -27,7 +27,7 @@ import {
   formatCouponValidityPeriod,
   isValidCouponCode,
 } from "../../utils/couponDisplay";
-import { toAdminSubscriptionPlan } from "../../types/voucherPayment";
+import { toAdminSubscriptionPlan, toVoucherBillingCycle } from "../../types/voucherPayment";
 type BillingCycle = "monthly" | "yearly";
 type CouponAlertType =
   | "notFound"
@@ -54,9 +54,6 @@ const toBillingCycleFromPassType = (
 
 const isCouponPassType = (passType?: string | null): boolean =>
   passType === MEMBERSHIP_PASS.coupon;
-
-const isChangeablePassType = (passType?: string | null): boolean =>
-  passType === MEMBERSHIP_PASS.monthly || passType === MEMBERSHIP_PASS.yearly;
 
 const resolveActivePassTitle = (
   data: AdminMembershipResponse,
@@ -176,6 +173,9 @@ const MembershipPage = () => {
   const lookupCouponMutation = useRequestAdminCoupon();
   const registerCouponMutation = useRegisterAdminCoupon();
   const changePlanMutation = useChangeAdminSubscriptionPlan();
+  // GET /api/admin/v1/memberships/current
+  // subscriptionPlan: MONTHLY(월간 구독) | YEARLY(연간 구독) | null(구독 플랜 없음)
+  // 쿠폰 이용권을 사용 중이어도 활성 구독이 있으면 해당 구독 플랜을 반환한다.
   const {
     data: membership,
     isLoading: isMembershipLoading,
@@ -187,20 +187,20 @@ const MembershipPage = () => {
   useEffect(() => {
     if (didSyncBillingCycleRef.current || !isMembershipFetched) return;
     didSyncBillingCycleRef.current = true;
-    const syncedCycle = toBillingCycleFromPassType(membership?.passType);
-    if (membership?.subscribed && syncedCycle) {
-      setBillingCycle(syncedCycle);
+    if (membership?.subscriptionPlan) {
+      setBillingCycle(toVoucherBillingCycle(membership.subscriptionPlan));
     }
-  }, [isMembershipFetched, membership?.subscribed, membership?.passType]);
+  }, [isMembershipFetched, membership?.subscriptionPlan]);
 
   useEffect(() => {
     if (
       scheduledCycle &&
-      toBillingCycleFromPassType(membership?.passType) === scheduledCycle
+      membership?.subscriptionPlan &&
+      toVoucherBillingCycle(membership.subscriptionPlan) === scheduledCycle
     ) {
       setScheduledCycle(null);
     }
-  }, [scheduledCycle, membership?.passType]);
+  }, [scheduledCycle, membership?.subscriptionPlan]);
 
   const selectedPlan = SUBSCRIPTION_PLANS[billingCycle];
   const trimmedCouponCode = couponCode.trim();
@@ -221,10 +221,10 @@ const MembershipPage = () => {
   const showEmptyMembership =
     !isMembershipLoading && (isMembershipError || !hasActivePass);
   const hasChangeableSubscription =
-    isMembershipSuccess &&
-    membership?.subscribed === true &&
-    isChangeablePassType(membership.passType);
-  const currentCycle = toBillingCycleFromPassType(membership?.passType);
+    isMembershipSuccess && Boolean(membership?.subscriptionPlan);
+  const currentCycle = membership?.subscriptionPlan
+    ? toVoucherBillingCycle(membership.subscriptionPlan)
+    : null;
   const isCurrentPlanSelected =
     hasChangeableSubscription && currentCycle === billingCycle;
   const isScheduledTargetSelected =
@@ -240,8 +240,9 @@ const MembershipPage = () => {
         : billingCycle === "yearly"
           ? "연간 구독으로 변경"
           : "월간 구독으로 변경";
-  const currentPlanDisplay = currentCycle
-    ? SUBSCRIPTION_PLANS[currentCycle]
+  const passCycle = toBillingCycleFromPassType(membership?.passType);
+  const currentPlanDisplay = passCycle
+    ? SUBSCRIPTION_PLANS[passCycle]
     : undefined;
 
   const handleComingSoon = () => {

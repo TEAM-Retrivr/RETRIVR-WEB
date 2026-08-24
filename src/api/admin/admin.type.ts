@@ -368,6 +368,7 @@ export interface AdminMembershipSubscriptionInfo {
 export interface AdminMembershipResponse {
   subscribed: boolean;
   level: string; // 예: "PREMIUM"
+  subscriptionPlan: AdminSubscriptionPlan | null;
   passType: string | null;
   couponInfo?: AdminMembershipCouponInfo | null;
   subscriptionInfo?: AdminMembershipSubscriptionInfo | null;
