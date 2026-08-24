@@ -35,6 +35,11 @@ const SUBSCRIPTION_PLAN_UNIT: Record<AdminSubscriptionPlan, string> = {
   YEARLY: "/연",
 };
 
+const PLAN_CHANGE_LABEL: Record<AdminSubscriptionPlan, string> = {
+  MONTHLY: "연간 구독으로 변경",
+  YEARLY: "월간 구독으로 변경",
+};
+
 const getSubscriptionErrorMessage = (error: unknown, fallback: string) => {
   if (axios.isAxiosError(error)) {
     const data = error.response?.data as
@@ -48,6 +53,30 @@ const getSubscriptionErrorMessage = (error: unknown, fallback: string) => {
 const formatPaidAmount = (amount?: number) =>
   typeof amount === "number" ? `${amount.toLocaleString("ko-KR")}₩` : undefined;
 
+const ACTION_BUTTON_CLASS =
+  "flex h-[42px] min-w-0 flex-1 items-center justify-center rounded-[7.5px] bg-neutral-white px-2 text-center text-12px font-bold leading-[1.5] text-neutral-gray-2 shadow-[0px_0px_2px_rgba(0,0,0,0.14)] cursor-pointer disabled:cursor-not-allowed disabled:opacity-60";
+
+type VoucherActionButtonProps = {
+  label: string;
+  disabled?: boolean;
+  onClick?: () => void;
+};
+
+const VoucherActionButton = ({
+  label,
+  disabled,
+  onClick,
+}: VoucherActionButtonProps) => (
+  <button
+    type="button"
+    onClick={onClick}
+    disabled={disabled}
+    className={ACTION_BUTTON_CLASS}
+  >
+    {label}
+  </button>
+);
+
 const SubscriptionVoucherPanel = () => {
   const { data, isLoading, isError, isSuccess } = useAdminCurrentSubscription();
   const cancelMutation = useCancelAdminSubscription();
@@ -59,15 +88,18 @@ const SubscriptionVoucherPanel = () => {
     isSuccess && Boolean(data) && data?.membershipPassStatus !== "EXPIRED";
   const showEmptyState = !isLoading && (isError || !hasSubscription);
   const isPaused = data?.membershipPassStatus === "REGISTERED";
-  const planLabel = data?.plan
-    ? SUBSCRIPTION_PLAN_LABEL[data.plan]
-    : undefined;
+  const isCanceledPass =
+    hasCanceled ||
+    Boolean(hasSubscription && !isPaused && data && !data.nextBillingAt);
+  const planLabel = data?.plan ? SUBSCRIPTION_PLAN_LABEL[data.plan] : undefined;
   const expireAt = data?.endAt || data?.nextBillingAt || undefined;
   const expireAtLabel = expireAt ? formatKoreanDate(expireAt) : undefined;
   const nextBillingLabel =
-    !hasCanceled && !isPaused && data?.nextBillingAt
+    !isCanceledPass && !isPaused && data?.nextBillingAt
       ? `다음 결제일 ${formatFullDotDay(data.nextBillingAt)}`
-      : undefined;
+      : isCanceledPass && data?.endAt
+        ? `혜택 종료일 ${formatFullDotDay(data.endAt)}`
+        : undefined;
   const pausedDescription =
     isPaused && data?.nextBillingAt
       ? `등록된 쿠폰 이용권을 모두 사용하면\n${formatCouponDay(data.nextBillingAt)}부터 자동 결제가 다시 진행돼요.`
@@ -109,10 +141,16 @@ const SubscriptionVoucherPanel = () => {
       ) : null}
 
       {showEmptyState ? (
-        <div className="flex h-[42px] w-full items-center justify-center rounded-[7.5px] border border-[#e6eaed] bg-neutral-gray-5 px-[18px]">
-          <p className="text-12px font-bold leading-[1.5] text-neutral-gray-3">
-            {EMPTY_MEMBERSHIP_MESSAGE}
-          </p>
+        <div className="flex flex-col gap-1.5">
+          <div className="flex h-[42px] w-full items-center justify-center rounded-[7.5px] border border-[#e6eaed] bg-neutral-gray-5 px-[18px]">
+            <p className="text-12px font-bold leading-[1.5] text-neutral-gray-3">
+              {EMPTY_MEMBERSHIP_MESSAGE}
+            </p>
+          </div>
+          <div className="flex gap-1.5">
+            <VoucherActionButton label="월간 구독 시작하기" />
+            <VoucherActionButton label="연간 구독 시작하기" />
+          </div>
         </div>
       ) : null}
 
@@ -126,24 +164,27 @@ const SubscriptionVoucherPanel = () => {
             footerText={nextBillingLabel}
           />
 
-          {pausedDescription && !hasCanceled ? (
+          {pausedDescription && !isCanceledPass ? (
             <p className="whitespace-pre-line text-12px font-normal leading-[1.4] text-neutral-gray-3">
               {pausedDescription}
             </p>
           ) : null}
 
-          {!hasCanceled && data.nextBillingAt ? (
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={() => setIsCancelOpen(true)}
-                disabled={cancelMutation.isPending}
-                className="flex h-[42px] w-[166px] items-center justify-center rounded-[7.5px] bg-neutral-white px-[18px] text-12px font-bold leading-[1.5] text-neutral-gray-2 shadow-[0px_0px_2px_rgba(0,0,0,0.14)] cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                구독 해지
-              </button>
+          {isCanceledPass ? (
+            <div className="flex gap-1.5">
+              <VoucherActionButton label="월간 구독 시작하기" />
+              <VoucherActionButton label="연간 구독 시작하기" />
             </div>
-          ) : null}
+          ) : (
+            <div className="flex gap-1.5">
+              <VoucherActionButton label={PLAN_CHANGE_LABEL[data.plan]} />
+              <VoucherActionButton
+                label="구독 해지"
+                disabled={cancelMutation.isPending}
+                onClick={() => setIsCancelOpen(true)}
+              />
+            </div>
+          )}
         </div>
       ) : null}
 
