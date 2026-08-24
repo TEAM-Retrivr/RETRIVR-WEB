@@ -1,11 +1,15 @@
 type UsageGuideCardProps = {
   items: string[];
+  title?: string;
 };
 
-const UsageGuideCard = ({ items }: UsageGuideCardProps) => (
+const UsageGuideCard = ({
+  items,
+  title = "이용권 사용 안내",
+}: UsageGuideCardProps) => (
   <section className="rounded-[12px] border border-[#e6eaed] bg-neutral-white px-3.5 py-3.5">
     <h3 className="text-12px font-bold leading-[1.5] text-neutral-gray-3">
-      이용권 사용 안내
+      {title}
     </h3>
     <ul className="mt-1 flex flex-col">
       {items.map((item) => (

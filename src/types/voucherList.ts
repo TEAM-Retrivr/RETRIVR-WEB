@@ -19,6 +19,13 @@ export const HISTORY_PERIOD_LABEL: Record<HistoryPeriodOption, string> = {
   custom: "직접입력",
 };
 
+export const SUBSCRIPTION_USAGE_GUIDE_TITLE = "구독 및 쿠폰 사용 안내";
+
+export const EMPTY_SUBSCRIPTION_USAGE_GUIDE = [
+  "쿠폰 코드를 등록하면 이용권이 즉시 활성화돼요.",
+  "현재 구독 중이라면 다음 결제일부터 쿠폰 이용권이 먼저 사용돼요.",
+];
+
 export const SUBSCRIPTION_USAGE_GUIDE = [
   "쿠폰 코드를 등록하면 쿠폰 이용권을 사용할 수 있습니다.",
   "쿠폰 이용권은 등록 즉시 활성화됩니다.",
