@@ -368,7 +368,7 @@ export interface AdminMembershipSubscriptionInfo {
 export interface AdminMembershipResponse {
   subscribed: boolean;
   level: string; // 예: "PREMIUM"
-  passType: string;
+  passType: string | null;
   couponInfo?: AdminMembershipCouponInfo | null;
   subscriptionInfo?: AdminMembershipSubscriptionInfo | null;
   startAt: string; // YYYY-MM-DD
