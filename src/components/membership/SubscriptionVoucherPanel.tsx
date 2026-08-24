@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
   EMPTY_SUBSCRIPTION_USAGE_GUIDE,
@@ -18,7 +19,9 @@ import {
   formatFullDotDay,
   formatKoreanDate,
 } from "../../utils/couponDisplay";
+import type { VoucherBillingCycle } from "../../types/voucherPayment";
 import MembershipCouponCard from "./MembershipCouponCard";
+import MembershipSubscribeCard from "./MembershipSubscribeCard";
 import UsageGuideCard from "./UsageGuideCard";
 import SubscriptionCancelModal from "../modals/membership/SubscriptionCancelModal";
 import CouponAlertModal from "../modals/membership/CouponAlertModal";
@@ -32,7 +35,7 @@ const SUBSCRIPTION_PLAN_LABEL: Record<AdminSubscriptionPlan, string> = {
 
 const SUBSCRIPTION_PLAN_UNIT: Record<AdminSubscriptionPlan, string> = {
   MONTHLY: "/월",
-  YEARLY: "/연",
+  YEARLY: "/년",
 };
 
 const PLAN_CHANGE_LABEL: Record<AdminSubscriptionPlan, string> = {
@@ -78,11 +81,14 @@ const VoucherActionButton = ({
 );
 
 const SubscriptionVoucherPanel = () => {
+  const navigate = useNavigate();
   const { data, isLoading, isError, isSuccess } = useAdminCurrentSubscription();
   const cancelMutation = useCancelAdminSubscription();
   const [isCancelOpen, setIsCancelOpen] = useState(false);
   const [resultMessage, setResultMessage] = useState<string | null>(null);
   const [hasCanceled, setHasCanceled] = useState(false);
+  const [billingCycle, setBillingCycle] =
+    useState<VoucherBillingCycle>("monthly");
 
   const hasSubscription =
     isSuccess && Boolean(data) && data?.membershipPassStatus !== "EXPIRED";
@@ -147,10 +153,14 @@ const SubscriptionVoucherPanel = () => {
               {EMPTY_MEMBERSHIP_MESSAGE}
             </p>
           </div>
-          <div className="flex gap-1.5">
-            <VoucherActionButton label="월간 구독 시작하기" />
-            <VoucherActionButton label="연간 구독 시작하기" />
-          </div>
+          <MembershipSubscribeCard
+            billingCycle={billingCycle}
+            onBillingCycleChange={setBillingCycle}
+            ctaLabel="구독 시작하기"
+            onCtaClick={() =>
+              navigate(`/membership/subscribe?cycle=${billingCycle}`)
+            }
+          />
         </div>
       ) : null}
 
