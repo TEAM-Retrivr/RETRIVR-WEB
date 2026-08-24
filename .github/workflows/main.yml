@@ -1,0 +1,40 @@
+name: Frontend CI/CD
+
+# 워크플로우가 실행될 조건 (main 브랜치에 푸시되거나 PR이 열릴 때)
+on:
+  push:
+    branches: ["develop", "main"]
+  pull_request:
+    branches: ["develop", "main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 레포지토리의 코드를 가져옵니다.
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. Node.js 환경을 설정합니다.
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20" # 프로젝트에 맞는 노드 버전으로 수정 가능
+          cache: "npm"
+
+      # 3. 의존성 패키지를 설치합니다. (yarn, pnpm을 쓰신다면 해당 명령어로 수정)
+      - name: Install Dependencies
+        run: npm ci
+
+      # 4. 타입 체크 및 프로젝트 빌드를 진행합니다.
+      - name: Build Project
+        run: npm run build
+
+      # 5. Discord로 빌드 결과 알림을 전송합니다.
+      - name: Send Discord Notification
+        uses: sarisia/actions-status-discord@v1
+        if: always() # 빌드 성공/실패 여부와 관계없이 무조건 실행
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: "🚀 프론트엔드 CI/CD 실행 결과"
