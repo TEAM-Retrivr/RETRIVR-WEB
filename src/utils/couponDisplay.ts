@@ -23,6 +23,24 @@ export const formatCouponDay = (day: string): string => {
   return day;
 };
 
+/** YYYY-MM-DD → YYYY. MM. DD */
+export const formatFullDotDay = (day: string): string => {
+  const datePart = day.includes("T") ? day.slice(0, 10) : day;
+  const isoMatch = datePart.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (isoMatch) {
+    return `${isoMatch[1]}. ${isoMatch[2]}. ${isoMatch[3]}`;
+  }
+  return formatCouponDay(day);
+};
+
+/** YYYY-MM-DD → YYYY년 M월 D일 */
+export const formatKoreanDate = (day: string): string => {
+  const datePart = day.includes("T") ? day.slice(0, 10) : day;
+  const match = datePart.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!match) return formatCouponDay(day);
+  return `${match[1]}년 ${Number(match[2])}월 ${Number(match[3])}일`;
+};
+
 export const formatCouponValidityPeriod = (
   activeStartDay: string,
   expiresDay: string,

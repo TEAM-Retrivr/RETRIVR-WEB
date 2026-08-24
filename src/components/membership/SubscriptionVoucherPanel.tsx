@@ -1,6 +1,10 @@
 import { useState } from "react";
 import axios from "axios";
-import { SUBSCRIPTION_USAGE_GUIDE } from "../../types/voucherList";
+import {
+  EMPTY_SUBSCRIPTION_USAGE_GUIDE,
+  SUBSCRIPTION_USAGE_GUIDE,
+  SUBSCRIPTION_USAGE_GUIDE_TITLE,
+} from "../../types/voucherList";
 import {
   useAdminCurrentSubscription,
   useCancelAdminSubscription,
@@ -9,16 +13,26 @@ import type {
   AdminSubscriptionErrorResponse,
   AdminSubscriptionPlan,
 } from "../../api/admin/admin.type";
-import { formatCouponDay } from "../../utils/couponDisplay";
+import {
+  formatCouponDay,
+  formatFullDotDay,
+  formatKoreanDate,
+} from "../../utils/couponDisplay";
+import MembershipCouponCard from "./MembershipCouponCard";
 import UsageGuideCard from "./UsageGuideCard";
 import SubscriptionCancelModal from "../modals/membership/SubscriptionCancelModal";
 import CouponAlertModal from "../modals/membership/CouponAlertModal";
 
-const EMPTY_MEMBERSHIP_MESSAGE = "현재 이용 중인 이용권이 없습니다.";
+const EMPTY_MEMBERSHIP_MESSAGE = "Retrivr 프로를 이용하고 있지 않아요!";
 
 const SUBSCRIPTION_PLAN_LABEL: Record<AdminSubscriptionPlan, string> = {
-  MONTHLY: "월간 이용권",
-  YEARLY: "연간 이용권",
+  MONTHLY: "월간 구독 이용권",
+  YEARLY: "연간 구독 이용권",
+};
+
+const SUBSCRIPTION_PLAN_UNIT: Record<AdminSubscriptionPlan, string> = {
+  MONTHLY: "/월",
+  YEARLY: "/연",
 };
 
 const getSubscriptionErrorMessage = (error: unknown, fallback: string) => {
@@ -31,26 +45,8 @@ const getSubscriptionErrorMessage = (error: unknown, fallback: string) => {
   return fallback;
 };
 
-const resolveStatusLabel = (status?: string): string =>
-  status === "REGISTERED" ? "일시중지" : "이용중";
-
-const resolveDescription = ({
-  isPaused,
-  nextBillingAt,
-}: {
-  isPaused: boolean;
-  nextBillingAt?: string | null;
-}): string | undefined => {
-  if (!nextBillingAt) return undefined;
-
-  const billingDay = formatCouponDay(nextBillingAt);
-
-  if (isPaused) {
-    return `등록된 쿠폰 이용권을 모두 사용하면\n${billingDay}부터 자동 결제가 다시 진행돼요.`;
-  }
-
-  return `다음 결제 예정일: ${billingDay}`;
-};
+const formatPaidAmount = (amount?: number) =>
+  typeof amount === "number" ? `${amount.toLocaleString("ko-KR")}₩` : undefined;
 
 const SubscriptionVoucherPanel = () => {
   const { data, isLoading, isError, isSuccess } = useAdminCurrentSubscription();
@@ -66,11 +62,16 @@ const SubscriptionVoucherPanel = () => {
   const planLabel = data?.plan
     ? SUBSCRIPTION_PLAN_LABEL[data.plan]
     : undefined;
-  const statusLabel = resolveStatusLabel(data?.membershipPassStatus);
-  const description = resolveDescription({
-    isPaused,
-    nextBillingAt: data?.nextBillingAt,
-  });
+  const expireAt = data?.endAt || data?.nextBillingAt || undefined;
+  const expireAtLabel = expireAt ? formatKoreanDate(expireAt) : undefined;
+  const nextBillingLabel =
+    !hasCanceled && !isPaused && data?.nextBillingAt
+      ? `다음 결제일 ${formatFullDotDay(data.nextBillingAt)}`
+      : undefined;
+  const pausedDescription =
+    isPaused && data?.nextBillingAt
+      ? `등록된 쿠폰 이용권을 모두 사용하면\n${formatCouponDay(data.nextBillingAt)}부터 자동 결제가 다시 진행돼요.`
+      : undefined;
 
   const handleConfirmCancel = async () => {
     if (cancelMutation.isPending) return;
@@ -108,50 +109,57 @@ const SubscriptionVoucherPanel = () => {
       ) : null}
 
       {showEmptyState ? (
-        <div className="flex min-h-[180px] items-center justify-center">
-          <p className="text-center text-14px font-normal leading-[1.4] text-neutral-gray-3">
+        <div className="flex h-[42px] w-full items-center justify-center rounded-[7.5px] border border-[#e6eaed] bg-neutral-gray-5 px-[18px]">
+          <p className="text-12px font-bold leading-[1.5] text-neutral-gray-3">
             {EMPTY_MEMBERSHIP_MESSAGE}
           </p>
         </div>
       ) : null}
 
       {hasSubscription && data && planLabel ? (
-        <article className="flex flex-col rounded-2xl bg-neutral-white px-[26px] py-6 shadow-[0px_0px_16px_-6px_rgba(0,0,0,0.2)]">
-          <div className="flex items-center gap-[5px]">
-            <h2 className="text-16px font-bold leading-normal text-neutral-gray-1">
-              {planLabel}
-            </h2>
-            <span className="inline-flex h-[18px] items-center justify-center rounded-[9px] border-[0.5px] border-secondary-2 bg-neutral-gray-5 px-[7px]">
-              <span className="text-10px font-bold leading-[1.3] text-secondary-2">
-                {statusLabel}
-              </span>
-            </span>
-          </div>
+        <div className="flex flex-col gap-1.5">
+          <MembershipCouponCard
+            title={planLabel}
+            status="active"
+            priceAmount={formatPaidAmount(data.paidAmount)}
+            priceUnit={SUBSCRIPTION_PLAN_UNIT[data.plan]}
+            footerText={nextBillingLabel}
+          />
 
-          {description && !hasCanceled ? (
-            <p className="mt-2 whitespace-pre-line text-12px font-normal leading-[1.4] text-neutral-gray-3">
-              {description}
+          {pausedDescription && !hasCanceled ? (
+            <p className="whitespace-pre-line text-12px font-normal leading-[1.4] text-neutral-gray-3">
+              {pausedDescription}
             </p>
           ) : null}
 
           {!hasCanceled && data.nextBillingAt ? (
-            <button
-              type="button"
-              onClick={() => setIsCancelOpen(true)}
-              disabled={cancelMutation.isPending}
-              className="mt-4 self-end text-12px font-medium leading-[1.5] text-neutral-gray-3 underline cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              구독 해지
-            </button>
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => setIsCancelOpen(true)}
+                disabled={cancelMutation.isPending}
+                className="flex h-[42px] w-[166px] items-center justify-center rounded-[7.5px] bg-neutral-white px-[18px] text-12px font-bold leading-[1.5] text-neutral-gray-2 shadow-[0px_0px_2px_rgba(0,0,0,0.14)] cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                구독 해지
+              </button>
+            </div>
           ) : null}
-        </article>
+        </div>
       ) : null}
 
-      <UsageGuideCard items={SUBSCRIPTION_USAGE_GUIDE} />
+      <UsageGuideCard
+        title={SUBSCRIPTION_USAGE_GUIDE_TITLE}
+        items={
+          showEmptyState
+            ? EMPTY_SUBSCRIPTION_USAGE_GUIDE
+            : SUBSCRIPTION_USAGE_GUIDE
+        }
+      />
 
       <SubscriptionCancelModal
         isOpen={isCancelOpen}
         isPending={cancelMutation.isPending}
+        expireAtLabel={expireAtLabel}
         onClose={() => {
           if (cancelMutation.isPending) return;
           setIsCancelOpen(false);
