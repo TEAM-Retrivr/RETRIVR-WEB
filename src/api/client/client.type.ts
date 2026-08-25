@@ -1,8 +1,10 @@
 // 1. 대여지 소유 물품 목록 조회 정보
 // 1-1. 전체 응답 바디
+// GET /api/public/v1/organizations/{organizationId}/items
 export interface ItemResponse {
   organizationId: number; // 대여지(단체) ID
   organizationName: string; // 대여지 이름
+  profileImageUrl: string | null; // 대여지 프로필 이미지 presigned URL (없으면 null)
   items: {
     itemId: number; // 물품 번호
     name: string; // 물품 이름
