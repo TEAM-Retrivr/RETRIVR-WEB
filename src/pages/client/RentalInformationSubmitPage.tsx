@@ -15,7 +15,6 @@ import {
   useSendPhoneVerificationCode,
   useVerifyPhoneVerificationCode,
 } from "../../hooks/queries/useAuthQueries";
-import { useQueryClient } from "@tanstack/react-query";
 
 const label1 =
   "대여 물품 연체 시 안내 문자가 카카오톡으로\n발송됩니다. 이에 동의하시나요?";
@@ -33,7 +32,6 @@ const formatPhoneNumber = (rawPhone: string) => {
 const RentalInformationSubmitPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const queryClient = useQueryClient();
   const routeState = location.state as {
     itemId?: number;
     itemUnitId?: number;
@@ -69,15 +67,7 @@ const RentalInformationSubmitPage = () => {
   const itemId = state?.itemId ?? 0;
   const itemUnitId = state?.itemUnitId; // 개별 코드형 물품일 때만 전달
   const organizationId = state?.organizationId;
-  const cachedOrganization =
-    Number.isFinite(organizationId) && (organizationId ?? 0) > 0
-      ? queryClient.getQueryData<{ name?: string; imageURL?: string }>([
-          "selectedOrganization",
-          organizationId,
-        ])
-      : undefined;
-  const organizationName =
-    state?.organizationName ?? cachedOrganization?.name ?? "대여지명";
+  const organizationName = state?.organizationName ?? "대여지명";
   const itemName = state?.name ?? "대여 물품";
   const rentalDuration = state?.rentalDuration ?? 0;
   const guaranteedGoods = state?.guaranteedGoods ?? "없음";

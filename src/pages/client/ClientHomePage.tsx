@@ -3,85 +3,23 @@ import RentalAvailableItemCard from "../../components/cards/client/RentalAvailab
 import type { ItemRequest } from "../../types/item";
 import { useItemList } from "../../hooks/queries/useClientQueries";
 import UserIcon from "../../components/UserIcon";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo } from "react";
-
-const CLIENT_HOME_STATE_STORAGE_KEY = "clientHomeSelectedOrganization";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const ClientHome = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const location = useLocation();
-  const queryClient = useQueryClient();
 
   const organizationIdParam = searchParams.get("organizationId");
   const organizationId = organizationIdParam
     ? Number(organizationIdParam)
     : NaN;
 
-  const state = location.state as
-    | {
-        name?: string;
-        imageURL?: string;
-      }
-    | undefined;
-  const restoredState = useMemo(() => {
-    const raw = sessionStorage.getItem(CLIENT_HOME_STATE_STORAGE_KEY);
-    if (!raw) return undefined;
-
-    try {
-      const parsed = JSON.parse(raw) as {
-        organizationId?: number;
-        name?: string;
-        imageURL?: string;
-      };
-      if (
-        Number.isFinite(organizationId) &&
-        organizationId > 0 &&
-        parsed.organizationId === organizationId
-      ) {
-        return parsed;
-      }
-      return undefined;
-    } catch {
-      return undefined;
-    }
-  }, [organizationId]);
-
-  useEffect(() => {
-    if (!state || !Number.isFinite(organizationId) || organizationId <= 0)
-      return;
-    sessionStorage.setItem(
-      CLIENT_HOME_STATE_STORAGE_KEY,
-      JSON.stringify({
-        organizationId,
-        name: state.name,
-        imageURL: state.imageURL,
-      }),
-    );
-  }, [state, organizationId]);
-
-  const cachedOrganization = queryClient.getQueryData<{
-    name?: string;
-    imageURL?: string;
-  }>(["selectedOrganization", organizationId]);
-  const organizationName =
-    state?.name ?? restoredState?.name ?? cachedOrganization?.name ?? "";
-  const imageURL =
-    state?.imageURL ??
-    restoredState?.imageURL ??
-    cachedOrganization?.imageURL ??
-    "";
-
   const { data, isLoading, error } = useItemList({
     organizationId,
     size: 10,
     enabled: Number.isFinite(organizationId) && organizationId > 0,
   });
-  const organizationNameFromItemsApi = data?.organizationName ?? "";
-  const displayOrganizationName =
-    organizationNameFromItemsApi || organizationName;
+  const displayOrganizationName = data?.organizationName ?? "";
 
   const itemRequests: ItemRequest[] =
     data?.items?.map((item) => ({
@@ -131,7 +69,7 @@ const ClientHome = () => {
           {/* 프로필 사진 */}
           <UserIcon
             usage="home"
-            imageURL={imageURL}
+            imageURL={data?.profileImageUrl}
             alt={displayOrganizationName || "대여지"}
           />
           <div />
