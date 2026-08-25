@@ -24,6 +24,8 @@ export interface ItemResponse {
 
 // 1-2. 물품 상세 조회 응답 바디
 // GET /api/public/v1/items/{itemId}
+export type OrganizationMembershipLevel = "PREMIUM" | "FREE";
+
 export interface ItemDetailResponse {
   itemUnits?: {
     itemUnitId: number;
@@ -31,6 +33,9 @@ export interface ItemDetailResponse {
     status?: string;
   }[];
   itemManagementType?: string;
+  // PREMIUM: 연락처 인증 UI / FREE: 이메일 인증 UI
+  // 필드가 없으면 기존처럼 연락처 인증 UI를 유지한다.
+  level?: OrganizationMembershipLevel;
   borrowerRequirements?: {
     label: string;
     required: boolean;

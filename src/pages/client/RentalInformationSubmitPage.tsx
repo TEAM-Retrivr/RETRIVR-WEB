@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import type { FormEvent } from "react";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
@@ -17,21 +17,49 @@ import {
 } from "../../hooks/queries/useAuthQueries";
 
 const label1 =
-  "대여 물품 연체 시 안내 문자가 카카오톡으로\n발송됩니다. 이에 동의하시나요?";
+  "대여 물품 연체 시 독촉 문자가 카카오톡으로\n발송됩니다. 이에 동의하시나요?";
 
 const label2 = "대여 시 ";
 const label3 =
   "을 맡기셔야 합니다.\n물품 반납 시 반환됩니다. 이에 동의하시나요?";
 const CLIENT_RENTAL_SUBMIT_STATE_STORAGE_KEY = "clientRentalSubmitState";
+const EMAIL_FORMAT_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const formatPhoneNumber = (rawPhone: string) => {
   const digits = rawPhone.replace(/\D/g, "");
   if (!/^010\d{8}$/.test(digits)) return digits;
   return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7, 11)}`;
 };
 
+const ItemInfoRow = ({
+  label,
+  value,
+  emphasizeValue = false,
+}: {
+  label: string;
+  value: string;
+  emphasizeValue?: boolean;
+}) => (
+  <div className="flex items-center">
+    <span className="flex h-[17px] w-[17px] shrink-0 items-center justify-center">
+      <img
+        src="/icons/client/item-info-dot.svg"
+        alt=""
+        className="h-1.5 w-1.5"
+      />
+    </span>
+    <p className="text-12px text-neutral-gray-1 font-normal leading-[140%] opacity-90">
+      {label}:{" "}
+      <span className={emphasizeValue ? "text-primary" : undefined}>
+        {value}
+      </span>
+    </p>
+  </div>
+);
+
 const RentalInformationSubmitPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const routeState = location.state as {
     itemId?: number;
     itemUnitId?: number;
@@ -73,6 +101,9 @@ const RentalInformationSubmitPage = () => {
   const guaranteedGoods = state?.guaranteedGoods ?? "없음";
   const description = state?.description ?? "-";
   const { data: itemDetail } = useItemDetail(itemId, itemId > 0);
+  const isEmailVerificationUi =
+    itemDetail?.level === "FREE" ||
+    (import.meta.env.DEV && searchParams.get("verification") === "email");
   const selectedItemUnitLabel = useMemo(() => {
     if (itemDetail?.itemManagementType !== "UNIT") return "";
     if (!Number.isFinite(itemUnitId) || (itemUnitId ?? 0) <= 0) return "";
@@ -91,7 +122,9 @@ const RentalInformationSubmitPage = () => {
           req.label !== "이름" &&
           req.label !== "연락처" &&
           req.label !== "전화번호" &&
+          req.label !== "이메일" &&
           req.label !== "요청사항" &&
+          req.label !== "요청 사항" &&
           arr.findIndex((item) => item.label === req.label) === index,
       ),
     [borrowerRequirements],
@@ -113,6 +146,8 @@ const RentalInformationSubmitPage = () => {
     setIsPhoneVerificationSendPermanentlyDisabled,
   ] = useState(false);
   const phoneVerificationSendLockRef = useRef(false);
+  const [email, setEmail] = useState("");
+  const [emailVerificationCode, setEmailVerificationCode] = useState("");
   const [requestment, setRequestment] = useState("");
   const [additionalFieldValues, setAdditionalFieldValues] = useState<
     Record<string, string>
@@ -121,8 +156,7 @@ const RentalInformationSubmitPage = () => {
   // 개인 정보 활용 동의 체크 여부 : boolean
   const [firstConsentChecked, setFirstConsentChecked] = useState(false);
   const [secondConsentChecked, setSecondConsentChecked] = useState(false);
-  const [isPhoneVerificationErrorOpen, setIsPhoneVerificationErrorOpen] =
-    useState(false);
+  const [isVerificationErrorOpen, setIsVerificationErrorOpen] = useState(false);
 
   // 보증 물품이 필요할 때만 두 번째 동의를 요구
   const isGuaranteedGoodsRequired =
@@ -134,6 +168,10 @@ const RentalInformationSubmitPage = () => {
   );
   const isValidPhoneVerificationCode = /^\d{6}$/.test(
     phoneVerificationCode.trim(),
+  );
+  const isValidEmail = EMAIL_FORMAT_PATTERN.test(email.trim());
+  const isValidEmailVerificationCode = /^\d{6}$/.test(
+    emailVerificationCode.trim(),
   );
 
   const { mutate: sendPhoneVerificationCode, isPending: isSendingPhoneCode } =
@@ -233,18 +271,22 @@ const RentalInformationSubmitPage = () => {
           requirement.required &&
           !additionalFieldValues[requirement.label]?.trim(),
       );
+    const hasMissingContact = isEmailVerificationUi
+      ? !email.trim()
+      : !phoneNumber.trim();
 
-    if (
-      !name.trim() ||
-      !phoneNumber.trim() ||
-      hasMissingRequiredAdditionalField
-    ) {
+    if (!name.trim() || hasMissingContact || hasMissingRequiredAdditionalField) {
       alert("필수 항목을 모두 입력해주세요.");
       return;
     }
 
+    if (isEmailVerificationUi) {
+      setIsVerificationErrorOpen(true);
+      return;
+    }
+
     if (!isPhoneVerificationComplete) {
-      setIsPhoneVerificationErrorOpen(true);
+      setIsVerificationErrorOpen(true);
       return;
     }
 
@@ -263,7 +305,12 @@ const RentalInformationSubmitPage = () => {
     borrowerRequirements.forEach(({ label }) => {
       // renterFields(additionalBorrowerInfo)에는 이름/전화번호를 넣지 않는다.
       // - 이름/전화번호는 top-level의 name, phone으로 분리 전송
-      if (label === "이름" || label === "전화번호" || label === "연락처")
+      if (
+        label === "이름" ||
+        label === "전화번호" ||
+        label === "연락처" ||
+        label === "이메일"
+      )
         return;
       const value = additionalFieldValues[label]?.trim();
       if (value) {
@@ -326,27 +373,29 @@ const RentalInformationSubmitPage = () => {
               : "/client-search"
           }
         />
-        <div className="w-84.5 h-44 font-[Pretendard] bg-secondary-4 border border-secondary-5 border-[0.5px] rounded-[16px] mt-6 mx-7.75">
-          <div className="pt-7.25 pl-8 pb-7.75">
+        <div className="w-84.5 font-[Pretendard] bg-secondary-4 border border-secondary-5 border-[0.5px] rounded-[18px] mt-6 mx-7.75 px-8 py-7">
+          <div className="flex flex-col gap-3.5">
             <div className="flex flex-col text-neutral-gray-1">
               <p className="w-60 truncate text-24px font-bold">{itemName}</p>
-              <p className="w-60 truncate text-neutral-gray-2 text-16px font-[500] leading-none">
-                {selectedItemUnitLabel}
-              </p>
+              {selectedItemUnitLabel ? (
+                <p className="w-60 truncate text-neutral-gray-2 text-16px font-[500] leading-none">
+                  {selectedItemUnitLabel}
+                </p>
+              ) : null}
             </div>
-            <ul className="text-12px opacity-[0.9] font-normal mt-4.25 px-0.5 leading-[130%]">
-              <li>
-                • 대여 기간 :{" "}
-                <span className="text-primary">{rentalDuration}일</span>
-              </li>
-              <li>
-                • 보증 물품 :{" "}
-                <span className="text-primary">{guaranteedGoods}</span>
-              </li>
-              <li>
-                • 물품 설명 : <span>{description}</span>
-              </li>
-            </ul>
+            <div className="flex flex-col gap-0.5">
+              <ItemInfoRow
+                label="대여 기간"
+                value={`${rentalDuration}일`}
+                emphasizeValue
+              />
+              <ItemInfoRow
+                label="담보 물품"
+                value={guaranteedGoods}
+                emphasizeValue
+              />
+              <ItemInfoRow label="물품 설명" value={description} />
+            </div>
           </div>
         </div>
         <div className="w-full flex flex-col font-[Pretendard] mt-7.5 px-8 gap-7.5">
@@ -364,72 +413,119 @@ const RentalInformationSubmitPage = () => {
               className="text-14px placeholder:text-14px placeholder:font-normal placeholder:leading-[140%]"
             />
           </div>
-          <div>
-            {/* 연락처 인증 필드 - 연락처 입력 및 인증번호 입력 */}
-            <div className="flex gap-0.5 text-neutral-gray-2 text-14px font-bold ">
-              <p>연락처</p>
-              <p className="text-primary">*</p>
+          {isEmailVerificationUi ? (
+            <div>
+              <div className="flex gap-0.5 text-neutral-gray-2 text-14px font-bold mb-2.5">
+                <p>이메일</p>
+                <p className="text-primary">*</p>
+              </div>
+              <div className="flex items-center justify-between gap-1.5">
+                <CommonInput
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="retrivr@gmail.com"
+                  inputSize="large"
+                  className="w-54 text-14px text-neutral-gray-1 placeholder:text-14px placeholder:font-normal placeholder:leading-[140%]"
+                />
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="w-29 h-12"
+                  disabled={!isValidEmail}
+                >
+                  인증번호 전송
+                </Button>
+              </div>
+              <div className="flex items-center justify-between gap-1.5 mt-2.5">
+                <CommonInput
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]{6}"
+                  maxLength={6}
+                  value={emailVerificationCode}
+                  onChange={(e) => setEmailVerificationCode(e.target.value)}
+                  placeholder="인증번호를 입력해주세요"
+                  inputSize="large"
+                  className="w-51 text-14px text-neutral-gray-1 placeholder:text-14px placeholder:font-normal placeholder:leading-[140%]"
+                />
+                <Button
+                  variant={isValidEmailVerificationCode ? "primary" : "gray"}
+                  size="sm"
+                  className="w-29 h-12"
+                  disabled
+                >
+                  인증번호 확인
+                </Button>
+              </div>
             </div>
-            <p className="text-neutral-gray-3 text-12px font-[400] mt-1.5 mb-2.5 leading-none">
-              숫자로만 적어주세요.
-            </p>
-            <div className="flex items-center justify-between gap-1.5">
-              <CommonInput
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                maxLength={11}
-                value={phoneNumber}
-                disabled={isPhoneVerificationComplete}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder="01012345678"
-                inputSize="large"
-                className="w-54 text-14px text-neutral-gray-1 placeholder:text-14px placeholder:font-normal placeholder:leading-[140%]"
-              />
-              <Button
-                variant="primary"
-                size="sm"
-                className="w-29 h-12"
-                disabled={
-                  !isValidPhoneNumberForVerification ||
-                  isSendingPhoneCode ||
-                  isPhoneVerificationComplete ||
-                  isPhoneVerificationSendPermanentlyDisabled
-                }
-                onClick={handleSendPhoneVerificationCode}
-              >
-                인증번호 전송
-              </Button>
+          ) : (
+            <div>
+              <div className="flex gap-0.5 text-neutral-gray-2 text-14px font-bold ">
+                <p>연락처</p>
+                <p className="text-primary">*</p>
+              </div>
+              <p className="text-neutral-gray-3 text-12px font-[400] mt-1.5 mb-2.5 leading-none">
+                숫자로만 적어주세요.
+              </p>
+              <div className="flex items-center justify-between gap-1.5">
+                <CommonInput
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={11}
+                  value={phoneNumber}
+                  disabled={isPhoneVerificationComplete}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  placeholder="01012345678"
+                  inputSize="large"
+                  className="w-54 text-14px text-neutral-gray-1 placeholder:text-14px placeholder:font-normal placeholder:leading-[140%]"
+                />
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="w-29 h-12"
+                  disabled={
+                    !isValidPhoneNumberForVerification ||
+                    isSendingPhoneCode ||
+                    isPhoneVerificationComplete ||
+                    isPhoneVerificationSendPermanentlyDisabled
+                  }
+                  onClick={handleSendPhoneVerificationCode}
+                >
+                  인증번호 전송
+                </Button>
+              </div>
+              <div className="flex items-center justify-between gap-1.5 mt-2.5">
+                <CommonInput
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]{6}"
+                  maxLength={6}
+                  value={phoneVerificationCode}
+                  disabled={isPhoneVerificationComplete}
+                  onChange={(e) => setPhoneVerificationCode(e.target.value)}
+                  placeholder="인증번호를 입력해주세요"
+                  inputSize="large"
+                  className="w-51 text-14px text-neutral-gray-1 placeholder:text-14px placeholder:font-normal placeholder:leading-[140%]"
+                />
+                <Button
+                  variant={
+                    isPhoneVerificationComplete ||
+                    isPhoneVerificationButtonEnabled
+                      ? "primary"
+                      : "gray"
+                  }
+                  size="sm"
+                  className="w-29 h-12"
+                  disabled={!isPhoneVerificationButtonEnabled}
+                  onClick={handleVerifyPhoneVerificationCode}
+                >
+                  인증번호 확인
+                </Button>
+              </div>
             </div>
-            <div className="flex items-center justify-between gap-1.5 mt-2.5">
-              <CommonInput
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]{6}"
-                maxLength={6}
-                value={phoneVerificationCode}
-                disabled={isPhoneVerificationComplete}
-                onChange={(e) => setPhoneVerificationCode(e.target.value)}
-                placeholder="인증번호 입력"
-                inputSize="large"
-                className="w-51 text-14px text-neutral-gray-1 placeholder:text-14px placeholder:font-normal placeholder:leading-[140%]"
-              />
-              <Button
-                variant={
-                  isPhoneVerificationComplete ||
-                  isPhoneVerificationButtonEnabled
-                    ? "primary"
-                    : "gray"
-                }
-                size="sm"
-                className="w-29 h-12"
-                disabled={!isPhoneVerificationButtonEnabled}
-                onClick={handleVerifyPhoneVerificationCode}
-              >
-                인증번호 확인
-              </Button>
-            </div>
-          </div>
+          )}
           {additionalBorrowerRequirements.map((requirement) => (
             <div key={requirement.label}>
               <div className="flex gap-0.5 text-neutral-gray-2 text-14px font-[700] mb-2.5">
@@ -453,14 +549,14 @@ const RentalInformationSubmitPage = () => {
           ))}
           <div>
             <div className="text-neutral-gray-2 text-14px font-[700] mb-2.5">
-              <p>요청사항</p>
+              <p>요청 사항</p>
             </div>
             <CommonInput
               type="text"
               value={requestment}
               onChange={(e) => setRequestment(e.target.value.slice(0, 30))}
               maxLength={30}
-              placeholder="요청사항을 입력하세요. ex) 반납기한 연장"
+              placeholder="ex. 반납기한 연장"
               inputSize="large"
               className="placeholder:text-14px placeholder:font-[400] placeholder:leading-[120%]"
             />
@@ -491,14 +587,9 @@ const RentalInformationSubmitPage = () => {
         </div>
         {/* 요청하기 영역 */}
         <div className="flex flex-col w-full items-center mt-5.5 mb-12 gap-3.5">
-          <div className="flex flex-col items-center">
-            <p className="text-center text-primary text-10px font-[400] leading-[130%]">
-              관리자 승인 후 대여가 완료됩니다.
-            </p>
-            <p className="text-center text-primary text-10px font-[400] leading-[130%]">
-              대여 요청은 15분 간 유지돼요!
-            </p>
-          </div>
+          <p className="text-center text-primary text-10px font-[400] leading-[130%]">
+            관리자 승인 후 대여가 완료됩니다.
+          </p>
           <Button
             variant="primary"
             size="lg"
@@ -514,9 +605,13 @@ const RentalInformationSubmitPage = () => {
         </div>
       </form>
       <ErrorModal
-        isOpen={isPhoneVerificationErrorOpen}
-        onClose={() => setIsPhoneVerificationErrorOpen(false)}
-        message1="연락처 인증을 진행해주세요."
+        isOpen={isVerificationErrorOpen}
+        onClose={() => setIsVerificationErrorOpen(false)}
+        message1={
+          isEmailVerificationUi
+            ? "이메일 인증을 진행해주세요."
+            : "연락처 인증을 진행해주세요."
+        }
       />
     </Layout>
   );
