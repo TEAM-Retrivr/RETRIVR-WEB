@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
@@ -9,6 +9,7 @@ import {
 import {
   useAdminCurrentSubscription,
   useCancelAdminSubscription,
+  useChangeAdminSubscriptionPlan,
 } from "../../hooks/queries/useAdminQueries";
 import type {
   AdminSubscriptionErrorResponse,
@@ -19,10 +20,19 @@ import {
   formatFullDotDay,
   formatKoreanDate,
 } from "../../utils/couponDisplay";
-import type { VoucherBillingCycle } from "../../types/voucherPayment";
+import {
+  toAdminSubscriptionPlan,
+  toVoucherBillingCycle,
+  type VoucherBillingCycle,
+} from "../../types/voucherPayment";
+import ConfirmModal from "../modals/ConfirmModal";
 import MembershipCouponCard from "./MembershipCouponCard";
-import MembershipSubscribeCard from "./MembershipSubscribeCard";
+import MembershipSubscribeCard, {
+  MEMBERSHIP_SUBSCRIBE_PLANS,
+} from "./MembershipSubscribeCard";
 import UsageGuideCard from "./UsageGuideCard";
+import PlanChangeConfirmModal from "../modals/membership/PlanChangeConfirmModal";
+import PlanChangeSuccessModal from "../modals/membership/PlanChangeSuccessModal";
 import SubscriptionCancelModal from "../modals/membership/SubscriptionCancelModal";
 import CouponAlertModal from "../modals/membership/CouponAlertModal";
 
@@ -80,15 +90,35 @@ const VoucherActionButton = ({
   </button>
 );
 
+const oppositeCycle = (plan: AdminSubscriptionPlan): VoucherBillingCycle =>
+  plan === "MONTHLY" ? "yearly" : "monthly";
+
 const SubscriptionVoucherPanel = () => {
   const navigate = useNavigate();
   const { data, isLoading, isError, isSuccess } = useAdminCurrentSubscription();
   const cancelMutation = useCancelAdminSubscription();
+  const changePlanMutation = useChangeAdminSubscriptionPlan();
   const [isCancelOpen, setIsCancelOpen] = useState(false);
   const [resultMessage, setResultMessage] = useState<string | null>(null);
   const [hasCanceled, setHasCanceled] = useState(false);
   const [billingCycle, setBillingCycle] =
     useState<VoucherBillingCycle>("monthly");
+  const [isPlanChangeConfirmOpen, setIsPlanChangeConfirmOpen] = useState(false);
+  const [isPlanChangeSuccessOpen, setIsPlanChangeSuccessOpen] = useState(false);
+  const [planChangeTargetCycle, setPlanChangeTargetCycle] =
+    useState<VoucherBillingCycle>("yearly");
+  const [planChangeSuccessDate, setPlanChangeSuccessDate] = useState<
+    string | null
+  >(null);
+  const [planChangeMessage, setPlanChangeMessage] = useState<string | null>(
+    null,
+  );
+  const [scheduledCycle, setScheduledCycle] =
+    useState<VoucherBillingCycle | null>(null);
+
+  const goToSubscribe = (cycle: VoucherBillingCycle) => {
+    navigate(`/membership/subscribe?cycle=${cycle}`);
+  };
 
   const hasSubscription =
     isSuccess && Boolean(data) && data?.membershipPassStatus !== "EXPIRED";
@@ -110,6 +140,57 @@ const SubscriptionVoucherPanel = () => {
     isPaused && data?.nextBillingAt
       ? `등록된 쿠폰 이용권을 모두 사용하면\n${formatCouponDay(data.nextBillingAt)}부터 자동 결제가 다시 진행돼요.`
       : undefined;
+  const isPlanChangeScheduled =
+    data?.plan != null && scheduledCycle === oppositeCycle(data.plan);
+
+  useEffect(() => {
+    if (
+      scheduledCycle &&
+      data?.plan &&
+      toVoucherBillingCycle(data.plan) === scheduledCycle
+    ) {
+      setScheduledCycle(null);
+    }
+  }, [scheduledCycle, data?.plan]);
+
+  const handleOpenPlanChange = () => {
+    if (!data?.plan || changePlanMutation.isPending || isPlanChangeScheduled) {
+      return;
+    }
+    setPlanChangeTargetCycle(oppositeCycle(data.plan));
+    setIsPlanChangeConfirmOpen(true);
+  };
+
+  const handleConfirmPlanChange = () => {
+    if (!data?.plan || changePlanMutation.isPending) return;
+    if (toVoucherBillingCycle(data.plan) === planChangeTargetCycle) return;
+    if (scheduledCycle === planChangeTargetCycle) return;
+
+    changePlanMutation.mutate(
+      { plan: toAdminSubscriptionPlan(planChangeTargetCycle) },
+      {
+        onSuccess: (response) => {
+          setIsPlanChangeConfirmOpen(false);
+          setScheduledCycle(planChangeTargetCycle);
+          setPlanChangeSuccessDate(
+            response.nextBillingAt
+              ? formatKoreanDate(response.nextBillingAt)
+              : null,
+          );
+          setIsPlanChangeSuccessOpen(true);
+        },
+        onError: (error) => {
+          setIsPlanChangeConfirmOpen(false);
+          setPlanChangeMessage(
+            getSubscriptionErrorMessage(
+              error,
+              "플랜 변경에 실패했습니다. 다시 시도해주세요.",
+            ),
+          );
+        },
+      },
+    );
+  };
 
   const handleConfirmCancel = async () => {
     if (cancelMutation.isPending) return;
@@ -157,9 +238,7 @@ const SubscriptionVoucherPanel = () => {
             billingCycle={billingCycle}
             onBillingCycleChange={setBillingCycle}
             ctaLabel="구독 시작하기"
-            onCtaClick={() =>
-              navigate(`/membership/subscribe?cycle=${billingCycle}`)
-            }
+            onCtaClick={() => goToSubscribe(billingCycle)}
           />
         </div>
       ) : null}
@@ -182,12 +261,26 @@ const SubscriptionVoucherPanel = () => {
 
           {isCanceledPass ? (
             <div className="flex gap-1.5">
-              <VoucherActionButton label="월간 구독 시작하기" />
-              <VoucherActionButton label="연간 구독 시작하기" />
+              <VoucherActionButton
+                label="월간 구독 시작하기"
+                onClick={() => goToSubscribe("monthly")}
+              />
+              <VoucherActionButton
+                label="연간 구독 시작하기"
+                onClick={() => goToSubscribe("yearly")}
+              />
             </div>
           ) : (
             <div className="flex gap-1.5">
-              <VoucherActionButton label={PLAN_CHANGE_LABEL[data.plan]} />
+              <VoucherActionButton
+                label={
+                  isPlanChangeScheduled
+                    ? "변경 예약됨"
+                    : PLAN_CHANGE_LABEL[data.plan]
+                }
+                disabled={changePlanMutation.isPending || isPlanChangeScheduled}
+                onClick={handleOpenPlanChange}
+              />
               <VoucherActionButton
                 label="구독 해지"
                 disabled={cancelMutation.isPending}
@@ -218,10 +311,41 @@ const SubscriptionVoucherPanel = () => {
         onConfirm={handleConfirmCancel}
       />
 
+      <PlanChangeConfirmModal
+        isOpen={isPlanChangeConfirmOpen}
+        isPending={changePlanMutation.isPending}
+        targetCycle={planChangeTargetCycle}
+        amountLabel={MEMBERSHIP_SUBSCRIBE_PLANS[
+          planChangeTargetCycle
+        ].amount.replace("₩", "원")}
+        onClose={() => {
+          if (changePlanMutation.isPending) return;
+          setIsPlanChangeConfirmOpen(false);
+        }}
+        onConfirm={handleConfirmPlanChange}
+      />
+
+      <PlanChangeSuccessModal
+        isOpen={isPlanChangeSuccessOpen}
+        targetCycle={planChangeTargetCycle}
+        startDateLabel={planChangeSuccessDate ?? undefined}
+        onClose={() => {
+          setIsPlanChangeSuccessOpen(false);
+          setPlanChangeSuccessDate(null);
+        }}
+      />
+
       <CouponAlertModal
         isOpen={resultMessage !== null}
         message={resultMessage ?? ""}
         onClose={() => setResultMessage(null)}
+      />
+
+      <ConfirmModal
+        isOpen={planChangeMessage !== null}
+        onClose={() => setPlanChangeMessage(null)}
+        message={planChangeMessage ?? ""}
+        confirmText="확인"
       />
     </div>
   );
