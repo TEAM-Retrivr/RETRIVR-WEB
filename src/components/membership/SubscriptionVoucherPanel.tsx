@@ -7,7 +7,7 @@ import {
   SUBSCRIPTION_USAGE_GUIDE_TITLE,
 } from "../../types/voucherList";
 import {
-  useAdminCurrentSubscription,
+  useAdminMembership,
   useCancelAdminSubscription,
   useChangeAdminSubscriptionPlan,
 } from "../../hooks/queries/useAdminQueries";
@@ -53,6 +53,15 @@ const PLAN_CHANGE_LABEL: Record<AdminSubscriptionPlan, string> = {
   YEARLY: "월간 구독으로 변경",
 };
 
+const resolvePassCycle = (
+  subscriptionName?: string | null,
+): AdminSubscriptionPlan | undefined => {
+  const name = subscriptionName?.trim() ?? "";
+  if (name.includes("연간")) return "YEARLY";
+  if (name.includes("월간")) return "MONTHLY";
+  return undefined;
+};
+
 const getSubscriptionErrorMessage = (error: unknown, fallback: string) => {
   if (axios.isAxiosError(error)) {
     const data = error.response?.data as
@@ -95,7 +104,7 @@ const oppositeCycle = (plan: AdminSubscriptionPlan): VoucherBillingCycle =>
 
 const SubscriptionVoucherPanel = () => {
   const navigate = useNavigate();
-  const { data, isLoading, isError, isSuccess } = useAdminCurrentSubscription();
+  const { data, isLoading, isError, isSuccess } = useAdminMembership();
   const cancelMutation = useCancelAdminSubscription();
   const changePlanMutation = useChangeAdminSubscriptionPlan();
   const [isCancelOpen, setIsCancelOpen] = useState(false);
@@ -120,18 +129,22 @@ const SubscriptionVoucherPanel = () => {
     navigate(`/membership/subscribe?cycle=${cycle}`);
   };
 
-  const hasSubscription =
-    isSuccess && Boolean(data) && data?.membershipPassStatus !== "EXPIRED";
+  const subscriptionPlan = data?.subscriptionPlan ?? null;
+  const passCycle =
+    resolvePassCycle(data?.subscriptionInfo?.subscriptionName) ??
+    resolvePassCycle(data?.passType);
+  const hasSubscription = isSuccess && Boolean(subscriptionPlan);
   const showEmptyState = !isLoading && (isError || !hasSubscription);
-  const isPaused = data?.membershipPassStatus === "REGISTERED";
+  const isPaused = data?.passType === "쿠폰 사용" && Boolean(subscriptionPlan);
   const isCanceledPass =
     hasCanceled ||
     Boolean(hasSubscription && !isPaused && data && !data.nextBillingAt);
-  const planLabel = data?.plan ? SUBSCRIPTION_PLAN_LABEL[data.plan] : undefined;
+  const passLabel = passCycle ? SUBSCRIPTION_PLAN_LABEL[passCycle] : undefined;
   const expireAt = data?.endAt || data?.nextBillingAt || undefined;
   const expireAtLabel = expireAt ? formatKoreanDate(expireAt) : undefined;
-  const nextBillingLabel =
-    !isCanceledPass && !isPaused && data?.nextBillingAt
+  const nextBillingLabel = isPaused
+    ? undefined
+    : data?.nextBillingAt
       ? `다음 결제일 ${formatFullDotDay(data.nextBillingAt)}`
       : isCanceledPass && data?.endAt
         ? `혜택 종료일 ${formatFullDotDay(data.endAt)}`
@@ -141,29 +154,36 @@ const SubscriptionVoucherPanel = () => {
       ? `등록된 쿠폰 이용권을 모두 사용하면\n${formatCouponDay(data.nextBillingAt)}부터 자동 결제가 다시 진행돼요.`
       : undefined;
   const isPlanChangeScheduled =
-    data?.plan != null && scheduledCycle === oppositeCycle(data.plan);
+    subscriptionPlan != null &&
+    scheduledCycle === oppositeCycle(subscriptionPlan);
 
   useEffect(() => {
     if (
       scheduledCycle &&
-      data?.plan &&
-      toVoucherBillingCycle(data.plan) === scheduledCycle
+      subscriptionPlan &&
+      toVoucherBillingCycle(subscriptionPlan) === scheduledCycle
     ) {
       setScheduledCycle(null);
     }
-  }, [scheduledCycle, data?.plan]);
+  }, [scheduledCycle, subscriptionPlan]);
 
   const handleOpenPlanChange = () => {
-    if (!data?.plan || changePlanMutation.isPending || isPlanChangeScheduled) {
+    if (
+      !subscriptionPlan ||
+      changePlanMutation.isPending ||
+      isPlanChangeScheduled
+    ) {
       return;
     }
-    setPlanChangeTargetCycle(oppositeCycle(data.plan));
+    setPlanChangeTargetCycle(oppositeCycle(subscriptionPlan));
     setIsPlanChangeConfirmOpen(true);
   };
 
   const handleConfirmPlanChange = () => {
-    if (!data?.plan || changePlanMutation.isPending) return;
-    if (toVoucherBillingCycle(data.plan) === planChangeTargetCycle) return;
+    if (!subscriptionPlan || changePlanMutation.isPending) return;
+    if (toVoucherBillingCycle(subscriptionPlan) === planChangeTargetCycle) {
+      return;
+    }
     if (scheduledCycle === planChangeTargetCycle) return;
 
     changePlanMutation.mutate(
@@ -243,13 +263,15 @@ const SubscriptionVoucherPanel = () => {
         </div>
       ) : null}
 
-      {hasSubscription && data && planLabel ? (
+      {hasSubscription && data && subscriptionPlan ? (
         <div className="flex flex-col gap-1.5">
           <MembershipCouponCard
-            title={planLabel}
+            title={passLabel ?? "구독 이용권"}
             status="active"
-            priceAmount={formatPaidAmount(data.paidAmount)}
-            priceUnit={SUBSCRIPTION_PLAN_UNIT[data.plan]}
+            priceAmount={formatPaidAmount(data.payedAmount)}
+            priceUnit={
+              passCycle ? SUBSCRIPTION_PLAN_UNIT[passCycle] : undefined
+            }
             footerText={nextBillingLabel}
           />
 
@@ -276,7 +298,7 @@ const SubscriptionVoucherPanel = () => {
                 label={
                   isPlanChangeScheduled
                     ? "변경 예약됨"
-                    : PLAN_CHANGE_LABEL[data.plan]
+                    : PLAN_CHANGE_LABEL[subscriptionPlan]
                 }
                 disabled={changePlanMutation.isPending || isPlanChangeScheduled}
                 onClick={handleOpenPlanChange}
