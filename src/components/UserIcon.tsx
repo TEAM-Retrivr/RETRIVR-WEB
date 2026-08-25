@@ -1,6 +1,6 @@
 type UserIconProps = {
   usage?: "search" | "home";
-  imageURL?: string;
+  imageURL?: string | null;
   alt?: string;
 };
 
@@ -14,10 +14,14 @@ const UserIcon = ({
       ? "w-18 h-18 border border-neutral-gray-4 border-[0.6px] shadow-profile"
       : "w-14 h-14  shadow-[0_0_3px_1px_rgba(92,174,255,0.4)]";
   const iconSize = usage === "home" ? "w-10" : "w-7";
-  const wrapperClass = `${iconBoxSize} flex items-center justify-center rounded-full  bg-neutral-white pt-2  overflow-hidden`;
-  if (!imageURL)
+  const wrapperClass = `${iconBoxSize} flex items-center justify-center rounded-full bg-neutral-white overflow-hidden`;
+  const resolvedImageUrl =
+    typeof imageURL === "string" && /^https?:\/\//i.test(imageURL.trim())
+      ? imageURL.trim()
+      : null;
+  if (!resolvedImageUrl)
     return (
-      <div className={wrapperClass}>
+      <div className={`${wrapperClass} pt-2`}>
         <img
           className={iconSize}
           src="/icons/default-profile.svg"
@@ -28,7 +32,11 @@ const UserIcon = ({
 
   return (
     <div className={wrapperClass}>
-      <img src={imageURL} alt={alt} className=" object-cover" />
+      <img
+        src={resolvedImageUrl}
+        alt={alt}
+        className="h-full w-full object-cover"
+      />
     </div>
   );
 };
