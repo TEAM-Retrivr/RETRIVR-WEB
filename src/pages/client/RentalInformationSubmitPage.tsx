@@ -19,8 +19,8 @@ import {
 } from "../../hooks/queries/useAuthQueries";
 import type { BorrowerInformationRequest } from "../../api/client/client.type";
 
-const label1 =
-  "대여 물품 연체 시 독촉 문자가 카카오톡으로\n발송됩니다. 이에 동의하시나요?";
+const getOverdueConsentLabel = (channel: "이메일로" | "카카오톡으로") =>
+  `대여 물품 연체 시 독촉 문자가 ${channel}\n발송됩니다. 이에 동의하시나요?`;
 
 const label2 = "대여 시 ";
 const label3 =
@@ -103,10 +103,18 @@ const RentalInformationSubmitPage = () => {
   const rentalDuration = state?.rentalDuration ?? 0;
   const guaranteedGoods = state?.guaranteedGoods ?? "없음";
   const description = state?.description ?? "-";
-  const { data: itemDetail } = useItemDetail(itemId, itemId > 0);
+  const { data: itemDetail, isPending: isItemDetailPending } = useItemDetail(
+    itemId,
+    itemId > 0,
+  );
+  const isMembershipLevelReady = itemId <= 0 || !isItemDetailPending;
   const isEmailVerificationUi =
-    itemDetail?.level === "FREE" ||
-    (import.meta.env.DEV && searchParams.get("verification") === "email");
+    isMembershipLevelReady &&
+    (itemDetail?.level === "FREE" ||
+      (import.meta.env.DEV && searchParams.get("verification") === "email"));
+  const overdueConsentLabel = getOverdueConsentLabel(
+    isEmailVerificationUi ? "이메일로" : "카카오톡으로",
+  );
   const selectedItemUnitLabel = useMemo(() => {
     if (itemDetail?.itemManagementType !== "UNIT") return "";
     if (!Number.isFinite(itemUnitId) || (itemUnitId ?? 0) <= 0) return "";
@@ -503,7 +511,8 @@ const RentalInformationSubmitPage = () => {
               className="text-14px placeholder:text-14px placeholder:font-normal placeholder:leading-[140%]"
             />
           </div>
-          {isEmailVerificationUi ? (
+          {isMembershipLevelReady ? (
+            isEmailVerificationUi ? (
             <div>
               <div className="flex gap-0.5 text-neutral-gray-2 text-14px font-bold mb-2.5">
                 <p>이메일</p>
@@ -513,7 +522,10 @@ const RentalInformationSubmitPage = () => {
                 <CommonInput
                   type="email"
                   value={email}
-                  disabled={isEmailVerificationComplete}
+                  disabled={
+                    isEmailVerificationComplete ||
+                    isEmailVerificationSendPermanentlyDisabled
+                  }
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="retrivr@gmail.com"
                   inputSize="large"
@@ -629,7 +641,8 @@ const RentalInformationSubmitPage = () => {
                 </Button>
               </div>
             </div>
-          )}
+          )
+          ) : null}
           {additionalBorrowerRequirements.map((requirement) => (
             <div key={requirement.label}>
               <div className="flex gap-0.5 text-neutral-gray-2 text-14px font-[700] mb-2.5">
@@ -674,11 +687,13 @@ const RentalInformationSubmitPage = () => {
               개인 정보 동의
             </p>
             <div className="flex flex-col mt-4 gap-3.5">
-              <ConsentSectionCard
-                label={label1}
-                checked={firstConsentChecked}
-                onCheckedChange={setFirstConsentChecked}
-              />
+              {isMembershipLevelReady && (
+                <ConsentSectionCard
+                  label={overdueConsentLabel}
+                  checked={firstConsentChecked}
+                  onCheckedChange={setFirstConsentChecked}
+                />
+              )}
               {isGuaranteedGoodsRequired && (
                 <ConsentSectionCard
                   label={label2 + guaranteedGoods + label3}
@@ -699,6 +714,7 @@ const RentalInformationSubmitPage = () => {
             size="lg"
             type="submit"
             disabled={
+              !isMembershipLevelReady ||
               !firstConsentChecked ||
               (isGuaranteedGoodsRequired && !secondConsentChecked) ||
               isPending
