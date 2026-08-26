@@ -22,6 +22,10 @@ import VoucherListPage from "./pages/admin/VoucherListPage";
 import VoucherPaymentPage from "./pages/admin/VoucherPaymentPage";
 import ProfileEditPage from "./pages/admin/ProfileEditPage";
 import LandingPage from "./pages/LandingPage";
+import {
+  PublicPrivacyPage,
+  PublicTermsPage,
+} from "./pages/LegalDocumentPage";
 import RegisterPage from "./pages/admin/RegisterPage";
 import TermsConsentPage from "./pages/TermsConsentPage";
 import RentalRequestPage from "./pages/admin/RentalRequestPage";
@@ -97,6 +101,8 @@ function App() {
       <Routes>
         {/* Public */}
         <Route path="/" element={<LandingPage />} />
+        <Route path="/legal/terms" element={<PublicTermsPage />} />
+        <Route path="/legal/privacy" element={<PublicPrivacyPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/terms" element={<TermsConsentPage />} />
         <Route path="/test" element={<TestPage />} />
