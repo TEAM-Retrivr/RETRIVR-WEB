@@ -103,11 +103,13 @@ const RentalInformationSubmitPage = () => {
   const rentalDuration = state?.rentalDuration ?? 0;
   const guaranteedGoods = state?.guaranteedGoods ?? "없음";
   const description = state?.description ?? "-";
-  const { data: itemDetail, isPending: isItemDetailPending } = useItemDetail(
-    itemId,
-    itemId > 0,
-  );
-  const isMembershipLevelReady = itemId <= 0 || !isItemDetailPending;
+  const {
+    data: itemDetail,
+    isPending: isItemDetailPending,
+    isError: isItemDetailError,
+  } = useItemDetail(itemId, itemId > 0);
+  const isMembershipLevelReady =
+    itemId <= 0 || (!isItemDetailPending && !isItemDetailError);
   const isEmailVerificationUi =
     isMembershipLevelReady &&
     (itemDetail?.level === "FREE" ||
@@ -511,7 +513,11 @@ const RentalInformationSubmitPage = () => {
               className="text-14px placeholder:text-14px placeholder:font-normal placeholder:leading-[140%]"
             />
           </div>
-          {isMembershipLevelReady ? (
+          {isItemDetailError ? (
+            <p className="text-primary text-12px font-[400] leading-[140%]">
+              물품 정보를 불러오지 못했습니다. 다시 시도해주세요.
+            </p>
+          ) : isMembershipLevelReady ? (
             isEmailVerificationUi ? (
             <div>
               <div className="flex gap-0.5 text-neutral-gray-2 text-14px font-bold mb-2.5">
