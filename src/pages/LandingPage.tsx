@@ -46,9 +46,21 @@ const LandingPage = () => {
         <p className="mt-[30px] w-full px-4 text-center text-10px font-normal leading-[1.3] text-neutral-gray-3 whitespace-pre">
           Retrivr  |  대표자: 박다솔  |  사업자등록번호: 870-64-00978
           {"\n"}
-          <span className={footerUnderlineClass}>이용약관</span>
+          <button
+            type="button"
+            className={`${footerUnderlineClass} inline cursor-pointer bg-transparent p-0 font-[inherit] text-10px leading-[1.3]`}
+            onClick={() => navigate("/legal/terms")}
+          >
+            이용약관
+          </button>
           {"  |  "}
-          <span className={footerUnderlineClass}>개인정보처리방침</span>
+          <button
+            type="button"
+            className={`${footerUnderlineClass} inline cursor-pointer bg-transparent p-0 font-[inherit] text-10px leading-[1.3]`}
+            onClick={() => navigate("/legal/privacy")}
+          >
+            개인정보처리방침
+          </button>
           {"  | E-mail: retrivr.service@gmail.com\n"}
           {"Instagram: @retrivr_official  |  "}
           <button
