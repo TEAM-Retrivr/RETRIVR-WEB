@@ -2,7 +2,8 @@ export type EmailVerificationPurpose =
   | "SIGNUP"
   | "PASSWORD_RESET"
   | "LOGIN"
-  | "EMAIL_CHANGE";
+  | "EMAIL_CHANGE"
+  | "BORROW";
 
 // 휴대폰 인증 코드 발송/검증 목적
 // (현재 클라이언트 대여 요청에만 사용)
@@ -27,15 +28,15 @@ export interface SendEmailCodeResponse {
 // 2-1. 이메일 인증 코드 검증 요청 바디
 export interface VerifyEmailCodeRequest {
   email: string; // 인증 코드 받았던 이메일
-  purpose: "SIGNUP"; // API 요청 목적
+  purpose: EmailVerificationPurpose; // API 요청 목적 (SIGNUP / BORROW 등)
   code: string; // 이메일로 왔던 인증코드
 }
 
 // 2-2. 이메일 인증 코드 검증 응답 바디
 export interface VerifyEmailCodeResponse {
-  tokenType: "SIGNUP"; // 토큰 용도 (회원가입용)
-  token: string; // 인증 성공 시 발급되는 토큰 (일회성/단기만료)
-  expiresInSeconds: number; // 인증 코드 유효 시간 (코드가 일치하더라도 유효 시간 이후에 인증 받으면 실패)
+  tokenType: EmailVerificationPurpose; // SIGNUP / PASSWORD_RESET / BORROW 등
+  token: string; // 인증 성공 시 발급되는 토큰 (BORROW면 대여 요청의 emailVerificationToken)
+  expiresInSeconds: number; // 토큰 유효 시간
 }
 
 // 2. 휴대폰 인증 코드 발송
@@ -57,8 +58,8 @@ export interface VerifyPhoneVerificationCodeRequest {
 }
 
 export interface VerifyPhoneVerificationCodeResponse {
-  // 서버 응답 스펙이 버전/구현에 따라 달라질 수 있어 둘 다 optional로 지원
-  // (UI에서는 Borrow 요청 생성 API로 verificationToken/verificationTokenId가 필요)
+  // 문서: verificationToken / verificationTokenId
+  // 실제 서버: rawToken / tokenId
   verificationToken?: string;
   verificationTokenId?: string;
   rawToken?: string;

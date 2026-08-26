@@ -12,9 +12,12 @@ import {
   useSendRentalRequest,
 } from "../../hooks/queries/useClientQueries";
 import {
+  useSendEmailCode,
   useSendPhoneVerificationCode,
+  useVerifyEmailCode,
   useVerifyPhoneVerificationCode,
 } from "../../hooks/queries/useAuthQueries";
+import type { BorrowerInformationRequest } from "../../api/client/client.type";
 
 const label1 =
   "대여 물품 연체 시 독촉 문자가 카카오톡으로\n발송됩니다. 이에 동의하시나요?";
@@ -148,6 +151,15 @@ const RentalInformationSubmitPage = () => {
   const phoneVerificationSendLockRef = useRef(false);
   const [email, setEmail] = useState("");
   const [emailVerificationCode, setEmailVerificationCode] = useState("");
+  const [emailVerificationToken, setEmailVerificationToken] = useState("");
+  const [isEmailVerificationComplete, setIsEmailVerificationComplete] =
+    useState(false);
+  /** 이메일 인증번호 전송: 성공 후 새로고침 전까지 재전송 불가 */
+  const [
+    isEmailVerificationSendPermanentlyDisabled,
+    setIsEmailVerificationSendPermanentlyDisabled,
+  ] = useState(false);
+  const emailVerificationSendLockRef = useRef(false);
   const [requestment, setRequestment] = useState("");
   const [additionalFieldValues, setAdditionalFieldValues] = useState<
     Record<string, string>
@@ -180,12 +192,21 @@ const RentalInformationSubmitPage = () => {
     mutate: verifyPhoneVerificationCode,
     isPending: isVerifyingPhoneCode,
   } = useVerifyPhoneVerificationCode();
+  const { mutate: sendEmailCode, isPending: isSendingEmailCode } =
+    useSendEmailCode();
+  const { mutate: verifyEmailCode, isPending: isVerifyingEmailCode } =
+    useVerifyEmailCode();
 
   const isPhoneVerificationButtonEnabled =
     !isPhoneVerificationComplete &&
     isValidPhoneVerificationCode &&
     !!phoneVerificationId.trim() &&
     !isVerifyingPhoneCode;
+  const isEmailVerificationButtonEnabled =
+    !isEmailVerificationComplete &&
+    isValidEmailVerificationCode &&
+    isEmailVerificationSendPermanentlyDisabled &&
+    !isVerifyingEmailCode;
 
   useEffect(() => {
     if (!isGuaranteedGoodsRequired) {
@@ -239,12 +260,11 @@ const RentalInformationSubmitPage = () => {
       {
         onSuccess: (data) => {
           const verificationToken =
-            data.verificationToken ?? data.rawToken ?? "";
+            data.verificationToken?.trim() || data.rawToken?.trim() || "";
           const verificationTokenId =
-            data.verificationTokenId ?? data.tokenId ?? "";
+            data.verificationTokenId?.trim() || data.tokenId?.trim() || "";
 
-          // 토큰이 없으면 인증 완료 처리하지 않음
-          if (!verificationToken.trim() || !verificationTokenId.trim()) {
+          if (!verificationToken || !verificationTokenId) {
             alert("인증이 완료되지 않았습니다. 다시 시도해주세요.");
             return;
           }
@@ -252,6 +272,66 @@ const RentalInformationSubmitPage = () => {
           setPhoneVerificationToken(verificationToken);
           setPhoneVerificationTokenId(verificationTokenId);
           setIsPhoneVerificationComplete(true);
+          alert("인증이 완료되었습니다.");
+        },
+        onError: (error: any) => {
+          const message =
+            error?.response?.data?.message ?? "인증번호 검증에 실패했습니다.";
+          alert(message);
+        },
+      },
+    );
+  };
+
+  const handleSendEmailVerificationCode = () => {
+    if (isEmailVerificationComplete) return;
+    if (!isValidEmail) return;
+    if (emailVerificationSendLockRef.current) return;
+
+    sendEmailCode(
+      {
+        email: email.trim(),
+        purpose: "BORROW",
+      },
+      {
+        onSuccess: () => {
+          emailVerificationSendLockRef.current = true;
+          setIsEmailVerificationSendPermanentlyDisabled(true);
+          setEmailVerificationCode("");
+          alert("인증번호가 전송되었습니다.");
+        },
+        onError: (error: any) => {
+          emailVerificationSendLockRef.current = false;
+          const message =
+            error?.response?.data?.message ?? "인증번호 전송에 실패했습니다.";
+          alert(message);
+        },
+      },
+    );
+  };
+
+  const handleVerifyEmailVerificationCode = () => {
+    if (isEmailVerificationComplete) return;
+    if (!isValidEmailVerificationCode) return;
+    if (!isEmailVerificationSendPermanentlyDisabled) return;
+
+    verifyEmailCode(
+      {
+        email: email.trim(),
+        purpose: "BORROW",
+        code: emailVerificationCode.trim(),
+      },
+      {
+        onSuccess: (data) => {
+          const verificationToken = data.token?.trim() ?? "";
+
+          if (data.tokenType !== "BORROW" || !verificationToken) {
+            alert("인증이 완료되지 않았습니다. 다시 시도해주세요.");
+            return;
+          }
+
+          setEmailVerificationToken(verificationToken);
+          setIsEmailVerificationComplete(true);
           alert("인증이 완료되었습니다.");
         },
         onError: (error: any) => {
@@ -280,12 +360,11 @@ const RentalInformationSubmitPage = () => {
       return;
     }
 
-    if (isEmailVerificationUi) {
-      setIsVerificationErrorOpen(true);
-      return;
-    }
+    const isVerificationComplete = isEmailVerificationUi
+      ? isEmailVerificationComplete
+      : isPhoneVerificationComplete;
 
-    if (!isPhoneVerificationComplete) {
+    if (!isVerificationComplete) {
       setIsVerificationErrorOpen(true);
       return;
     }
@@ -303,8 +382,7 @@ const RentalInformationSubmitPage = () => {
     const renterFields: Record<string, string> = {};
 
     borrowerRequirements.forEach(({ label }) => {
-      // renterFields(additionalBorrowerInfo)에는 이름/전화번호를 넣지 않는다.
-      // - 이름/전화번호는 top-level의 name, phone으로 분리 전송
+      // 이름/인증용 연락처·이메일은 top-level 필드로 보내고 renterFields에는 넣지 않는다.
       if (
         label === "이름" ||
         label === "전화번호" ||
@@ -317,16 +395,28 @@ const RentalInformationSubmitPage = () => {
         renterFields[label] = value;
       }
     });
-    // POST /api/public/v1/items/{itemId}/rentals 의 Request Body
-    const body = {
+
+    const baseFields = {
       itemUnitId: itemUnitId ?? null,
       name: normalizedName,
-      phone: normalizedPhone,
       requestNote: normalizedRequestment || undefined,
       renterFields,
-      rawToken: phoneVerificationToken,
-      tokenId: phoneVerificationTokenId,
     };
+
+    // POST /api/public/v1/items/{itemId}/rentals
+    // 인증 수단에 맞는 필드만 넣고, 상대 인증 필드는 전달하지 않는다.
+    const body: BorrowerInformationRequest = isEmailVerificationUi
+      ? {
+          ...baseFields,
+          email: email.trim(),
+          emailVerificationToken,
+        }
+      : {
+          ...baseFields,
+          phone: normalizedPhone,
+          rawToken: phoneVerificationToken,
+          tokenId: phoneVerificationTokenId,
+        };
 
     sendRentalRequest(
       {
@@ -423,6 +513,7 @@ const RentalInformationSubmitPage = () => {
                 <CommonInput
                   type="email"
                   value={email}
+                  disabled={isEmailVerificationComplete}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="retrivr@gmail.com"
                   inputSize="large"
@@ -432,7 +523,13 @@ const RentalInformationSubmitPage = () => {
                   variant="primary"
                   size="sm"
                   className="w-29 h-12"
-                  disabled={!isValidEmail}
+                  disabled={
+                    !isValidEmail ||
+                    isSendingEmailCode ||
+                    isEmailVerificationComplete ||
+                    isEmailVerificationSendPermanentlyDisabled
+                  }
+                  onClick={handleSendEmailVerificationCode}
                 >
                   인증번호 전송
                 </Button>
@@ -444,16 +541,23 @@ const RentalInformationSubmitPage = () => {
                   pattern="[0-9]{6}"
                   maxLength={6}
                   value={emailVerificationCode}
+                  disabled={isEmailVerificationComplete}
                   onChange={(e) => setEmailVerificationCode(e.target.value)}
                   placeholder="인증번호를 입력해주세요"
                   inputSize="large"
                   className="w-51 text-14px text-neutral-gray-1 placeholder:text-14px placeholder:font-normal placeholder:leading-[140%]"
                 />
                 <Button
-                  variant={isValidEmailVerificationCode ? "primary" : "gray"}
+                  variant={
+                    isEmailVerificationComplete ||
+                    isEmailVerificationButtonEnabled
+                      ? "primary"
+                      : "gray"
+                  }
                   size="sm"
                   className="w-29 h-12"
-                  disabled
+                  disabled={!isEmailVerificationButtonEnabled}
+                  onClick={handleVerifyEmailVerificationCode}
                 >
                   인증번호 확인
                 </Button>
