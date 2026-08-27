@@ -10,6 +10,7 @@ export type PaymentMethod = {
   maskedNumber?: string;
   provider: PaymentMethodProvider;
   isDefault: boolean;
+  registeredAt?: string;
 };
 
 export const PAYMENT_PROVIDER_LABEL: Record<PaymentMethodProvider, string> = {
@@ -36,6 +37,7 @@ export const toPaymentMethodView = (item: {
   paymentMethodId: string;
   provider: PaymentMethodProvider | string;
   isDefault: boolean;
+  registeredAt?: string;
 }): PaymentMethod => {
   const provider = item.provider as PaymentMethodProvider;
   return {
@@ -43,6 +45,7 @@ export const toPaymentMethodView = (item: {
     name: PAYMENT_PROVIDER_LABEL[provider] ?? item.provider,
     provider,
     isDefault: item.isDefault,
+    registeredAt: item.registeredAt,
   };
 };
 
@@ -52,6 +55,7 @@ export const toActivePaymentMethods = (
     provider: PaymentMethodProvider | string;
     status?: string;
     isDefault: boolean;
+    registeredAt?: string;
   }>,
 ): PaymentMethod[] =>
   (items ?? [])

@@ -5,6 +5,7 @@ import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import PaymentMethodDeleteModal from "../../components/modals/membership/PaymentMethodDeleteModal";
+import PaymentProviderIcon from "../../components/membership/PaymentProviderIcon";
 import {
   useAdminPaymentMethod,
   useAdminPaymentMethods,
@@ -18,6 +19,7 @@ import {
   toPaymentMethodView,
   type PaymentMethod,
 } from "../../types/paymentMethod";
+import { formatPaymentMethodRegisteredAt } from "../../utils/paymentMethodLabel";
 
 const getPaymentMethodErrorMessage = (error: unknown, fallback: string) => {
   if (axios.isAxiosError(error)) {
@@ -88,6 +90,11 @@ const PaymentMethodsPage = () => {
     });
   };
 
+  const isPrimaryKakao = primaryMethod?.provider === "KAKAOPAY";
+  const primaryRegisteredAtLabel = isPrimaryKakao
+    ? null
+    : formatPaymentMethodRegisteredAt(primaryMethod?.registeredAt);
+
   return (
     <Layout>
       <Header
@@ -96,11 +103,16 @@ const PaymentMethodsPage = () => {
         backTo="/membership"
       />
 
-      <div className="relative flex flex-1 flex-col overflow-y-auto no-scrollbar px-8 pb-28 pt-8 font-[Pretendard]">
-        <section className="flex flex-col gap-2">
-          <h2 className="text-18px font-bold leading-normal text-neutral-gray-1">
-            대표 결제 수단
-          </h2>
+      <div className="relative flex flex-1 flex-col overflow-y-auto no-scrollbar pb-28 font-[Pretendard]">
+        <section className="flex flex-col gap-5 bg-secondary-4 px-8 pt-8 pb-8">
+          <div className="flex flex-col gap-1">
+            <h2 className="text-18px font-bold leading-normal text-neutral-gray-1">
+              대표 결제 수단
+            </h2>
+            <p className="text-12px font-normal leading-[1.4] text-neutral-gray-3">
+              다음 결제일에 대표 결제 수단으로 자동 결제됩니다.
+            </p>
+          </div>
 
           {isLoading ? (
             <p className="text-12px font-normal leading-[1.4] text-neutral-gray-3">
@@ -111,72 +123,91 @@ const PaymentMethodsPage = () => {
               결제 수단을 불러오지 못했어요
             </p>
           ) : primaryMethod ? (
-            <div className="flex flex-col gap-0.5 text-secondary-1">
-              <p className="text-12px font-bold leading-[1.5]">
-                {primaryMethod.name}
-              </p>
-              {primaryMethod.maskedNumber ? (
-                <p className="text-16px font-semibold leading-normal">
-                  {primaryMethod.maskedNumber}
-                </p>
-              ) : null}
+            <div className="flex items-center gap-3">
+              <PaymentProviderIcon
+                provider={primaryMethod.provider}
+                size="lg"
+              />
+              <div className="flex min-w-0 flex-col text-secondary-1">
+                {isPrimaryKakao ? (
+                  <p className="text-16px font-semibold leading-normal">
+                    {primaryMethod.name}
+                  </p>
+                ) : (
+                  <>
+                    <p className="text-12px font-bold leading-[1.5]">
+                      {primaryMethod.name}
+                    </p>
+                    {primaryRegisteredAtLabel ? (
+                      <p className="text-12px font-normal leading-[1.4]">
+                        {primaryRegisteredAtLabel}
+                      </p>
+                    ) : null}
+                  </>
+                )}
+              </div>
             </div>
           ) : (
             <p className="text-12px font-normal leading-[1.4] text-neutral-gray-3">
               등록된 대표 결제 수단이 없어요
             </p>
           )}
-
-          <ul className="mt-2 pl-1.5 text-12px font-normal leading-[1.4] text-neutral-gray-3">
-            <li>∙ 다음 결제일에 대표 결제 수단으로 자동 결제됩니다.</li>
-          </ul>
         </section>
 
-        <section className="mt-6 flex flex-col">
+        <section className="flex flex-col px-8">
           <div className="border-t border-[#e6eaed]" />
           {isLoading || isError ? null : otherMethods.length === 0 ? (
             <p className="py-8 text-center text-12px font-normal text-neutral-gray-3">
               추가 등록된 결제 수단이 없어요
             </p>
           ) : (
-            otherMethods.map((method) => (
-              <div key={method.id} className="border-b border-[#e6eaed]">
-                <div className="flex items-center justify-between py-6">
-                  <button
-                    type="button"
-                    onClick={() => setDeleteTarget(method)}
-                    className="flex min-w-0 items-center gap-2 text-left cursor-pointer"
-                    aria-label={`${method.name} 삭제`}
-                  >
-                    <img
-                      src="/icons/membership/payment-method-placeholder.svg"
-                      alt=""
-                      className="size-3.5 shrink-0"
-                      aria-hidden
-                    />
-                    <span className="flex min-w-0 flex-col">
-                      <span className="text-12px font-bold leading-[1.5] text-neutral-gray-1">
-                        {method.name}
-                      </span>
-                      {method.maskedNumber ? (
-                        <span className="text-12px font-normal leading-[1.4] text-neutral-gray-1">
-                          {method.maskedNumber}
-                        </span>
-                      ) : null}
-                    </span>
-                  </button>
+            otherMethods.map((method) => {
+              const registeredAtLabel = formatPaymentMethodRegisteredAt(
+                method.registeredAt,
+              );
 
-                  <button
-                    type="button"
-                    disabled={isUpdatingDefault}
-                    onClick={() => handleChangePrimary(method.id)}
-                    className="flex h-[27px] w-[113px] shrink-0 items-center justify-center rounded-[10px] border border-neutral-gray-2 bg-neutral-white text-12px font-normal leading-[1.4] text-neutral-gray-2 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    대표 수단으로 변경
-                  </button>
+              return (
+                <div key={method.id} className="border-b border-[#e6eaed]">
+                  <div className="flex items-center justify-between py-6">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <button
+                        type="button"
+                        disabled={isDeleting}
+                        onClick={() => setDeleteTarget(method)}
+                        className="flex size-3.5 shrink-0 items-center justify-center cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                        aria-label={`${method.name} 삭제`}
+                      >
+                        <img
+                          src="/icons/membership/payment-method-placeholder.svg"
+                          alt=""
+                          className="size-3.5"
+                          aria-hidden
+                        />
+                      </button>
+                      <span className="flex min-w-0 flex-col">
+                        <span className="text-12px font-bold leading-[1.5] text-neutral-gray-1">
+                          {method.name}
+                        </span>
+                        {registeredAtLabel ? (
+                          <span className="text-12px font-normal leading-[1.4] text-neutral-gray-1">
+                            {registeredAtLabel}
+                          </span>
+                        ) : null}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={isUpdatingDefault}
+                      onClick={() => handleChangePrimary(method.id)}
+                      className="flex h-[27px] shrink-0 items-center justify-center whitespace-nowrap rounded-[6px] border border-neutral-gray-4 bg-neutral-white px-3 text-12px font-normal leading-[1.4] text-neutral-gray-3 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      대표 수단으로 변경
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </section>
 

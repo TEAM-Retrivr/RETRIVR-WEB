@@ -1,6 +1,7 @@
 import { Modal } from "../../Modal";
 import Button from "../../Button";
 import type { PaymentMethod } from "../../../types/paymentMethod";
+import { formatPaymentMethodRegisteredAt } from "../../../utils/paymentMethodLabel";
 
 type PaymentMethodDeleteModalProps = {
   isOpen: boolean;
@@ -19,6 +20,10 @@ const PaymentMethodDeleteModal = ({
 }: PaymentMethodDeleteModalProps) => {
   if (!paymentMethod) return null;
 
+  const registeredAtLabel = formatPaymentMethodRegisteredAt(
+    paymentMethod.registeredAt,
+  );
+
   return (
     <Modal
       isOpen={isOpen}
@@ -36,9 +41,9 @@ const PaymentMethodDeleteModal = ({
           <p className="text-12px font-bold leading-[1.5] text-neutral-gray-1">
             {paymentMethod.name}
           </p>
-          {paymentMethod.maskedNumber ? (
+          {registeredAtLabel ? (
             <p className="text-12px font-normal leading-[1.4] text-neutral-gray-1">
-              {paymentMethod.maskedNumber}
+              {registeredAtLabel}
             </p>
           ) : null}
         </div>
