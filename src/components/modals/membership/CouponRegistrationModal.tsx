@@ -95,12 +95,12 @@ const CouponRegistrationModal = ({
                 </p>
                 <ul className="flex flex-col gap-2">
                   {NOTICE_ITEMS.map((notice) => (
-                    <li key={notice} className="flex gap-0.5">
+                    <li key={notice} className="flex items-start gap-0.5">
                       <span
-                        className="mt-[7px] size-[17px] shrink-0 flex items-center justify-center"
+                        className="shrink-0 text-14px font-normal leading-[1.4] text-neutral-gray-2"
                         aria-hidden
                       >
-                        <span className="size-[2px] rounded-full bg-neutral-gray-2" />
+                        ∙
                       </span>
                       <p className="text-14px font-normal leading-[1.4] text-neutral-gray-2">
                         {notice}
