@@ -64,13 +64,10 @@ const CouponRegistrationModal = ({
 
           <div className="-mx-6 flex flex-col gap-6 bg-secondary-4 px-6 py-6">
             <MembershipCouponCard
-              title={preview.title}
-              eventName={preview.eventName}
-              period={preview.validityPeriod}
               status="pending"
-              periodLabel="유효 기간"
-              compact
-              preview
+              title={preview.title}
+              detail={preview.eventName}
+              footerText={`유효 기간: ${preview.validityPeriod}`}
             />
 
             <div className="flex flex-col gap-2.5">

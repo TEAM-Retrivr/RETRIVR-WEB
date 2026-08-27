@@ -7,11 +7,12 @@ import {
   SUBSCRIPTION_USAGE_GUIDE_TITLE,
 } from "../../types/voucherList";
 import {
-  useAdminMembership,
+  useAdminCurrentSubscription,
   useCancelAdminSubscription,
   useChangeAdminSubscriptionPlan,
 } from "../../hooks/queries/useAdminQueries";
 import type {
+  AdminMembershipPassStatus,
   AdminSubscriptionErrorResponse,
   AdminSubscriptionPlan,
 } from "../../api/admin/admin.type";
@@ -27,6 +28,7 @@ import {
 } from "../../types/voucherPayment";
 import ConfirmModal from "../modals/ConfirmModal";
 import MembershipCouponCard from "./MembershipCouponCard";
+import type { MembershipCouponStatus } from "./MembershipStatusBadge";
 import MembershipSubscribeCard, {
   MEMBERSHIP_SUBSCRIBE_PLANS,
 } from "./MembershipSubscribeCard";
@@ -53,13 +55,12 @@ const PLAN_CHANGE_LABEL: Record<AdminSubscriptionPlan, string> = {
   YEARLY: "월간 구독으로 변경",
 };
 
-const resolvePassCycle = (
-  subscriptionName?: string | null,
-): AdminSubscriptionPlan | undefined => {
-  const name = subscriptionName?.trim() ?? "";
-  if (name.includes("연간")) return "YEARLY";
-  if (name.includes("월간")) return "MONTHLY";
-  return undefined;
+const mapSubscriptionPassStatus = (
+  status: AdminMembershipPassStatus,
+): MembershipCouponStatus => {
+  if (status === "ACTIVE") return "active";
+  if (status === "EXPIRED") return "completed";
+  return "pending";
 };
 
 const getSubscriptionErrorMessage = (error: unknown, fallback: string) => {
@@ -104,7 +105,9 @@ const oppositeCycle = (plan: AdminSubscriptionPlan): VoucherBillingCycle =>
 
 const SubscriptionVoucherPanel = () => {
   const navigate = useNavigate();
-  const { data, isLoading, isError, isSuccess } = useAdminMembership();
+  // GET /api/admin/v1/memberships/current/subscription
+  const { data: currentSubscription, isLoading } =
+    useAdminCurrentSubscription();
   const cancelMutation = useCancelAdminSubscription();
   const changePlanMutation = useChangeAdminSubscriptionPlan();
   const [isCancelOpen, setIsCancelOpen] = useState(false);
@@ -129,29 +132,26 @@ const SubscriptionVoucherPanel = () => {
     navigate(`/membership/subscribe?cycle=${cycle}`);
   };
 
-  const subscriptionPlan = data?.subscriptionPlan ?? null;
-  const passCycle =
-    resolvePassCycle(data?.subscriptionInfo?.subscriptionName) ??
-    resolvePassCycle(data?.passType);
-  const hasSubscription = isSuccess && Boolean(subscriptionPlan);
-  const showEmptyState = !isLoading && (isError || !hasSubscription);
-  const isPaused = data?.passType === "쿠폰 사용" && Boolean(subscriptionPlan);
+  const subscriptionPlan = currentSubscription?.plan ?? null;
+  const hasSubscription = Boolean(currentSubscription);
+  const showEmptyState = !isLoading && !hasSubscription;
+  const nextBillingAt = currentSubscription?.nextBillingAt ?? undefined;
+  const endAt = currentSubscription?.endAt;
+  const paidAmount = currentSubscription?.paidAmount;
+  const cardStatus = currentSubscription
+    ? mapSubscriptionPassStatus(currentSubscription.membershipPassStatus)
+    : "active";
   const isCanceledPass =
-    hasCanceled ||
-    Boolean(hasSubscription && !isPaused && data && !data.nextBillingAt);
-  const passLabel = passCycle ? SUBSCRIPTION_PLAN_LABEL[passCycle] : undefined;
-  const expireAt = data?.endAt || data?.nextBillingAt || undefined;
+    hasCanceled || Boolean(hasSubscription && !nextBillingAt);
+  const passLabel = subscriptionPlan
+    ? SUBSCRIPTION_PLAN_LABEL[subscriptionPlan]
+    : undefined;
+  const expireAt = endAt || nextBillingAt || undefined;
   const expireAtLabel = expireAt ? formatKoreanDate(expireAt) : undefined;
-  const nextBillingLabel = isPaused
-    ? undefined
-    : data?.nextBillingAt
-      ? `다음 결제일 ${formatFullDotDay(data.nextBillingAt)}`
-      : isCanceledPass && data?.endAt
-        ? `혜택 종료일 ${formatFullDotDay(data.endAt)}`
-        : undefined;
-  const pausedDescription =
-    isPaused && data?.nextBillingAt
-      ? `등록된 쿠폰 이용권을 모두 사용하면\n${formatCouponDay(data.nextBillingAt)}부터 자동 결제가 다시 진행돼요.`
+  const nextBillingLabel = nextBillingAt
+    ? `다음 결제일 ${formatFullDotDay(nextBillingAt)}`
+    : isCanceledPass && endAt
+      ? `혜택 종료일 ${formatFullDotDay(endAt)}`
       : undefined;
   const isPlanChangeScheduled =
     subscriptionPlan != null &&
@@ -263,23 +263,19 @@ const SubscriptionVoucherPanel = () => {
         </div>
       ) : null}
 
-      {hasSubscription && data && subscriptionPlan ? (
+      {hasSubscription && subscriptionPlan ? (
         <div className="flex flex-col gap-1.5">
           <MembershipCouponCard
+            status={cardStatus}
             title={passLabel ?? "구독 이용권"}
-            status="active"
-            priceAmount={formatPaidAmount(data.payedAmount)}
-            priceUnit={
-              passCycle ? SUBSCRIPTION_PLAN_UNIT[passCycle] : undefined
+            detail={formatPaidAmount(paidAmount)}
+            detailUnit={
+              subscriptionPlan
+                ? SUBSCRIPTION_PLAN_UNIT[subscriptionPlan]
+                : undefined
             }
             footerText={nextBillingLabel}
           />
-
-          {pausedDescription && !isCanceledPass ? (
-            <p className="whitespace-pre-line text-12px font-normal leading-[1.4] text-neutral-gray-3">
-              {pausedDescription}
-            </p>
-          ) : null}
 
           {isCanceledPass ? (
             <div className="flex gap-1.5">

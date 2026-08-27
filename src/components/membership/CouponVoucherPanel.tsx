@@ -28,7 +28,7 @@ const resolveCouponFooter = (
   const endAt = coupon.endAt ? formatCouponDay(coupon.endAt) : "";
 
   if (status === "pending" && startAt) {
-    return `${startAt} 활성화 예정`;
+    return `${startAt} 사용 예정`;
   }
   if (startAt && endAt) {
     return `사용 기간: ${startAt} ~ ${endAt}`;
@@ -37,6 +37,7 @@ const resolveCouponFooter = (
 };
 
 const CouponVoucherPanel = () => {
+  // GET /api/admin/v1/memberships/coupons
   const { data, isLoading, isError, isSuccess } = useAdminCouponMemberships();
   const coupons = data?.coupons ?? [];
   const showEmptyState =
@@ -61,17 +62,16 @@ const CouponVoucherPanel = () => {
       ) : null}
 
       {isSuccess && coupons.length > 0 ? (
-        <div className="flex flex-col gap-2.5">
+        <div className="flex flex-col gap-1.5">
           {coupons.map((coupon) => {
             const status = mapCouponPassStatus(coupon.status);
             return (
               <MembershipCouponCard
                 key={coupon.membershipPassId}
-                title={coupon.couponName}
-                eventName={coupon.description}
                 status={status}
+                title={coupon.couponName}
+                detail={coupon.description}
                 footerText={resolveCouponFooter(coupon, status)}
-                compact
               />
             );
           })}
