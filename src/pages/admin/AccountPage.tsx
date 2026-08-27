@@ -22,11 +22,13 @@ import {
   PROFILE_IMAGE_MAX_BYTES,
   extractProfileImageObjectKey,
   resolveProfileImageContentType,
+  resolveProfileImageDisplayUrl,
   uploadProfileImageToPresignedUrl,
 } from "../../utils/profileImageUpload";
 
 const PRODUCTION_WEB_ORIGIN = "https://www.retrivr.kr";
 const PREVIEW_WEB_ORIGIN = "https://retrivr-web.vercel.app";
+const DEFAULT_ACCOUNT_PROFILE_ICON = "/icons/profile-default-icon.svg";
 
 const getPublicWebOrigin = () => {
   if (typeof window === "undefined") return PREVIEW_WEB_ORIGIN;
@@ -63,11 +65,14 @@ const AccountPage = () => {
       : Number(localStorage.getItem("orgId") ?? "");
   const storedEmail = getAdminEmail();
 
+  const uploadedProfileImageUrl = resolveProfileImageDisplayUrl(
+    previewUrl ?? data?.profileImageUrl,
+    { allowBlob: true },
+  );
+
   const userProfile = {
     organizationId,
     organizationName: data?.organizationName,
-    profileImageUrl:
-      previewUrl ?? data?.profileImageUrl ?? "/icons/profile-default-icon.svg",
     email: storedEmail,
   };
 
@@ -233,12 +238,26 @@ const AccountPage = () => {
       <div className="w-full font-[Pretendard] text-neutral-gray-1 px-7.75">
         {/* 프로필 영역 - 프로필 사진, 대여지명, 이메일, 개인정보 수정하기 버튼 */}
         <div className="flex flex-col items-center pt-11.5 gap-3.5">
-          <div className="relative flex items-center justify-center w-25 h-25 rounded-[50%] shadow-account-profile">
-            <img
-              className="h-full w-full rounded-[50%] object-cover"
-              src={userProfile.profileImageUrl}
-              alt="프로필 이미지"
-            />
+          <div className="relative w-25 h-25">
+            <div
+              className={`flex h-full w-full items-center justify-center overflow-hidden rounded-[50%] bg-neutral-white shadow-account-profile ${
+                uploadedProfileImageUrl ? "" : "pt-2"
+              }`}
+            >
+              {uploadedProfileImageUrl ? (
+                <img
+                  className="h-full w-full object-cover"
+                  src={uploadedProfileImageUrl}
+                  alt="프로필 이미지"
+                />
+              ) : (
+                <img
+                  className="w-[45px]"
+                  src={DEFAULT_ACCOUNT_PROFILE_ICON}
+                  alt="기본 프로필"
+                />
+              )}
+            </div>
             <input
               ref={profileImageInputRef}
               type="file"
