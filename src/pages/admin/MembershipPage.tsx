@@ -28,6 +28,7 @@ import type {
 import {
   formatCouponDay,
   formatCouponValidityPeriod,
+  formatFullDotDay,
   isValidCouponCode,
 } from "../../utils/couponDisplay";
 import {
@@ -51,41 +52,29 @@ const MEMBERSHIP_PASS = {
   coupon: "쿠폰 사용",
 } as const;
 
+const SUBSCRIPTION_UNIT_BY_PASS_TYPE: Record<string, string> = {
+  [MEMBERSHIP_PASS.monthly]: "/월",
+  [MEMBERSHIP_PASS.yearly]: "/년",
+};
+
 const isCouponPassType = (passType?: string | null): boolean =>
   passType === MEMBERSHIP_PASS.coupon;
 
-const isCouponOnlyMembership = (data: AdminMembershipResponse): boolean =>
-  !data.subscriptionPlan &&
-  (isCouponPassType(data.passType) || Boolean(data.couponInfo));
+const isCouponMembership = (data: AdminMembershipResponse): boolean =>
+  isCouponPassType(data.passType) || Boolean(data.couponInfo);
 
 const resolveActivePassTitle = (
   data: AdminMembershipResponse,
-): string | undefined => {
-  if (data.subscriptionPlan) {
-    return (
-      data.subscriptionInfo?.subscriptionName?.trim() ||
-      (data.subscriptionPlan === "YEARLY"
-        ? MEMBERSHIP_PASS.yearly
-        : MEMBERSHIP_PASS.monthly)
-    );
-  }
-  if (isCouponOnlyMembership(data)) {
-    return data.couponInfo?.couponName?.trim() || undefined;
-  }
-  return undefined;
-};
+): string | undefined =>
+  data.subscriptionInfo?.subscriptionName?.trim() ||
+  data.couponInfo?.couponName?.trim() ||
+  undefined;
 
 const resolveActivePassFooter = (
   data: AdminMembershipResponse,
 ): string | undefined => {
-  if (data.subscriptionPlan && data.nextBillingAt) {
-    return `다음 결제일 ${formatCouponDay(data.nextBillingAt)}`;
-  }
-  if (isCouponOnlyMembership(data) && data.startAt && data.endAt) {
-    return `사용 기간: ${formatCouponValidityPeriod(data.startAt, data.endAt)}`;
-  }
   if (data.nextBillingAt) {
-    return `다음 결제일 ${formatCouponDay(data.nextBillingAt)}`;
+    return `다음 결제일 ${formatFullDotDay(data.nextBillingAt)}`;
   }
   if (data.startAt && data.endAt) {
     return `사용 기간: ${formatCouponValidityPeriod(data.startAt, data.endAt)}`;
@@ -381,23 +370,20 @@ const MembershipPage = () => {
           <div className="flex flex-col gap-3">
             {hasActivePass && membership ? (
               <MembershipCouponCard
-                title={activePassTitle ?? "이용권"}
+                size="home"
                 status="active"
-                eventName={
-                  isCouponOnlyMembership(membership)
+                title={activePassTitle ?? "이용권"}
+                detail={
+                  isCouponMembership(membership)
                     ? membership.couponInfo?.couponDescription
-                    : undefined
+                    : formatPaidAmount(membership.payedAmount)
                 }
-                priceAmount={
-                  isCouponOnlyMembership(membership)
+                detailUnit={
+                  isCouponMembership(membership)
                     ? undefined
-                    : (formatPaidAmount(membership.payedAmount) ??
-                      currentPlanDisplay?.amount)
-                }
-                priceUnit={
-                  isCouponOnlyMembership(membership)
-                    ? undefined
-                    : currentPlanDisplay?.unit
+                    : membership.passType
+                      ? SUBSCRIPTION_UNIT_BY_PASS_TYPE[membership.passType]
+                      : currentPlanDisplay?.unit
                 }
                 footerText={resolveActivePassFooter(membership)}
               />

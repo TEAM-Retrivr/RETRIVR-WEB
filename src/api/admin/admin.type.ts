@@ -356,6 +356,7 @@ export interface AdminCouponErrorResponse {
 
 // 현재 멤버십 상태 조회 응답
 // GET /api/admin/v1/memberships/current
+// 현재 적용 중인 이용권 1장. 구독/쿠폰이 섞여 있고 사용중/사용 전 상태값은 없다.
 export interface AdminMembershipCouponInfo {
   couponName: string;
   couponDescription: string;
@@ -391,6 +392,9 @@ export interface AdminMembershipErrorResponse {
 
 // 현재 이용 중인 구독 이용권 조회
 // GET /api/admin/v1/memberships/current/subscription
+// 구독 패스가 활성일 때만 200. 없으면 404.
+// 카드 매핑: membershipPassStatus → 사용여부/칩, plan → 이름·요금 단위,
+// paidAmount → 요금, nextBillingAt → 다음 결제일. 표시 이름 문자열은 없음.
 export type AdminSubscriptionPlan = "MONTHLY" | "YEARLY";
 export type AdminSubscriptionStatus = "ACTIVE" | "CANCELED" | "PAYMENT_FAILED";
 export type AdminMembershipPassStatus = "REGISTERED" | "ACTIVE" | "EXPIRED";
@@ -453,6 +457,8 @@ export interface AdminSubscriptionCancelResponse {
 
 // 쿠폰 이용권 목록 조회
 // GET /api/admin/v1/memberships/coupons
+// 카드 매핑: status → 사용여부/칩, couponName → 이름,
+// description → 이벤트명, startAt+endAt → 사용 기간.
 export interface AdminCouponMembershipPassResponse {
   membershipPassId: string;
   couponName: string;

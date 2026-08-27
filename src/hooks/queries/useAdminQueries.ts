@@ -433,6 +433,7 @@ export const useAdminCouponMemberships = () => {
 };
 
 // 현재 이용 중인 구독 이용권 조회
+// - 이용권 목록 > 구독 이용권 탭
 // GET /api/admin/v1/memberships/current/subscription
 export const useAdminCurrentSubscription = () => {
   return useQuery<AdminCurrentSubscriptionResponse | null>({
