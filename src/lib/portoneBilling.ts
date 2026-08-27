@@ -206,7 +206,7 @@ export const issuePortoneBillingKey = async ({
     storeId,
     channelKey,
     billingKeyMethod: config.billingKeyMethod,
-    issueId: `retrivr-${crypto.randomUUID()}`,
+    issueId: crypto.randomUUID().replaceAll("-", ""),
     issueName: ISSUE_NAME,
     ...(useMobileRedirect ? { redirectUrl: buildRedirectUrl() } : {}),
     windowType: {
