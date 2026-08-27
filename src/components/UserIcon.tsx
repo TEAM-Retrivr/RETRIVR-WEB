@@ -1,3 +1,5 @@
+import { resolveProfileImageDisplayUrl } from "../utils/profileImageUpload";
+
 type UserIconProps = {
   usage?: "search" | "home";
   imageURL?: string | null;
@@ -15,10 +17,7 @@ const UserIcon = ({
       : "w-14 h-14  shadow-[0_0_3px_1px_rgba(92,174,255,0.4)]";
   const iconSize = usage === "home" ? "w-10" : "w-7";
   const wrapperClass = `${iconBoxSize} flex items-center justify-center rounded-full bg-neutral-white overflow-hidden`;
-  const resolvedImageUrl =
-    typeof imageURL === "string" && /^https?:\/\//i.test(imageURL.trim())
-      ? imageURL.trim()
-      : null;
+  const resolvedImageUrl = resolveProfileImageDisplayUrl(imageURL);
   if (!resolvedImageUrl)
     return (
       <div className={`${wrapperClass} pt-2`}>

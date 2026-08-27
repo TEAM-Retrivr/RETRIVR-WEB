@@ -27,6 +27,18 @@ export const extractProfileImageObjectKey = (uploadUrl: string): string => {
   return organizationIndex >= 0 ? path.slice(organizationIndex) : path;
 };
 
+export const resolveProfileImageDisplayUrl = (
+  url: string | null | undefined,
+  options?: { allowBlob?: boolean },
+): string | null => {
+  if (typeof url !== "string") return null;
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  if (options?.allowBlob && trimmed.startsWith("blob:")) return trimmed;
+  return null;
+};
+
 export const uploadProfileImageToPresignedUrl = async (
   uploadUrl: string,
   file: File,

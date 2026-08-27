@@ -22,18 +22,13 @@ import {
   PROFILE_IMAGE_MAX_BYTES,
   extractProfileImageObjectKey,
   resolveProfileImageContentType,
+  resolveProfileImageDisplayUrl,
   uploadProfileImageToPresignedUrl,
 } from "../../utils/profileImageUpload";
 
 const PRODUCTION_WEB_ORIGIN = "https://www.retrivr.kr";
 const PREVIEW_WEB_ORIGIN = "https://retrivr-web.vercel.app";
 const DEFAULT_ACCOUNT_PROFILE_ICON = "/icons/profile-default-icon.svg";
-
-const isUploadedProfileImageUrl = (url: string | null | undefined) => {
-  if (typeof url !== "string") return false;
-  const trimmed = url.trim();
-  return /^https?:\/\//i.test(trimmed) || trimmed.startsWith("blob:");
-};
 
 const getPublicWebOrigin = () => {
   if (typeof window === "undefined") return PREVIEW_WEB_ORIGIN;
@@ -70,9 +65,9 @@ const AccountPage = () => {
       : Number(localStorage.getItem("orgId") ?? "");
   const storedEmail = getAdminEmail();
 
-  const uploadedProfileImageUrl = previewUrl ?? data?.profileImageUrl ?? null;
-  const hasUploadedProfileImage = isUploadedProfileImageUrl(
-    uploadedProfileImageUrl,
+  const uploadedProfileImageUrl = resolveProfileImageDisplayUrl(
+    previewUrl ?? data?.profileImageUrl,
+    { allowBlob: true },
   );
 
   const userProfile = {
@@ -246,17 +241,21 @@ const AccountPage = () => {
           <div className="relative w-25 h-25">
             <div
               className={`flex h-full w-full items-center justify-center overflow-hidden rounded-[50%] bg-neutral-white shadow-account-profile ${
-                hasUploadedProfileImage ? "" : "pt-2"
+                uploadedProfileImageUrl ? "" : "pt-2"
               }`}
             >
-              {hasUploadedProfileImage && uploadedProfileImageUrl ? (
+              {uploadedProfileImageUrl ? (
                 <img
                   className="h-full w-full object-cover"
                   src={uploadedProfileImageUrl}
                   alt="프로필 이미지"
                 />
               ) : (
-                <img src={DEFAULT_ACCOUNT_PROFILE_ICON} alt="기본 프로필" />
+                <img
+                  className="w-[45px]"
+                  src={DEFAULT_ACCOUNT_PROFILE_ICON}
+                  alt="기본 프로필"
+                />
               )}
             </div>
             <input
