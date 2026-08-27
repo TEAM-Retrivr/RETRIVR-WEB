@@ -13,12 +13,12 @@ const UsageGuideCard = ({
     </h3>
     <ul className="mt-1 flex flex-col">
       {items.map((item) => (
-        <li key={item} className="flex items-start gap-0">
+        <li key={item} className="flex items-start gap-0.5">
           <span
-            className="mt-[7px] flex size-[17px] shrink-0 items-center justify-center"
+            className="shrink-0 text-12px font-normal leading-[1.4] text-neutral-gray-3"
             aria-hidden
           >
-            <span className="size-0.5 rounded-full bg-neutral-gray-3" />
+            ∙
           </span>
           <p className="text-12px font-normal leading-[1.4] text-neutral-gray-3">
             {item}
