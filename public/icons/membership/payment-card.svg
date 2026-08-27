@@ -1,0 +1,13 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="&#234;&#178;&#176;&#236;&#160;&#156;&#236;&#136;&#152;&#235;&#139;&#168;" clip-path="url(#clip0_0_50)">
+<circle id="Ellipse 220" cx="18" cy="18" r="18" fill="white"/>
+<g id="ant-design:credit-card-filled">
+<path id="Vector" d="M27.75 9.25H8.25C7.83516 9.25 7.5 9.58516 7.5 10V13.75H28.5V10C28.5 9.58516 28.1648 9.25 27.75 9.25ZM7.5 25C7.5 25.4148 7.83516 25.75 8.25 25.75H27.75C28.1648 25.75 28.5 25.4148 28.5 25V15.8125H7.5V25ZM21.0703 20.6875C21.0703 20.5844 21.1547 20.5 21.2578 20.5H25.125C25.2281 20.5 25.3125 20.5844 25.3125 20.6875V22.375C25.3125 22.4781 25.2281 22.5625 25.125 22.5625H21.2578C21.1547 22.5625 21.0703 22.4781 21.0703 22.375V20.6875Z" fill="#76ADFF"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_0_50">
+<rect width="36" height="36" fill="white"/>
+</clipPath>
+</defs>
+</svg>

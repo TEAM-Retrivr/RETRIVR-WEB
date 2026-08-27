@@ -17,6 +17,16 @@ const maskedTail = (maskedNumber?: string) => {
   return `*****${tail}`;
 };
 
+export const formatPaymentMethodRegisteredAt = (registeredAt?: string) => {
+  if (!registeredAt) return null;
+  const match = registeredAt.match(
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/,
+  );
+  if (!match) return null;
+  const [, year, month, day, hour, minute, second] = match;
+  return `등록일자: ${year}년 ${month}월 ${day}일 ${hour}:${minute}:${second}`;
+};
+
 export const formatPaymentMethodOptionLabel = (
   method: PaymentMethod,
   isPrimary: boolean,
