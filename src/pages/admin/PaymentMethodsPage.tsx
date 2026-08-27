@@ -195,7 +195,7 @@ const PaymentMethodsPage = () => {
                       type="button"
                       disabled={isUpdatingDefault}
                       onClick={() => handleChangePrimary(method.id)}
-                      className="flex h-[27px] w-[113px] shrink-0 items-center justify-center rounded-[6px] border border-neutral-gray-4 bg-neutral-white px-3 text-12px font-normal leading-[1.4] text-neutral-gray-3 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                      className="flex h-[27px] shrink-0 items-center justify-center whitespace-nowrap rounded-[6px] border border-neutral-gray-4 bg-neutral-white px-3 text-12px font-normal leading-[1.4] text-neutral-gray-3 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       대표 수단으로 변경
                     </button>
