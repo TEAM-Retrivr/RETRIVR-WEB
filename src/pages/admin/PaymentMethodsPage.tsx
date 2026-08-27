@@ -168,13 +168,8 @@ const PaymentMethodsPage = () => {
 
               return (
                 <div key={method.id} className="border-b border-[#e6eaed]">
-                  <div className="flex items-center justify-between py-6">
-                    <button
-                      type="button"
-                      onClick={() => setDeleteTarget(method)}
-                      className="flex min-w-0 items-center gap-2 text-left cursor-pointer"
-                      aria-label={`${method.name} 삭제`}
-                    >
+                  <div className="flex items-center justify-between gap-3 py-6">
+                    <div className="flex min-w-0 items-center gap-2">
                       <PaymentProviderIcon
                         provider={method.provider}
                         size="sm"
@@ -189,16 +184,26 @@ const PaymentMethodsPage = () => {
                           </span>
                         ) : null}
                       </span>
-                    </button>
+                    </div>
 
-                    <button
-                      type="button"
-                      disabled={isUpdatingDefault}
-                      onClick={() => handleChangePrimary(method.id)}
-                      className="flex h-[27px] shrink-0 items-center justify-center whitespace-nowrap rounded-[6px] border border-neutral-gray-4 bg-neutral-white px-3 text-12px font-normal leading-[1.4] text-neutral-gray-3 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      대표 수단으로 변경
-                    </button>
+                    <div className="flex shrink-0 flex-col items-end gap-2">
+                      <button
+                        type="button"
+                        disabled={isUpdatingDefault}
+                        onClick={() => handleChangePrimary(method.id)}
+                        className="flex h-[27px] shrink-0 items-center justify-center whitespace-nowrap rounded-[6px] border border-neutral-gray-4 bg-neutral-white px-3 text-12px font-normal leading-[1.4] text-neutral-gray-3 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        대표 수단으로 변경
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isDeleting}
+                        onClick={() => setDeleteTarget(method)}
+                        className="text-12px font-normal leading-[1.4] text-neutral-gray-3 underline-offset-2 cursor-pointer hover:underline disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        삭제하기
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
