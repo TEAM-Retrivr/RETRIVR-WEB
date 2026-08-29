@@ -11,6 +11,7 @@ import type {
 } from "../../api/admin/admin.type";
 import {
   useAdminPaymentMethods,
+  useAdminSubscriptionPreview,
   useStartAdminSubscription,
   useUpdateAdminDefaultPaymentMethod,
 } from "../../hooks/queries/useAdminQueries";
@@ -23,6 +24,7 @@ import {
   toAdminSubscriptionPlan,
   VOUCHER_PAYMENT_PLANS,
 } from "../../types/voucherPayment";
+import { formatBillingScheduleDay } from "../../utils/couponDisplay";
 
 const SUMMARY_ROWS = [
   { key: "plan", label: "선택 플랜" },
@@ -41,11 +43,20 @@ const getPaymentMethodErrorMessage = (error: unknown, fallback: string) => {
   return fallback;
 };
 
+const formatPreviewAmount = (amount: number) =>
+  `${amount.toLocaleString("ko-KR")}원`;
+
 const VoucherPaymentPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const plan =
     VOUCHER_PAYMENT_PLANS[parseVoucherBillingCycle(searchParams.get("cycle"))];
+  const subscriptionPlan = toAdminSubscriptionPlan(plan.cycle);
+  const {
+    data: preview,
+    isLoading: isPreviewLoading,
+    isError: isPreviewError,
+  } = useAdminSubscriptionPreview(subscriptionPlan);
   const { data, isLoading, isError } = useAdminPaymentMethods();
   const { mutate: updateDefault, isPending: isUpdatingDefault } =
     useUpdateAdminDefaultPaymentMethod();
@@ -71,10 +82,18 @@ const VoucherPaymentPage = () => {
     });
   }, [methods, primaryId]);
 
+  const previewAmount =
+    preview?.immediatePaymentAmount ?? preview?.nextBillingAmount;
   const summaryValues = {
     plan: plan.planLabel,
-    amount: plan.amountLabel,
-    nextBilling: plan.nextBillingDateLabel,
+    amount: previewAmount
+      ? formatPreviewAmount(previewAmount)
+      : plan.amountLabel,
+    nextBilling: preview?.nextBillingAt
+      ? formatBillingScheduleDay(preview.nextBillingAt)
+      : isPreviewLoading
+        ? "불러오는 중..."
+        : "-",
   };
 
   const returnPath = `/membership/subscribe?cycle=${plan.cycle}`;
@@ -177,6 +196,11 @@ const VoucherPaymentPage = () => {
               </div>
             ))}
           </dl>
+          {isPreviewError ? (
+            <p className="text-12px font-normal leading-[1.4] text-red-500">
+              결제 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.
+            </p>
+          ) : null}
         </section>
 
         <div className="mt-8 h-px w-full bg-[#e6eaed]" />
@@ -209,7 +233,14 @@ const VoucherPaymentPage = () => {
         <div className="pointer-events-none absolute inset-x-0 bottom-0 px-8 pb-8">
           <button
             type="button"
-            disabled={isLoading || isError || isUpdatingDefault || isStarting}
+            disabled={
+              isLoading ||
+              isError ||
+              isPreviewLoading ||
+              isPreviewError ||
+              isUpdatingDefault ||
+              isStarting
+            }
             onClick={handleStartSubscription}
             className="pointer-events-auto flex h-[50px] w-full items-center justify-center rounded-[12px] bg-primary text-18px font-bold text-neutral-white shadow-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
           >
