@@ -23,6 +23,22 @@ export const formatCouponDay = (day: string): string => {
   return day;
 };
 
+const WEEKDAY_LABEL = ["일", "월", "화", "수", "목", "금", "토"] as const;
+
+/** YYYY-MM-DD 또는 LocalDateTime → YYYY. MM. DD(요일) */
+export const formatBillingScheduleDay = (day: string): string => {
+  const datePart = day.includes("T") ? day.slice(0, 10) : day;
+  const match = datePart.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!match) return formatFullDotDay(day);
+
+  const parsed = new Date(
+    Number(match[1]),
+    Number(match[2]) - 1,
+    Number(match[3]),
+  );
+  return `${match[1]}. ${match[2]}. ${match[3]}(${WEEKDAY_LABEL[parsed.getDay()]})`;
+};
+
 /** YYYY-MM-DD → YYYY. MM. DD */
 export const formatFullDotDay = (day: string): string => {
   const datePart = day.includes("T") ? day.slice(0, 10) : day;

@@ -357,6 +357,7 @@ export interface AdminCouponErrorResponse {
 // 현재 멤버십 상태 조회 응답
 // GET /api/admin/v1/memberships/current
 // 현재 적용 중인 이용권 1장. 구독/쿠폰이 섞여 있고 사용중/사용 전 상태값은 없다.
+// 쿠폰 이용권 사용 중이어도 활성 구독이 있으면 subscriptionPlan을 반환한다.
 export interface AdminMembershipCouponInfo {
   couponName: string;
   couponDescription: string;
@@ -390,24 +391,23 @@ export interface AdminMembershipErrorResponse {
   detail?: string;
 }
 
-// 현재 이용 중인 구독 이용권 조회
-// GET /api/admin/v1/memberships/current/subscription
-// 구독 패스가 활성일 때만 200. 없으면 404.
-// 카드 매핑: membershipPassStatus → 사용여부/칩, plan → 이름·요금 단위,
-// paidAmount → 요금, nextBillingAt → 다음 결제일. 표시 이름 문자열은 없음.
 export type AdminSubscriptionPlan = "MONTHLY" | "YEARLY";
 export type AdminSubscriptionStatus = "ACTIVE" | "CANCELED" | "PAYMENT_FAILED";
-export type AdminMembershipPassStatus = "REGISTERED" | "ACTIVE" | "EXPIRED";
+export type AdminSubscriptionPreviewScenario =
+  | "IMMEDIATE_PURCHASE"
+  | "DEFERRED_START";
 
-export interface AdminCurrentSubscriptionResponse {
-  membershipPassId: string;
+// 구독 시작 전 결제 정보 조회
+// GET /api/admin/v1/subscriptions/preview
+export interface AdminSubscriptionPreviewResponse {
+  scenario: AdminSubscriptionPreviewScenario;
   plan: AdminSubscriptionPlan;
-  membershipPassStatus: AdminMembershipPassStatus;
-  durationDays: number;
-  paidAmount: number;
-  startAt: string;
-  endAt: string;
-  nextBillingAt?: string | null;
+  amount: number;
+  immediatePaymentAmount: number | null;
+  immediatePaymentAt: string | null;
+  nextBillingAmount: number;
+  nextBillingAt: string;
+  effectiveAt: string;
 }
 
 // 구독 시작

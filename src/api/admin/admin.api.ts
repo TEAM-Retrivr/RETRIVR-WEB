@@ -25,8 +25,9 @@ import type {
   AdminCouponLookupResponse,
   AdminCouponMembershipPassListResponse,
   AdminCouponRegistrationResponse,
-  AdminCurrentSubscriptionResponse,
   AdminMembershipHistoryParams,
+  AdminSubscriptionPlan,
+  AdminSubscriptionPreviewResponse,
   AdminSubscriptionStartRequest,
   AdminSubscriptionStartResponse,
   AdminSubscriptionPlanChangeRequest,
@@ -413,17 +414,6 @@ export const requestAdminCouponMemberships =
     return response.data;
   };
 
-// 현재 이용 중인 구독 이용권 조회
-// - 활성화된 패스가 구독일 때만 200. 없으면 404
-// GET /api/admin/v1/memberships/current/subscription
-export const requestAdminCurrentSubscription =
-  async (): Promise<AdminCurrentSubscriptionResponse> => {
-    const response = await apiClient.get<AdminCurrentSubscriptionResponse>(
-      "/api/admin/v1/memberships/current/subscription",
-    );
-    return response.data;
-  };
-
 // 이용권 및 결제 내역 조회
 // GET /api/admin/v1/memberships/history
 export const requestAdminMembershipHistory = async (
@@ -432,6 +422,18 @@ export const requestAdminMembershipHistory = async (
   const response = await apiClient.get<AdminMembershipHistoryResponse>(
     "/api/admin/v1/memberships/history",
     { params },
+  );
+  return response.data;
+};
+
+// 구독 시작 전 결제 정보 조회
+// GET /api/admin/v1/subscriptions/preview
+export const requestAdminSubscriptionPreview = async (
+  plan: AdminSubscriptionPlan,
+): Promise<AdminSubscriptionPreviewResponse> => {
+  const response = await apiClient.get<AdminSubscriptionPreviewResponse>(
+    "/api/admin/v1/subscriptions/preview",
+    { params: { plan } },
   );
   return response.data;
 };

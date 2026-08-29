@@ -4,7 +4,6 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import axios from "axios";
 import {
   requestAdminItemList,
   requestAdminRentalItemSummaryList,
@@ -27,9 +26,9 @@ import {
   requestAdminCoupon,
   registerAdminCoupon,
   requestAdminCouponMemberships,
-  requestAdminCurrentSubscription,
   requestAdminMembership,
   requestAdminMembershipHistory,
+  requestAdminSubscriptionPreview,
   startAdminSubscription,
   changeAdminSubscriptionPlan,
   cancelAdminSubscription,
@@ -43,9 +42,10 @@ import type {
   AdminCreateItemRequest,
   AdminItemListResponse,
   AdminCouponMembershipPassListResponse,
-  AdminCurrentSubscriptionResponse,
   AdminMembershipHistoryResponse,
   AdminMembershipResponse,
+  AdminSubscriptionPlan,
+  AdminSubscriptionPreviewResponse,
   AdminSubscriptionStartRequest,
   AdminSubscriptionPlanChangeRequest,
   AdminPaymentMethodCreateRequest,
@@ -414,9 +414,6 @@ export const useRegisterAdminCoupon = () => {
       await queryClient.invalidateQueries({
         queryKey: ["adminCouponMemberships"],
       });
-      await queryClient.invalidateQueries({
-        queryKey: ["adminCurrentSubscription"],
-      });
     },
   });
 };
@@ -428,26 +425,6 @@ export const useAdminCouponMemberships = () => {
   return useQuery<AdminCouponMembershipPassListResponse>({
     queryKey: ["adminCouponMemberships"],
     queryFn: requestAdminCouponMemberships,
-    retry: false,
-  });
-};
-
-// 현재 이용 중인 구독 이용권 조회
-// - 이용권 목록 > 구독 이용권 탭
-// GET /api/admin/v1/memberships/current/subscription
-export const useAdminCurrentSubscription = () => {
-  return useQuery<AdminCurrentSubscriptionResponse | null>({
-    queryKey: ["adminCurrentSubscription"],
-    queryFn: async () => {
-      try {
-        return await requestAdminCurrentSubscription();
-      } catch (error) {
-        if (axios.isAxiosError(error) && error.response?.status === 404) {
-          return null;
-        }
-        throw error;
-      }
-    },
     retry: false,
   });
 };
@@ -480,6 +457,17 @@ export const useAdminMembershipHistory = (params?: {
   });
 };
 
+// 구독 시작 전 결제 정보 조회
+// - 구독 시작 페이지 진입 시 선택 플랜 기준 결제 미리보기
+// GET /api/admin/v1/subscriptions/preview
+export const useAdminSubscriptionPreview = (plan: AdminSubscriptionPlan) => {
+  return useQuery<AdminSubscriptionPreviewResponse>({
+    queryKey: ["adminSubscriptionPreview", plan],
+    queryFn: () => requestAdminSubscriptionPreview(plan),
+    retry: false,
+  });
+};
+
 // 구독 시작
 // POST /api/admin/v1/subscriptions
 export const useStartAdminSubscription = () => {
@@ -490,9 +478,6 @@ export const useStartAdminSubscription = () => {
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["adminMembership"] }),
-        queryClient.invalidateQueries({
-          queryKey: ["adminCurrentSubscription"],
-        }),
         queryClient.invalidateQueries({
           queryKey: ["adminMembershipHistory"],
         }),
@@ -512,9 +497,6 @@ export const useChangeAdminSubscriptionPlan = () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["adminMembership"] }),
         queryClient.invalidateQueries({
-          queryKey: ["adminCurrentSubscription"],
-        }),
-        queryClient.invalidateQueries({
           queryKey: ["adminMembershipHistory"],
         }),
       ]);
@@ -531,9 +513,6 @@ export const useCancelAdminSubscription = () => {
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["adminMembership"] }),
-        queryClient.invalidateQueries({
-          queryKey: ["adminCurrentSubscription"],
-        }),
         queryClient.invalidateQueries({
           queryKey: ["adminMembershipHistory"],
         }),
