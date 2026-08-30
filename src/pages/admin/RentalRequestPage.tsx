@@ -41,6 +41,8 @@ const RentalRequestPage = () => {
               itemId: request.itemUnitCode,
               // 남은 수량/전체 수량 형식으로 가공
               itemCount: `(${request.availableQuantity}/${request.totalQuantity})`,
+              rentalDuration: request.rentalDuration,
+              guaranteedGoods: request.guaranteedGoods,
               applicantInfo: {
                 name: request.borrowerName,
                 phone: request.contact,
