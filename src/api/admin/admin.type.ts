@@ -98,7 +98,7 @@ export interface AdminRentalRequestItem {
   availableQuantity: number;
   borrowerName: string;
   contact: string;
-  guaranteedGoods: string;
+  guaranteedGoods: string | null;
   requestedAt: string;
 }
 

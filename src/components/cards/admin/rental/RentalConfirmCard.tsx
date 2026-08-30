@@ -18,6 +18,10 @@ const RentalConfirmCard = ({ rental }: RentalConfirmCardProps) => {
     guaranteedGoods,
     applicantInfo,
   } = rental;
+  const guaranteedGoodsLabel =
+    guaranteedGoods === null || !guaranteedGoods?.trim()
+      ? "없음"
+      : guaranteedGoods.trim();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleOpenModal = () => {
@@ -58,7 +62,7 @@ const RentalConfirmCard = ({ rental }: RentalConfirmCardProps) => {
             <div className="mt-2.5 pl-2.5">
               <ul className="list-disc pl-5 text-14px font-normal leading-[140%] text-neutral-gray-1">
                 <li>대여 기간 : {rentalDuration ?? "-"}일</li>
-                <li>보증 물품 : {guaranteedGoods?.trim() || "없음"}</li>
+                <li>보증 물품 : {guaranteedGoodsLabel}</li>
               </ul>
             </div>
 
@@ -87,7 +91,7 @@ const RentalConfirmCard = ({ rental }: RentalConfirmCardProps) => {
           name: itemName,
           borrower: applicantInfo.name,
           duration: `${rentalDuration ?? "-"}일`,
-          guaranteedGoods: guaranteedGoods?.trim() || "없음",
+          guaranteedGoods: guaranteedGoodsLabel,
         }}
       />
     </>

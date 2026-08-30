@@ -9,7 +9,7 @@ interface RentRequestCardProps {
   applicant: string; // '대여 요청자 | 요청자 전화번호'
   time: string; // '대여 요청이 들어온 시각'
   rentalDuration?: number;
-  guaranteedGoods?: string;
+  guaranteedGoods?: string | null;
   itemUnitLabel?: string;
 }
 
