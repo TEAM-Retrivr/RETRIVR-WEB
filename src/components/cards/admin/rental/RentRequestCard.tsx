@@ -6,7 +6,9 @@ interface RentRequestCardProps {
   rentalId: number;
   itemName: string; // '대여 요청한 기자재명'
   count: string; // '남은 수량 / 전체 수량'
-  applicant: string; // '대여 요청자 | 요청자 전화번호'
+  applicant: string; // '대여 요청자 | 요청자 연락처'
+  borrowerName: string;
+  contact: string;
   time: string; // '대여 요청이 들어온 시각'
   rentalDuration?: number;
   guaranteedGoods?: string | null;
@@ -18,6 +20,8 @@ export const RentRequestCard = ({
   itemName,
   count,
   applicant,
+  borrowerName,
+  contact,
   time,
   rentalDuration,
   guaranteedGoods,
@@ -49,6 +53,8 @@ export const RentRequestCard = ({
         itemName={itemName}
         count={count}
         applicant={applicant}
+        borrowerName={borrowerName}
+        contact={contact}
         time={time}
         rentalDurationDays={rentalDuration}
         guaranteedGoodsProp={guaranteedGoods}

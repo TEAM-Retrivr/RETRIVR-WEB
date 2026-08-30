@@ -56,7 +56,7 @@ const RentalConfirmationPage = () => {
             요청 승인 중
           </p>
           <p className="text-12px text-center text-neutral-gray-2 font-normal leading-[140%]">
-            관리자 확인 후 카카오톡으로 전달해드릴게요!
+            관리자 확인 후 입력하신 연락처로 전달해드릴게요!
           </p>
         </div>
         {/* 완료 메시지 영역 : 리트리버 캐릭터 로고 & 안내 메시지 */}
