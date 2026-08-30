@@ -24,6 +24,7 @@ import {
   toAdminSubscriptionPlan,
   VOUCHER_PAYMENT_PLANS,
 } from "../../types/voucherPayment";
+import { notifyPaymentSystemPreparing } from "../../constants/paymentSystemNotice";
 import { formatBillingScheduleDay } from "../../utils/couponDisplay";
 
 const SUMMARY_ROWS = [
@@ -129,6 +130,8 @@ const VoucherPaymentPage = () => {
       return;
     }
     if (isStarting || isUpdatingDefault) return;
+
+    notifyPaymentSystemPreparing();
 
     startSubscription(
       {

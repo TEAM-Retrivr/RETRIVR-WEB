@@ -76,47 +76,6 @@ const ItemManagementPage = () => {
   }
 
   // 등록된 물품 없을 때: 초기 화면 렌더링
-  if (!hasItems) {
-    return (
-      <Layout>
-        <Header
-          name={organizationName}
-          pageName="물품 관리"
-          backTo="/home"
-          rightAction={
-            <button
-              type="button"
-              onClick={handleExcelDownload}
-              className="h-10 cursor-pointer"
-              aria-label="엑셀 다운로드"
-            >
-              <img
-                src="/icons/excel-download.svg"
-                alt="엑셀 다운로드"
-                className="h-full w-auto object-contain"
-              />
-            </button>
-          }
-        />
-        <div className="flex flex-col w-full mt-48 items-center font-[Pretendard] font-normal">
-          <img className="w-42" src="/icons/symbol.svg" alt="심볼 로고" />
-          <p className="text-[#000] opacity-[0.39] text-16px ">
-            물품을 등록해주세요
-          </p>
-          <p className="text-primary text-12px">
-            오른쪽 하단 버튼을 눌러 물품을 추가하세요
-          </p>
-        </div>
-        {/* 물품 추가 버튼 */}
-        <BlueButton
-          option="addItem"
-          onClick={() => navigate("/item-register")}
-        ></BlueButton>
-      </Layout>
-    );
-  }
-
-  // 등록된 물품이 있을 때: 물품 목록 렌더링
   return (
     <Layout>
       <Header
@@ -137,26 +96,42 @@ const ItemManagementPage = () => {
             />
           </button>
         }
-      ></Header>
-      <div className="flex flex-col items-center mx-6.5 my-8.5 gap-4">
-        {items.map((item) => (
-          <ItemManagementCard
-            key={item.itemId}
-            itemId={item.itemId}
-            name={item.name}
-            totalQuantity={item.totalQuantity}
-            availableQuantity={item.availableQuantity}
-            isActive={item.isActive}
-            rentalDuration={item.rentalDuration}
-            description={item.description}
-            guaranteedGoods={item.guaranteedGoods}
-            borrowerRequirements={item.borrowerRequirements}
-            itemManagementType={item.itemManagementType}
-          />
-        ))}
+      />
+      {!hasItems ? (
+        <div className="flex flex-col w-full mt-48 items-center font-[Pretendard] font-normal">
+          <img className="w-42" src="/icons/symbol.svg" alt="심볼 로고" />
+          <p className="text-[#000] opacity-[0.39] text-16px ">
+            물품을 등록해주세요
+          </p>
+          <p className="text-primary text-12px">
+            오른쪽 하단 버튼을 눌러 물품을 추가하세요
+          </p>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center mx-6.5 my-8.5 gap-4">
+          {items.map((item) => (
+            <ItemManagementCard
+              key={item.itemId}
+              itemId={item.itemId}
+              name={item.name}
+              totalQuantity={item.totalQuantity}
+              availableQuantity={item.availableQuantity}
+              isActive={item.isActive}
+              rentalDuration={item.rentalDuration}
+              description={item.description}
+              guaranteedGoods={item.guaranteedGoods}
+              borrowerRequirements={item.borrowerRequirements}
+              itemManagementType={item.itemManagementType}
+            />
+          ))}
+        </div>
+      )}
+      <div className="flex justify-end mt-auto mb-11">
+        <BlueButton
+          option="addItem"
+          onClick={() => navigate("/item-register")}
+        />
       </div>
-      {/* 물품 추가 버튼 */}
-      <BlueButton option="addItem" onClick={() => navigate("/item-register")} />
     </Layout>
   );
 };

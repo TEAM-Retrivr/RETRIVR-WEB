@@ -10,7 +10,12 @@ import {
   trackPageView,
   type AnalyticsUserType,
 } from "../lib/analytics";
-import { ADMIN_TERMS_CONTENT, ADMIN_PRIVACY_CONTENT } from "../constants/legalContent";
+import {
+  ADMIN_PRIVACY_CONTENT,
+  ADMIN_TERMS_CONTENT,
+  CLIENT_PRIVACY_CONTENT,
+  CLIENT_TERMS_CONTENT,
+} from "../constants/legalContent";
 
 const CLIENT_TERMS_REDIRECT_STORAGE_KEY = "clientTermsRedirectPayload";
 const CLIENT_RENTAL_SUBMIT_STATE_STORAGE_KEY = "clientRentalSubmitState";
@@ -28,99 +33,12 @@ const PAGE_DESTINATION_BY_USER_TYPE: Record<"admin" | "client", string> = {
 
 const TERMS_CONTENT_BY_USER_TYPE: Record<"admin" | "client", string> = {
   admin: ADMIN_TERMS_CONTENT,
-  client: `제1조 (목적)
-본 약관은 Retrivr(이하 "서비스")가 제공하는 물품 대여 요청 서비스의 이용과 관련하여 서비스와 이용자 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.
-
-제2조 (정의)
-
-1. "이용자"란 회원가입 없이 서비스에 접속하여 물품 대여를 요청하는 자를 의미합니다.
-2. "관리자"란 물품을 등록하고 대여 요청을 승인 또는 거절할 수 있는 권한을 가진 자를 의미합니다.
-
-제3조 (서비스의 제공)
-서비스는 다음과 같은 기능을 제공합니다.
-
-1. 물품 정보 조회
-2. 대여 요청 접수
-3. 대여 상태 안내 및 알림 제공
-
-제4조 (대여 요청 및 성립)
-
-1. 이용자는 이름 및 연락처 입력을 통해 대여 요청을 할 수 있습니다.
-2. 대여 요청은 관리자의 승인 시 최종 확정됩니다.
-3. 일정 시간 내 승인되지 않은 요청은 자동 취소될 수 있습니다.
-
-제5조 (이용자의 의무)
-
-1. 이용자는 정확하고 최신의 정보를 입력해야 합니다.
-2. 타인의 정보를 도용하거나 허위 정보를 입력해서는 안 됩니다.
-3. 승인된 대여 조건(기간, 반납 등)을 준수해야 합니다.
-
-제6조 (대여 물품에 대한 책임)
-이용자는 대여 물품의 분실, 훼손 또는 손상에 대해 책임을 질 수 있으며, 책임 범위는 관리자 또는 서비스 운영 정책에 따릅니다.
-
-제7조 (알림 서비스)
-서비스는 대여 요청 및 상태 안내를 위해 알림을 발송할 수 있으며, 알림은 카카오 알림톡 또는 이메일로 제공될 수 있습니다.
-
-제8조 (서비스 이용 제한)
-서비스는 다음과 같은 경우 이용을 제한할 수 있습니다.
-
-1. 허위 정보 입력
-2. 서비스의 정상적인 운영을 방해하는 행위
-3. 기타 부정한 방법으로 서비스를 이용하는 경우
-
-제9조 (면책 조항)
-
-1. 서비스는 관리자와 이용자 간의 대여 관계에 직접 개입하지 않습니다.
-2. 대여 과정에서 발생하는 분쟁에 대해 서비스는 책임을 지지 않습니다.
-
-제10조 (약관의 변경)
-서비스는 관련 법령을 위반하지 않는 범위에서 약관을 변경할 수 있으며, 변경 시 사전에 공지합니다.
-`,
+  client: CLIENT_TERMS_CONTENT,
 };
 
 const PRIVACY_CONTENT_BY_USER_TYPE: Record<"admin" | "client", string> = {
   admin: ADMIN_PRIVACY_CONTENT,
-  client: `1. 수집하는 개인정보 항목
-   서비스는 다음과 같은 개인정보를 수집합니다.
-
-[필수 항목]
-
-* 이름
-* 연락처 (전화번호 또는 이메일)
-
-[선택 항목]
-
-* 대여 요청 시 추가 입력 정보 (예: 요청사항 등)
-  ※ 추가 정보는 물품 및 관리자 설정에 따라 달라질 수 있습니다.
-
-2. 개인정보의 수집 및 이용 목적
-
-* 대여 요청 접수 및 처리
-* 관리자와의 원활한 연락
-* 대여 상태 안내 및 알림 발송
-* 서비스 운영 및 이용 기록 관리
-
-3. 개인정보의 보관 및 이용 기간
-   수집된 개인정보는 대여 완료일로부터 90일간 보관 후 지체 없이 파기합니다.
-   단, 분쟁 발생 시 해당 분쟁 해결 시까지 보관할 수 있습니다.
-
-4. 개인정보의 제공
-   이용자의 개인정보는 대여 요청 처리 및 운영을 위해 해당 물품을 관리하는 관리자에게 제공됩니다.
-
-5. 개인정보 처리의 위탁
-   서비스는 원활한 서비스 제공을 위해 다음 업무를 외부에 위탁할 수 있습니다.
-
-* 카카오 알림톡 발송
-* 이메일 발송
-
-6. 이용자의 권리 및 거부
-   이용자는 개인정보 제공을 거부할 수 있으나, 이 경우 대여 요청 서비스 이용이 제한될 수 있습니다.
-
-7. 개인정보 보호 책임자
-
-* 이름: 박다솔
-* 이메일: pds2023@gmail.com
-`,
+  client: CLIENT_PRIVACY_CONTENT,
 };
 
 const TermsConsentPage = () => {
