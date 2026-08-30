@@ -17,7 +17,7 @@ interface RentRequestCardData {
   applicant: string;
   time: string;
   rentalDuration?: number;
-  guaranteedGoods?: string;
+  guaranteedGoods?: string | null;
   itemUnitLabel?: string;
 }
 

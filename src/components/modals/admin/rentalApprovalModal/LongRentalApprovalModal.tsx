@@ -24,7 +24,7 @@ interface LongRentalApproveModalProps {
   contact?: string;
   time?: string;
   rentalDurationDays?: number;
-  guaranteedGoodsProp?: string;
+  guaranteedGoodsProp?: string | null;
   requestNote?: string;
   expiresAt?: string;
   borrowerFields?: Record<string, string>;
