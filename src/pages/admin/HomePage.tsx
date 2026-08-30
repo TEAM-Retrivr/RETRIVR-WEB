@@ -15,6 +15,8 @@ interface RentRequestCardData {
   itemName: string;
   count: string;
   applicant: string;
+  borrowerName: string;
+  contact: string;
   time: string;
   rentalDuration?: number;
   guaranteedGoods?: string | null;
@@ -57,6 +59,8 @@ const Home = () => {
       count: `(${req.availableQuantity}/${req.totalQuantity})`,
       // '대여 요청자 | 요청자 전화번호'
       applicant: `${req.borrowerName} | ${req.contact}`,
+      borrowerName: req.borrowerName,
+      contact: req.contact,
       time: req.requestedAt,
       rentalDuration: req.rentalDuration,
       guaranteedGoods: req.guaranteedGoods,
@@ -164,6 +168,8 @@ const Home = () => {
                     itemName={items.itemName}
                     count={items.count}
                     applicant={items.applicant}
+                    borrowerName={items.borrowerName}
+                    contact={items.contact}
                     time={items.time}
                     rentalDuration={items.rentalDuration}
                     guaranteedGoods={items.guaranteedGoods}
