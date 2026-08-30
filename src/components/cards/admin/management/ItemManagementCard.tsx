@@ -205,7 +205,7 @@ const ItemManagementCard = ({
                     이름
                   </span>
                   <span className="inline-flex shrink-0 items-center text-secondary-1 text-12px font-normal rounded-[30px] bg-secondary-4 px-3 py-1 leading-[140%]">
-                    전화번호
+                    연락처
                   </span>
 
                   {effectiveBorrowerRequirements.length === 0 &&

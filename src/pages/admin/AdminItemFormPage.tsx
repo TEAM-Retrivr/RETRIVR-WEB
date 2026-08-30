@@ -290,7 +290,7 @@ const AdminItemFormPage = ({
 
   const renterRequiredFields: { key: RenterFieldKey; label: string }[] = [
     { key: "name", label: "이름" },
-    { key: "phone", label: "전화번호" },
+    { key: "phone", label: "연락처" },
   ];
 
   const handleSubmit = () => {
