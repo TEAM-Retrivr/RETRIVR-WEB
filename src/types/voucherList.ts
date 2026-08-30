@@ -22,11 +22,15 @@ export const HISTORY_PERIOD_LABEL: Record<HistoryPeriodOption, string> = {
 export const SUBSCRIPTION_USAGE_GUIDE_TITLE = "구독 및 쿠폰 사용 안내";
 
 export const EMPTY_SUBSCRIPTION_USAGE_GUIDE = [
-  "쿠폰 코드를 등록하면 이용권이 즉시 활성화돼요.",
+  "서비스 제공 기간: 결제 후 즉시 제공",
+  "(구독 서비스 특성상 환불이 제한될 수 있습니다.)",
   "현재 구독 중이라면 다음 결제일부터 쿠폰 이용권이 먼저 사용돼요.",
+  "쿠폰 코드를 등록하면 이용권이 즉시 활성화돼요.",
 ];
 
 export const SUBSCRIPTION_USAGE_GUIDE = [
+  "서비스 제공 기간: 결제 후 즉시 제공",
+  "구독 서비스 특성상 환불이 제한될 수 있습니다.",
   "쿠폰 코드를 등록하면 쿠폰 이용권을 사용할 수 있습니다.",
   "쿠폰 이용권은 등록 즉시 활성화됩니다.",
   "현재 구독 이용권을 사용 중인 경우에는 다음 결제일부터 쿠폰 이용권이 우선 적용됩니다.",
