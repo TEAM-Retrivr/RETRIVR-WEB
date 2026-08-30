@@ -28,8 +28,9 @@ const ReturnCheckPage = () => {
         itemName: data.itemName,
         unitId: unit.unitId,
         borrowedItemName: unit.borrowedItemName,
+        itemUnitLabel: unit.itemUnitLabel,
         borrowerName: unit.borrowerName,
-        borrowerPhone: unit.borrowerPhone,
+        contact: unit.contact,
         borrowerFields: unit.borrowerFields
           ? {
               additionalProp1: unit.borrowerFields.additionalProp1,

@@ -17,8 +17,9 @@ export interface ReturnCheckCardRentalInfo {
   unitId: number;
 
   borrowedItemName: string; // 대여 물품 이름
+  itemUnitLabel?: string; // 물품 유닛 표시명
   borrowerName: string; // 대여자 이름
-  borrowerPhone: string; // 대여자 전화번호
+  contact: string; // 대여자 연락처
   // 대여자 추가 입력 사항
   borrowerFields?: {
     additionalProp1?: string;
@@ -85,7 +86,7 @@ const ReturnCheckCard = ({
               {/* 대여자 정보 영역 - 이름, 학과, 학번  */}
               <div className="text-12px text-neutral-gray-1 font-normal leading-[140%]">
                 <p>이름: {rental.borrowerName}</p>
-                <p>연락처: {rental.borrowerPhone}</p>
+                <p>연락처: {rental.contact}</p>
 
                 {rental.borrowerFields?.additionalProp1 && (
                   <p>학과: {rental.borrowerFields?.additionalProp1}</p>
@@ -171,9 +172,9 @@ const ReturnCheckCard = ({
         submitError={submitError}
         isOverdue={rental.isOverdue}
         itemName={rental.itemName}
-        itemUnitLabel={rental.borrowedItemName}
+        itemUnitLabel={rental.itemUnitLabel ?? rental.borrowedItemName}
         borrowerName={rental.borrowerName}
-        borrowerPhone={rental.borrowerPhone}
+        contact={rental.contact}
         borrowerFields={rental.borrowerFields}
         rentalDate={rental.rentalDate}
         expectedReturnDueDate={rental.expectedReturnDueDate}

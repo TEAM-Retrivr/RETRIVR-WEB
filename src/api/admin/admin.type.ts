@@ -249,12 +249,13 @@ export interface AdminUpdateItemResponse {
 // - 물품별 관리(반납 처리) 화면에서 사용
 // - itemUnits: 현재 대여 중인 개별 물품(고유번호 단위) 목록
 export interface AdminActiveRentalItemUnit {
-  rentalId?: number; // 대여 ID (반납 확인 API에서 사용) - 백엔드 명세/응답에 없을 수 있어 optional
+  rentalId: number; // 대여 ID (반납 확인 API에서 사용)
   isOverdue: boolean; // 연체 여부
   unitId: number; // 물품 고유번호 ID (서버 명세: unitId)
   borrowedItemName: string; // 대여한 물품 이름
+  itemUnitLabel: string; // 물품 유닛 표시명 (예: c타입 충전기(1))
   borrowerName: string; //대여자 이름 (필수 입력 사항)
-  borrowerPhone: string; // 대여자 연락처 (필수 입력사항)
+  contact: string; // 대여자 연락처 (필수 입력사항)
   // borrowerFields: 선택적 요구사항
   borrowerFields?: {
     additionalProp1?: string;
