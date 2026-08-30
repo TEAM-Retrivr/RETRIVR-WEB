@@ -5,9 +5,11 @@ import CommonInput from "../../components/CommonInput";
 import Button from "../../components/Button";
 import { useLogin } from "../../hooks/queries/useAuthQueries";
 import ErrorModal from "../../components/modals/ErrorModal";
+import { useQueryClient } from "@tanstack/react-query";
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   {
     /* 상태변수 */
@@ -35,6 +37,8 @@ const LoginPage = () => {
       { email, password },
       {
         onSuccess: (data) => {
+          queryClient.removeQueries({ queryKey: ["adminPaymentMethods"] });
+          queryClient.removeQueries({ queryKey: ["adminPaymentMethod"] });
           localStorage.setItem("accessToken", data.accessToken);
           // 서버가 refreshToken을 HttpOnly 쿠키로 내려주는 경우 바디에 없을 수 있음
           if (data.refreshToken) {
@@ -44,6 +48,9 @@ const LoginPage = () => {
           if (organizationId != null) {
             localStorage.setItem("orgId", String(organizationId));
           }
+          // 프로필 API에서 email이 제거되어 로그인 이메일을 저장해 계정 화면에 사용한다
+          // 응답 email이 빈 문자열일 수 있어 폼 입력을 우선 폴백한다
+          localStorage.setItem("email", (data.email || email).trim());
           navigate("/home");
         },
         onError: () => {

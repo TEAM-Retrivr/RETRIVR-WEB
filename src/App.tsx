@@ -14,9 +14,18 @@ import HomePage from "./pages/admin/HomePage";
 import AccountPage from "./pages/admin/AccountPage";
 import AccountTermsPage from "./pages/admin/AccountTermsPage";
 import AccountPrivacyPage from "./pages/admin/AccountPrivacyPage";
+import WithdrawPage from "./pages/admin/WithdrawPage";
 import MembershipPage from "./pages/admin/MembershipPage";
+import PaymentMethodsPage from "./pages/admin/PaymentMethodsPage";
+import PaymentMethodRegisterPage from "./pages/admin/PaymentMethodRegisterPage";
+import VoucherListPage from "./pages/admin/VoucherListPage";
+import VoucherPaymentPage from "./pages/admin/VoucherPaymentPage";
 import ProfileEditPage from "./pages/admin/ProfileEditPage";
 import LandingPage from "./pages/LandingPage";
+import {
+  PublicPrivacyPage,
+  PublicTermsPage,
+} from "./pages/LegalDocumentPage";
 import RegisterPage from "./pages/admin/RegisterPage";
 import TermsConsentPage from "./pages/TermsConsentPage";
 import RentalRequestPage from "./pages/admin/RentalRequestPage";
@@ -92,6 +101,8 @@ function App() {
       <Routes>
         {/* Public */}
         <Route path="/" element={<LandingPage />} />
+        <Route path="/legal/terms" element={<PublicTermsPage />} />
+        <Route path="/legal/privacy" element={<PublicPrivacyPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/terms" element={<TermsConsentPage />} />
         <Route path="/test" element={<TestPage />} />
@@ -118,7 +129,21 @@ function App() {
           <Route path="/account" element={<AccountPage />} />
           <Route path="/account/terms" element={<AccountTermsPage />} />
           <Route path="/account/privacy" element={<AccountPrivacyPage />} />
+          <Route path="/account/withdraw" element={<WithdrawPage />} />
           <Route path="/membership" element={<MembershipPage />} />
+          <Route
+            path="/membership/payment-methods"
+            element={<PaymentMethodsPage />}
+          />
+          <Route
+            path="/membership/payment-methods/register"
+            element={<PaymentMethodRegisterPage />}
+          />
+          <Route path="/membership/vouchers" element={<VoucherListPage />} />
+          <Route
+            path="/membership/subscribe"
+            element={<VoucherPaymentPage />}
+          />
           <Route path="/profile" element={<ProfileEditPage />} />
           <Route path="/item-manage" element={<ItemManagementPage />} />
           <Route path="/item-register" element={<ItemRegisterationPage />} />

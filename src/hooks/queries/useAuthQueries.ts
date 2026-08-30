@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   sendEmailCode,
   verifyEmailCode,
@@ -10,6 +10,14 @@ import {
   requestWithdraw,
   requestLoadHome,
   requestAdminProfile,
+  sendAdminEmailCode,
+  verifyAdminEmailCode,
+  updateAdminProfile,
+  requestAdminProfileImagePresignedUpload,
+  updateAdminProfileImage,
+  verifyAdminPassword,
+  updateAdminPassword,
+  updateAdminCode,
 } from "../../api/auth/auth.api";
 
 //
@@ -163,5 +171,124 @@ export const useAdminProfile = (options?: { enabled?: boolean }) => {
     queryFn: requestAdminProfile,
     retry: false,
     enabled: options?.enabled ?? true,
+  });
+};
+
+//
+// 7-1. 관리자 이메일 인증 코드 발송 요청
+//
+export const useSendAdminEmailCode = () => {
+  return useMutation({
+    mutationFn: sendAdminEmailCode,
+    onSuccess: () => {
+      console.log("관리자 이메일 인증 코드 발송 성공");
+    },
+    onError: (error) => {
+      console.error("관리자 이메일 인증 코드 발송 실패:", error);
+    },
+  });
+};
+
+//
+// 7-2. 관리자 이메일 인증 코드 검증 요청
+//
+export const useVerifyAdminEmailCode = () => {
+  return useMutation({
+    mutationFn: verifyAdminEmailCode,
+    onSuccess: () => {
+      console.log("관리자 이메일 인증 코드 검증 성공");
+    },
+    onError: (error) => {
+      console.error("관리자 이메일 인증 코드 검증 실패:", error);
+    },
+  });
+};
+
+//
+// 7-3. 관리자 프로필 수정 요청
+//
+export const useUpdateAdminProfile = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateAdminProfile,
+    onSuccess: () => {
+      console.log("관리자 프로필 수정 성공");
+      queryClient.invalidateQueries({ queryKey: ["adminProfile"] });
+      queryClient.invalidateQueries({ queryKey: ["home"] });
+    },
+    onError: (error) => {
+      console.error("관리자 프로필 수정 실패:", error);
+    },
+  });
+};
+
+//
+// 7-3-1. 관리자 프로필 사진 업로드용 Presigned URL 발급
+//
+export const useRequestAdminProfileImagePresignedUpload = () => {
+  return useMutation({
+    mutationFn: requestAdminProfileImagePresignedUpload,
+  });
+};
+
+//
+// 7-3-2. 관리자 프로필 이미지 수정 확정
+//
+export const useUpdateAdminProfileImage = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateAdminProfileImage,
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["adminProfile"] }),
+        queryClient.invalidateQueries({ queryKey: ["home"] }),
+      ]);
+    },
+  });
+};
+
+//
+// 7-4. 개인정보 변경용 현재 비밀번호 확인 요청
+//
+export const useVerifyAdminPassword = () => {
+  return useMutation({
+    mutationFn: verifyAdminPassword,
+    onSuccess: () => {
+      console.log("관리자 비밀번호 확인 성공");
+    },
+    onError: (error) => {
+      console.error("관리자 비밀번호 확인 실패:", error);
+    },
+  });
+};
+
+//
+// 7-5. 관리자 비밀번호 변경 요청
+//
+export const useUpdateAdminPassword = () => {
+  return useMutation({
+    mutationFn: updateAdminPassword,
+    onSuccess: () => {
+      console.log("관리자 비밀번호 변경 성공");
+    },
+    onError: (error) => {
+      console.error("관리자 비밀번호 변경 실패:", error);
+    },
+  });
+};
+
+//
+// 7-6. 관리자 코드 변경 요청
+//
+export const useUpdateAdminCode = () => {
+  return useMutation({
+    mutationFn: updateAdminCode,
+    onSuccess: () => {
+      console.log("관리자 코드 변경 성공");
+    },
+    onError: (error) => {
+      console.error("관리자 코드 변경 실패:", error);
+    },
   });
 };

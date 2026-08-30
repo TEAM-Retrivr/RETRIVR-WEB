@@ -13,6 +13,18 @@ import type {
   LoginRequest,
   LoginResponse,
   AdminProfileResponse,
+  SendAdminEmailCodeRequest,
+  SendAdminEmailCodeResponse,
+  VerifyAdminEmailCodeRequest,
+  UpdateAdminProfileRequest,
+  AdminProfileImagePresignedUploadRequest,
+  AdminProfileImagePresignedUploadResponse,
+  AdminProfileImageUpdateRequest,
+  AdminProfileImageUpdateResponse,
+  VerifyAdminPasswordRequest,
+  VerifyAdminPasswordResponse,
+  UpdateAdminPasswordRequest,
+  UpdateAdminCodeRequest,
   LoadHomeResponse,
   LogoutResponse,
   WithdrawRequest,
@@ -114,12 +126,19 @@ export const requestLogout = async (): Promise<LogoutResponse> => {
 //
 // 5-1. 회원 탈퇴 요청 API (POST)
 // 엔드포인트: "/api/admin/v1/account/withdraw"
+// 요청 바디: password, reasonCodes, otherReason?, agreedToWarning
+// 비밀번호는 별도 확인 API 없이 탈퇴 요청에 포함해 서버에서 검증한다.
 export const requestWithdraw = async (
   data: WithdrawRequest,
 ): Promise<WithdrawResponse> => {
   const response = await apiClient.post<WithdrawResponse>(
     "/api/admin/v1/account/withdraw",
-    data,
+    {
+      password: data.password,
+      reasonCodes: data.reasonCodes,
+      ...(data.otherReason ? { otherReason: data.otherReason } : {}),
+      agreedToWarning: data.agreedToWarning,
+    },
   );
   return response.data;
 };
@@ -140,4 +159,97 @@ export const requestAdminProfile = async (): Promise<AdminProfileResponse> => {
     "/api/admin/v1/profile",
   );
   return response.data;
+};
+
+//
+// 7-1. 관리자 이메일 인증 코드 발송 API (POST)
+// 엔드포인트 : "/api/admin/v1/email/verification"
+export const sendAdminEmailCode = async (
+  data: SendAdminEmailCodeRequest,
+): Promise<SendAdminEmailCodeResponse> => {
+  const response = await apiClient.post<SendAdminEmailCodeResponse>(
+    "/api/admin/v1/email/verification",
+    data,
+  );
+  return response.data;
+};
+
+//
+// 7-2. 관리자 이메일 인증 코드 검증 및 이메일 변경 API (POST)
+// 엔드포인트 : "/api/admin/v1/email/verification/verify"
+// 성공 시 204 No Content (세션 만료)
+export const verifyAdminEmailCode = async (
+  data: VerifyAdminEmailCodeRequest,
+): Promise<void> => {
+  await apiClient.post("/api/admin/v1/email/verification/verify", data);
+};
+
+//
+// 7-3. 관리자 프로필(단체명) 수정 API (PATCH)
+// 엔드포인트 : "/api/admin/v1/profile/organization-name"
+// 성공 시 204 No Content (응답 본문 없음)
+export const updateAdminProfile = async (
+  data: UpdateAdminProfileRequest,
+): Promise<void> => {
+  await apiClient.patch("/api/admin/v1/profile/organization-name", data);
+};
+
+//
+// 7-3-1. 관리자 프로필 사진 업로드용 Presigned URL 발급 API (POST)
+// 엔드포인트 : "/api/admin/v1/profile/images/pre-signed-upload-url"
+export const requestAdminProfileImagePresignedUpload = async (
+  data: AdminProfileImagePresignedUploadRequest,
+): Promise<AdminProfileImagePresignedUploadResponse> => {
+  const response =
+    await apiClient.post<AdminProfileImagePresignedUploadResponse>(
+      "/api/admin/v1/profile/images/pre-signed-upload-url",
+      data,
+    );
+  return response.data;
+};
+
+//
+// 7-3-2. 관리자 프로필 이미지 수정 확정 API (PUT)
+// 엔드포인트 : "/api/admin/v1/profile/images"
+export const updateAdminProfileImage = async (
+  data: AdminProfileImageUpdateRequest,
+): Promise<AdminProfileImageUpdateResponse> => {
+  const response = await apiClient.put<AdminProfileImageUpdateResponse>(
+    "/api/admin/v1/profile/images",
+    data,
+  );
+  return response.data;
+};
+
+//
+// 7-4. 개인정보 변경용 현재 비밀번호 확인 API (POST)
+// 엔드포인트 : "/api/admin/v1/profile/password/verify"
+export const verifyAdminPassword = async (
+  data: VerifyAdminPasswordRequest,
+): Promise<VerifyAdminPasswordResponse> => {
+  const response = await apiClient.post<VerifyAdminPasswordResponse>(
+    "/api/admin/v1/profile/password/verify",
+    data,
+  );
+  return response.data;
+};
+
+//
+// 7-5. 관리자 비밀번호 변경 API (PATCH)
+// 엔드포인트 : "/api/admin/v1/profile/password"
+// 성공 시 204 No Content (세션 만료)
+export const updateAdminPassword = async (
+  data: UpdateAdminPasswordRequest,
+): Promise<void> => {
+  await apiClient.patch("/api/admin/v1/profile/password", data);
+};
+
+//
+// 7-6. 관리자 코드 변경 API (PATCH)
+// 엔드포인트 : "/api/admin/v1/profile/admin-code"
+// 성공 시 204 No Content (로그아웃 불필요)
+export const updateAdminCode = async (
+  data: UpdateAdminCodeRequest,
+): Promise<void> => {
+  await apiClient.patch("/api/admin/v1/profile/admin-code", data);
 };

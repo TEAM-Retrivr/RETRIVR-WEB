@@ -1,17 +1,34 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { ChangeEvent } from "react";
 import { flushSync } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import LogoutConfirmModal from "../../components/modals/admin/account/LogoutConfirmModal";
-import WithdrawConfirmModal from "../../components/modals/admin/account/WithdrawConfirmModal";
 import QRCodeDisplay from "../../components/qr/QRCodeDisplay";
-import { useAdminProfile, useLogout } from "../../hooks/queries/useAuthQueries";
+import {
+  useAdminProfile,
+  useLogout,
+  useRequestAdminProfileImagePresignedUpload,
+  useUpdateAdminProfileImage,
+} from "../../hooks/queries/useAuthQueries";
+import type { AdminProfileImageErrorResponse } from "../../api/auth/auth.type";
+import { clearAdminSession, getAdminEmail } from "../../utils/adminSession";
+import {
+  PROFILE_IMAGE_ACCEPT,
+  PROFILE_IMAGE_MAX_BYTES,
+  extractProfileImageObjectKey,
+  resolveProfileImageContentType,
+  resolveProfileImageDisplayUrl,
+  uploadProfileImageToPresignedUrl,
+} from "../../utils/profileImageUpload";
 
 const PRODUCTION_WEB_ORIGIN = "https://www.retrivr.kr";
 const PREVIEW_WEB_ORIGIN = "https://retrivr-web.vercel.app";
+const DEFAULT_ACCOUNT_PROFILE_ICON = "/icons/profile-default-icon.svg";
 
 const getPublicWebOrigin = () => {
   if (typeof window === "undefined") return PREVIEW_WEB_ORIGIN;
@@ -22,12 +39,6 @@ const getPublicWebOrigin = () => {
   return PREVIEW_WEB_ORIGIN;
 };
 
-const clearAdminSession = () => {
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("refreshToken");
-  localStorage.removeItem("orgId");
-};
-
 const AccountPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -35,22 +46,34 @@ const AccountPage = () => {
   // 로그아웃/탈퇴 중에는 프로필 쿼리를 꺼서 clear() 시 refetch → 401을 막는다
   const { data } = useAdminProfile({ enabled: !isSigningOut });
   const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
+  const { mutateAsync: requestImageUploadUrl } =
+    useRequestAdminProfileImagePresignedUpload();
+  const { mutateAsync: confirmProfileImage } = useUpdateAdminProfileImage();
+  const isUploadingProfileImageRef = useRef(false);
+  const [isUpdatingProfileImage, setIsUpdatingProfileImage] = useState(false);
   const qrCanvasRef = useRef<HTMLCanvasElement>(null);
+  const profileImageInputRef = useRef<HTMLInputElement>(null);
+  const previewUrlRef = useRef<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [confirmModalMessage, setConfirmModalMessage] = useState<string | null>(
     null,
   );
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const organizationId =
     typeof window === "undefined"
       ? null
       : Number(localStorage.getItem("orgId") ?? "");
+  const storedEmail = getAdminEmail();
+
+  const uploadedProfileImageUrl = resolveProfileImageDisplayUrl(
+    previewUrl ?? data?.profileImageUrl,
+    { allowBlob: true },
+  );
 
   const userProfile = {
-    organizationId: data?.organizationId,
+    organizationId,
     organizationName: data?.organizationName,
-    profileImageUrl: data?.profileImageUrl ?? "/icons/profile-default-icon.svg",
-    email: data?.email,
+    email: storedEmail,
   };
 
   const rentalPageUrl = useMemo(() => {
@@ -59,9 +82,84 @@ const AccountPage = () => {
       return `${publicWebOrigin}/client-search`;
     }
     return `${publicWebOrigin}/client-home?organizationId=${encodeURIComponent(
-      String(userProfile.organizationId),
+      String(organizationId),
     )}`;
   }, [organizationId]);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
+      }
+    };
+  }, []);
+
+  const getProfileImageErrorMessage = (error: unknown, fallback: string) => {
+    if (axios.isAxiosError(error)) {
+      const data = error.response?.data as
+        | AdminProfileImageErrorResponse
+        | undefined;
+      if (data?.message) return data.message;
+    }
+    if (error instanceof Error && error.message) return error.message;
+    return fallback;
+  };
+
+  const handleProfileImageChange = async (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || isUploadingProfileImageRef.current) return;
+
+    const contentType = resolveProfileImageContentType(file);
+    if (!contentType) {
+      setConfirmModalMessage("jpg, png, webp 이미지만 올릴 수 있어요.");
+      return;
+    }
+    if (file.size > PROFILE_IMAGE_MAX_BYTES) {
+      setConfirmModalMessage("5MB 이하 이미지만 올릴 수 있어요.");
+      return;
+    }
+
+    isUploadingProfileImageRef.current = true;
+    setIsUpdatingProfileImage(true);
+    try {
+      const { uploadUrl } = await requestImageUploadUrl({
+        imageContentType: contentType,
+      });
+      await uploadProfileImageToPresignedUrl(uploadUrl, file, contentType);
+
+      const objectKey = extractProfileImageObjectKey(uploadUrl);
+      if (!objectKey) {
+        throw new Error("업로드한 이미지 키를 확인할 수 없습니다.");
+      }
+      const confirmed = await confirmProfileImage({ objectKey });
+
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
+        previewUrlRef.current = null;
+      }
+      if (confirmed.downloadUrl) {
+        setPreviewUrl(confirmed.downloadUrl);
+      } else {
+        const nextPreview = URL.createObjectURL(file);
+        previewUrlRef.current = nextPreview;
+        setPreviewUrl(nextPreview);
+      }
+      setConfirmModalMessage("프로필 사진이 변경되었어요.");
+    } catch (error) {
+      setConfirmModalMessage(
+        getProfileImageErrorMessage(
+          error,
+          "사진 업로드에 실패했습니다. 다시 시도해주세요.",
+        ),
+      );
+    } finally {
+      isUploadingProfileImageRef.current = false;
+      setIsUpdatingProfileImage(false);
+    }
+  };
 
   const getQRDataUrl = () => qrCanvasRef.current?.toDataURL("image/png");
 
@@ -140,16 +238,38 @@ const AccountPage = () => {
       <div className="w-full font-[Pretendard] text-neutral-gray-1 px-7.75">
         {/* 프로필 영역 - 프로필 사진, 대여지명, 이메일, 개인정보 수정하기 버튼 */}
         <div className="flex flex-col items-center pt-11.5 gap-3.5">
-          <div className="relative flex items-center justify-center w-25 h-25 rounded-[50%] shadow-account-profile">
-            <img
-              className="object-cover"
-              src={userProfile.profileImageUrl}
-              alt="프로필 이미지"
+          <div className="relative w-25 h-25">
+            <div
+              className={`flex h-full w-full items-center justify-center overflow-hidden rounded-[50%] bg-neutral-white shadow-account-profile ${
+                uploadedProfileImageUrl ? "" : "pt-2"
+              }`}
+            >
+              {uploadedProfileImageUrl ? (
+                <img
+                  className="h-full w-full object-cover"
+                  src={uploadedProfileImageUrl}
+                  alt="프로필 이미지"
+                />
+              ) : (
+                <img
+                  className="w-[45px]"
+                  src={DEFAULT_ACCOUNT_PROFILE_ICON}
+                  alt="기본 프로필"
+                />
+              )}
+            </div>
+            <input
+              ref={profileImageInputRef}
+              type="file"
+              accept={PROFILE_IMAGE_ACCEPT}
+              className="hidden"
+              onChange={handleProfileImageChange}
             />
             <button
               type="button"
-              onClick={() => alert("개발 예정입니다.")}
-              className="absolute right-0 bottom-0 flex items-center bg-neutral-white justify-center w-7 h-7 rounded-[50%] shadow-camera cursor-pointer"
+              disabled={isUpdatingProfileImage}
+              onClick={() => profileImageInputRef.current?.click()}
+              className="absolute right-0 bottom-0 flex items-center bg-neutral-white justify-center w-7 h-7 rounded-[50%] shadow-camera cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
             >
               <img src="/icons/camera.svg" alt="프로필 이미지 변경하기" />
             </button>
@@ -164,7 +284,7 @@ const AccountPage = () => {
           </div>
           <button
             type="button"
-            onClick={() => alert("개발 예정입니다.")}
+            onClick={() => navigate("/profile")}
             className="w-45 h-9.75 border border-primary shadow-primary rounded-[23.164px] hover:bg-bg-pale cursor-pointer"
           >
             <p className="text-center text-14px text-primary font-bold">
@@ -231,7 +351,7 @@ const AccountPage = () => {
           <div className="flex flex-col w-full h-13.25 text-14px font-bold shadow-16-gray rounded-2xl">
             <button
               type="button"
-              onClick={() => alert("개발 예정입니다.")}
+              onClick={() => navigate("/membership")}
               className="flex items-center justify-between h-13.25 px-7.5 rounded-2xl cursor-pointer hover:bg-neutral-gray-4/50"
             >
               <p className="text-start text-primary">Retrivr 프로</p>
@@ -270,7 +390,7 @@ const AccountPage = () => {
             <p className="mx-2.5 border border-neutral-gray-4 opacity-[0.3]"></p>
             <button
               type="button"
-              onClick={() => setIsWithdrawModalOpen(true)}
+              onClick={() => navigate("/account/withdraw")}
               className="h-13.25 px-7.5 rounded-b-2xl cursor-pointer hover:bg-neutral-gray-4/50"
             >
               <p className="text-start">탈퇴하기</p>
@@ -309,23 +429,6 @@ const AccountPage = () => {
               queryClient.clear();
             });
           }
-        }}
-      />
-      <WithdrawConfirmModal
-        isOpen={isWithdrawModalOpen}
-        onClose={() => setIsWithdrawModalOpen(false)}
-        onConfirm={async () => {
-          // TODO: 회원 탈퇴 API 연동(RTR-283) 후 서버 탈퇴 처리로 교체
-          flushSync(() => {
-            setIsSigningOut(true);
-          });
-          clearAdminSession();
-          await queryClient.cancelQueries();
-          setIsWithdrawModalOpen(false);
-          navigate("/login", { replace: true });
-          queueMicrotask(() => {
-            queryClient.clear();
-          });
         }}
       />
     </Layout>

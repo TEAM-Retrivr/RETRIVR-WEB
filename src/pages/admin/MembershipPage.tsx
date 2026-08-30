@@ -1,279 +1,518 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import ConfirmModal from "../../components/modals/ConfirmModal";
-import CouponRegistrationModal, {
-  type CouponPreview,
-} from "../../components/modals/membership/CouponRegistrationModal";
+import CouponAlertModal from "../../components/modals/membership/CouponAlertModal";
+import CouponRegistrationModal from "../../components/modals/membership/CouponRegistrationModal";
+import CouponSuccessModal from "../../components/modals/membership/CouponSuccessModal";
+import PlanChangeConfirmModal from "../../components/modals/membership/PlanChangeConfirmModal";
+import PlanChangeSuccessModal from "../../components/modals/membership/PlanChangeSuccessModal";
 import MembershipCouponCard from "../../components/membership/MembershipCouponCard";
 import MembershipProBadge from "../../components/membership/MembershipProBadge";
+import MembershipSubscribeCard, {
+  MEMBERSHIP_SUBSCRIBE_PLANS,
+} from "../../components/membership/MembershipSubscribeCard";
+import {
+  useAdminMembership,
+  useChangeAdminSubscriptionPlan,
+  useRegisterAdminCoupon,
+  useRequestAdminCoupon,
+} from "../../hooks/queries/useAdminQueries";
+import type {
+  AdminCouponLookupResponse,
+  AdminMembershipResponse,
+  AdminSubscriptionErrorResponse,
+} from "../../api/admin/admin.type";
+import {
+  formatCouponDay,
+  formatCouponValidityPeriod,
+  formatFullDotDay,
+  isValidCouponCode,
+} from "../../utils/couponDisplay";
+import {
+  toAdminSubscriptionPlan,
+  toVoucherBillingCycle,
+  type VoucherBillingCycle,
+} from "../../types/voucherPayment";
+type BillingCycle = VoucherBillingCycle;
+type CouponAlertType =
+  | "notFound"
+  | "alreadyUsed"
+  | "lookupFailed"
+  | "registerFailed";
 
-type MembershipTab = "subscription" | "voucher";
+const EMPTY_MEMBERSHIP_GUIDE =
+  "현재 이용 중인 이용권이 없습니다.\n하단의 '구독 시작하기' 버튼을 눌러 이용권을 구독해보세요.";
 
-const ACTIVE_VOUCHER = {
-  title: "2달 이용권",
-  eventName: "Retrivr 출시 이벤트",
-  period: "26. 05. 01 ~ 26. 06. 30",
+const MEMBERSHIP_PASS = {
+  monthly: "월간 구독",
+  yearly: "연간 구독",
+  coupon: "쿠폰 사용",
+} as const;
+
+const SUBSCRIPTION_UNIT_BY_PASS_TYPE: Record<string, string> = {
+  [MEMBERSHIP_PASS.monthly]: "/월",
+  [MEMBERSHIP_PASS.yearly]: "/년",
 };
 
-const AVAILABLE_VOUCHERS = [
-  {
-    id: "voucher-1",
-    title: "2달 이용권",
-    eventName: "Retrivr 출시 이벤트",
-    period: "26. 05. 01 ~ 26. 06. 30",
-    status: "active" as const,
-  },
-  {
-    id: "voucher-2",
-    title: "2달 이용권",
-    eventName: "Retrivr 출시 이벤트",
-    period: "26. 05. 01 ~ 26. 06. 30",
-    status: "pending" as const,
-  },
-];
+const isCouponPassType = (passType?: string | null): boolean =>
+  passType === MEMBERSHIP_PASS.coupon;
 
-const COMPLETED_VOUCHERS = [
-  {
-    id: "completed-1",
-    title: "2달 이용권",
-    eventName: "Retrivr 출시 이벤트",
-    period: "26. 05. 01 ~ 26. 06. 30",
-  },
-  {
-    id: "completed-2",
-    title: "2달 이용권",
-    eventName: "Retrivr 출시 이벤트",
-    period: "26. 05. 01 ~ 26. 06. 30",
-  },
-  {
-    id: "completed-3",
-    title: "2달 이용권",
-    eventName: "Retrivr 출시 이벤트",
-    period: "26. 05. 01 ~ 26. 06. 30",
-  },
-];
+const isCouponMembership = (data: AdminMembershipResponse): boolean =>
+  isCouponPassType(data.passType) || Boolean(data.couponInfo);
 
-type VoucherItem = {
-  id: string;
-  title: string;
-  eventName: string;
-  period: string;
-  status: "active" | "pending";
+const resolveActivePassTitle = (
+  data: AdminMembershipResponse,
+): string | undefined =>
+  data.subscriptionInfo?.subscriptionName?.trim() ||
+  data.couponInfo?.couponName?.trim() ||
+  undefined;
+
+const resolveActivePassFooter = (
+  data: AdminMembershipResponse,
+): string | undefined => {
+  if (data.nextBillingAt) {
+    return `다음 결제일 ${formatFullDotDay(data.nextBillingAt)}`;
+  }
+  if (data.startAt && data.endAt) {
+    return `사용 기간: ${formatCouponValidityPeriod(data.startAt, data.endAt)}`;
+  }
+  return undefined;
+};
+
+const COUPON_ALERT_MESSAGES: Record<CouponAlertType, string> = {
+  notFound: "쿠폰 번호를\n다시 확인해주세요.",
+  alreadyUsed: "이미 사용된 쿠폰이예요.",
+  lookupFailed: "쿠폰 조회에 실패했습니다.\n다시 시도해주세요.",
+  registerFailed: "쿠폰 등록에 실패했습니다.\n다시 시도해주세요.",
+};
+
+const MENU_ITEMS = [
+  {
+    id: "voucher-manage",
+    title: "구독 및 쿠폰 관리",
+    description: "구독 이용권, 쿠폰 이용권, 결제 내역",
+  },
+  {
+    id: "payment-manage",
+    title: "결제 수단 관리",
+    description: "이용권 결제수단 관리 및 등록",
+  },
+] as const;
+
+const formatKoreanDate = (day: string): string => {
+  const datePart = day.includes("T") ? day.slice(0, 10) : day;
+  const match = datePart.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!match) return formatCouponDay(day);
+  return `${match[1]}년 ${Number(match[2])}월 ${Number(match[3])}일`;
+};
+
+const formatPaidAmount = (amount?: number) =>
+  typeof amount === "number" ? `${amount.toLocaleString("ko-KR")}₩` : undefined;
+
+const COMING_SOON_MESSAGE = "개발 예정입니다.";
+
+const getSubscriptionErrorMessage = (error: unknown, fallback: string) => {
+  if (axios.isAxiosError(error)) {
+    const data = error.response?.data as
+      | AdminSubscriptionErrorResponse
+      | undefined;
+    if (data?.message) return data.message;
+  }
+  return fallback;
 };
 
 const MembershipPage = () => {
-  const [activeTab, setActiveTab] = useState<MembershipTab>("voucher");
+  const navigate = useNavigate();
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
+  const [couponCode, setCouponCode] = useState("");
+  const [lookedUpCouponCode, setLookedUpCouponCode] = useState("");
+  const [lookedUpCoupon, setLookedUpCoupon] =
+    useState<AdminCouponLookupResponse | null>(null);
   const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
-  const [confirmModalMessage, setConfirmModalMessage] = useState<string | null>(
+  const [couponAlertType, setCouponAlertType] =
+    useState<CouponAlertType | null>(null);
+  const [isCouponSuccessModalOpen, setIsCouponSuccessModalOpen] =
+    useState(false);
+  const [planChangeMessage, setPlanChangeMessage] = useState<string | null>(
     null,
   );
-  const [availableVouchers, setAvailableVouchers] =
-    useState<VoucherItem[]>(AVAILABLE_VOUCHERS);
+  const [isPlanChangeConfirmOpen, setIsPlanChangeConfirmOpen] = useState(false);
+  const [isPlanChangeSuccessOpen, setIsPlanChangeSuccessOpen] = useState(false);
+  const [planChangeTargetCycle, setPlanChangeTargetCycle] =
+    useState<BillingCycle>("yearly");
+  const [planChangeSuccessDate, setPlanChangeSuccessDate] = useState<
+    string | null
+  >(null);
+  const [scheduledCycle, setScheduledCycle] = useState<BillingCycle | null>(
+    null,
+  );
+  const didSyncBillingCycleRef = useRef(false);
 
-  const handleRegisterCoupon = () => {
-    setIsCouponModalOpen(true);
+  const lookupCouponMutation = useRequestAdminCoupon();
+  const registerCouponMutation = useRegisterAdminCoupon();
+  const changePlanMutation = useChangeAdminSubscriptionPlan();
+  // GET /api/admin/v1/memberships/current
+  // subscriptionPlan: MONTHLY(월간 구독) | YEARLY(연간 구독) | null(구독 플랜 없음)
+  // 쿠폰 이용권을 사용 중이어도 활성 구독이 있으면 해당 구독 플랜을 반환한다.
+  const {
+    data: membership,
+    isLoading: isMembershipLoading,
+    isError: isMembershipError,
+    isSuccess: isMembershipSuccess,
+    isFetched: isMembershipFetched,
+  } = useAdminMembership();
+
+  useEffect(() => {
+    if (didSyncBillingCycleRef.current || !isMembershipFetched) return;
+    didSyncBillingCycleRef.current = true;
+    if (membership?.subscriptionPlan) {
+      setBillingCycle(toVoucherBillingCycle(membership.subscriptionPlan));
+    }
+  }, [isMembershipFetched, membership?.subscriptionPlan]);
+
+  useEffect(() => {
+    if (
+      scheduledCycle &&
+      membership?.subscriptionPlan &&
+      toVoucherBillingCycle(membership.subscriptionPlan) === scheduledCycle
+    ) {
+      setScheduledCycle(null);
+    }
+  }, [scheduledCycle, membership?.subscriptionPlan]);
+
+  const trimmedCouponCode = couponCode.trim();
+  const canLookupCoupon =
+    trimmedCouponCode.length > 0 && !lookupCouponMutation.isPending;
+
+  const activePassTitle = membership
+    ? resolveActivePassTitle(membership)
+    : undefined;
+  const hasActivePass =
+    isMembershipSuccess &&
+    Boolean(
+      membership?.subscriptionPlan ||
+      activePassTitle ||
+      membership?.subscriptionInfo?.subscriptionName ||
+      membership?.couponInfo?.couponName ||
+      membership?.subscribed,
+    );
+  const showEmptyMembership =
+    !isMembershipLoading && (isMembershipError || !hasActivePass);
+  const hasChangeableSubscription =
+    isMembershipSuccess && Boolean(membership?.subscriptionPlan);
+  const currentCycle = membership?.subscriptionPlan
+    ? toVoucherBillingCycle(membership.subscriptionPlan)
+    : null;
+  const isCurrentPlanSelected =
+    hasChangeableSubscription && currentCycle === billingCycle;
+  const isScheduledTargetSelected =
+    scheduledCycle === billingCycle && !isCurrentPlanSelected;
+  const isSubscriptionCtaLocked =
+    isCurrentPlanSelected || isScheduledTargetSelected;
+  const subscriptionCtaLabel = !hasChangeableSubscription
+    ? "구독 시작하기"
+    : isCurrentPlanSelected
+      ? "현재 이용 중"
+      : isScheduledTargetSelected
+        ? "변경 예약됨"
+        : billingCycle === "yearly"
+          ? "연간 구독으로 변경"
+          : "월간 구독으로 변경";
+  const currentPlanDisplay = currentCycle
+    ? MEMBERSHIP_SUBSCRIBE_PLANS[currentCycle]
+    : undefined;
+
+  const handleComingSoon = () => {
+    alert(COMING_SOON_MESSAGE);
   };
 
-  const handleCouponRegister = (_code: string, preview: CouponPreview) => {
-    setAvailableVouchers((prev) => {
-      const hasPending = prev.some((voucher) => voucher.status === "pending");
-      if (hasPending) return prev;
+  const handleStartSubscription = () => {
+    if (isMembershipLoading) return;
+    if (!hasChangeableSubscription) {
+      navigate(`/membership/subscribe?cycle=${billingCycle}`);
+      return;
+    }
+    if (isCurrentPlanSelected || isScheduledTargetSelected) return;
+    if (changePlanMutation.isPending) return;
+    setPlanChangeTargetCycle(billingCycle);
+    setIsPlanChangeConfirmOpen(true);
+  };
 
-      return [
-        ...prev,
-        {
-          id: `voucher-${Date.now()}`,
-          title: preview.title,
-          eventName: preview.eventName,
-          period: preview.validityPeriod,
-          status: "pending",
+  const handleConfirmPlanChange = () => {
+    if (!hasChangeableSubscription || changePlanMutation.isPending) return;
+
+    const nextPlan = toAdminSubscriptionPlan(planChangeTargetCycle);
+    if (currentCycle === planChangeTargetCycle) return;
+    if (scheduledCycle === planChangeTargetCycle) return;
+
+    changePlanMutation.mutate(
+      { plan: nextPlan },
+      {
+        onSuccess: (data) => {
+          setIsPlanChangeConfirmOpen(false);
+          setScheduledCycle(planChangeTargetCycle);
+          setPlanChangeSuccessDate(
+            data.nextBillingAt ? formatKoreanDate(data.nextBillingAt) : null,
+          );
+          setIsPlanChangeSuccessOpen(true);
         },
-      ];
-    });
+        onError: (error) => {
+          setIsPlanChangeConfirmOpen(false);
+          setPlanChangeMessage(
+            getSubscriptionErrorMessage(
+              error,
+              "플랜 변경에 실패했습니다. 다시 시도해주세요.",
+            ),
+          );
+        },
+      },
+    );
+  };
+
+  const handleMenuClick = (menuId: (typeof MENU_ITEMS)[number]["id"]) => {
+    if (menuId === "payment-manage") {
+      navigate("/membership/payment-methods");
+      return;
+    }
+    if (menuId === "voucher-manage") {
+      navigate("/membership/vouchers");
+      return;
+    }
+    handleComingSoon();
+  };
+
+  const handleCloseCouponModal = () => {
+    if (registerCouponMutation.isPending) return;
     setIsCouponModalOpen(false);
-    setConfirmModalMessage("쿠폰이 등록되었어요");
+    setLookedUpCoupon(null);
+    setLookedUpCouponCode("");
+  };
+
+  const handleLookupCoupon = () => {
+    if (!trimmedCouponCode || lookupCouponMutation.isPending) return;
+
+    if (!isValidCouponCode(trimmedCouponCode)) {
+      setCouponAlertType("notFound");
+      return;
+    }
+
+    lookupCouponMutation.mutate(trimmedCouponCode, {
+      onSuccess: (coupon) => {
+        if (!coupon.isExist) {
+          setCouponAlertType("notFound");
+          return;
+        }
+        if (coupon.isUsed) {
+          setCouponAlertType("alreadyUsed");
+          return;
+        }
+        setLookedUpCouponCode(trimmedCouponCode);
+        setLookedUpCoupon(coupon);
+        setIsCouponModalOpen(true);
+      },
+      onError: () => {
+        setCouponAlertType("lookupFailed");
+      },
+    });
+  };
+
+  const handleRegisterCoupon = () => {
+    if (!lookedUpCoupon || registerCouponMutation.isPending) return;
+
+    registerCouponMutation.mutate(lookedUpCoupon.couponId, {
+      onSuccess: () => {
+        setIsCouponModalOpen(false);
+        setLookedUpCoupon(null);
+        setLookedUpCouponCode("");
+        setCouponCode("");
+        setIsCouponSuccessModalOpen(true);
+      },
+      onError: () => {
+        setIsCouponModalOpen(false);
+        setLookedUpCoupon(null);
+        setLookedUpCouponCode("");
+        setCouponAlertType("registerFailed");
+      },
+    });
   };
 
   return (
     <Layout>
       <Header name="계정 관리" pageName="Retrivr 프로" backTo="/account" />
 
-      <div className="flex flex-1 flex-col overflow-y-auto no-scrollbar font-[Pretendard]">
-        <section className="relative bg-gradient-to-b from-white from-[42.5%] to-secondary-4 to-[87.7%] px-8 pb-6 pt-8">
-          <div className="flex flex-col items-center gap-4">
-            <img
-              src="/icons/retrivr_text_primary.svg"
-              alt="Retrivr"
-              className="h-[38px] w-auto object-contain"
-            />
-            <h1 className="text-18px font-bold text-neutral-gray-1">
-              <span className="text-primary">리트리버 프로</span> 멤버십
-            </h1>
+      <div className="flex flex-1 flex-col overflow-y-auto no-scrollbar bg-gradient-to-b from-secondary-4 from-[14%] to-neutral-white to-[88%] font-[Pretendard]">
+        <section
+          className={`flex flex-col px-12 pb-6 pt-10 ${
+            showEmptyMembership ? "gap-5" : "gap-3"
+          }`}
+        >
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2">
+              <h2 className="text-18px font-bold leading-normal text-neutral-gray-1">
+                이용 현황
+              </h2>
+              {hasActivePass ? <MembershipProBadge /> : null}
+            </div>
+            {isMembershipLoading ? null : showEmptyMembership ? (
+              <p className="whitespace-pre-line text-12px font-bold leading-[1.5] text-secondary-2">
+                {EMPTY_MEMBERSHIP_GUIDE}
+              </p>
+            ) : (
+              <p className="text-12px font-bold leading-[1.5] text-secondary-2">
+                이용 방식: {activePassTitle ?? "이용권"}
+              </p>
+            )}
           </div>
 
-          <div className="mx-auto mt-8 flex w-full max-w-[360px] flex-col items-center rounded-[26px] bg-white/40 px-[27px] py-6 shadow-[0px_0px_0px_0px_rgba(45,78,127,0.5),0px_0px_12.9px_0px_rgba(92,174,255,0.2)]">
-            <div className="flex w-full max-w-[306px] flex-col items-center gap-[29px]">
-              <div className="flex flex-col items-center gap-1">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-20px font-bold leading-[1.4] text-neutral-gray-1">
-                    이용 현황
-                  </h2>
-                  <MembershipProBadge />
-                </div>
-                <p className="text-12px font-bold leading-[1.5] text-secondary-2">
-                  구독 방식: 이용권 사용
-                </p>
-              </div>
+          <div className="flex flex-col gap-3">
+            {hasActivePass && membership ? (
+              <MembershipCouponCard
+                size="home"
+                status="active"
+                title={activePassTitle ?? "이용권"}
+                detail={
+                  isCouponMembership(membership)
+                    ? membership.couponInfo?.couponDescription
+                    : formatPaidAmount(membership.payedAmount)
+                }
+                detailUnit={
+                  isCouponMembership(membership)
+                    ? undefined
+                    : membership.passType
+                      ? SUBSCRIPTION_UNIT_BY_PASS_TYPE[membership.passType]
+                      : currentPlanDisplay?.unit
+                }
+                footerText={resolveActivePassFooter(membership)}
+              />
+            ) : null}
 
-              <div className="flex w-full flex-col gap-[11px]">
-                <MembershipCouponCard
-                  title={ACTIVE_VOUCHER.title}
-                  eventName={ACTIVE_VOUCHER.eventName}
-                  period={ACTIVE_VOUCHER.period}
-                  status="active"
-                  compact
-                />
-
-                <div className="flex items-center justify-between rounded-[7.5px] border border-[#e6eaed] bg-neutral-white px-[18px] py-3">
-                  <div className="flex items-center gap-1.5">
-                    <img
-                      src="/icons/membership/calendar.svg"
-                      alt=""
-                      className="size-[18px] shrink-0"
-                      aria-hidden
-                    />
-                    <span className="text-[11px] font-bold leading-[1.5] text-neutral-gray-2">
-                      다음 갱신일
+            <div className="flex flex-col gap-1.5">
+              {MENU_ITEMS.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => handleMenuClick(item.id)}
+                  className="flex w-full items-center justify-between rounded-[7.5px] border border-[#e6eaed] bg-neutral-white px-[18px] py-3 text-left cursor-pointer"
+                >
+                  <div className="flex flex-col">
+                    <span className="text-12px font-bold leading-[1.5] text-neutral-gray-2">
+                      {item.title}
+                    </span>
+                    <span className="text-10px font-normal leading-[1.3] text-neutral-gray-3">
+                      {item.description}
                     </span>
                   </div>
-                  <span className="text-[11px] font-bold leading-[1.5] text-neutral-gray-2">
-                    2026. 07. 01
-                  </span>
-                </div>
-              </div>
+                  <img
+                    src="/icons/right-arrow2.svg"
+                    alt=""
+                    className="h-2.5 w-[4.2px] shrink-0"
+                    aria-hidden
+                  />
+                </button>
+              ))}
             </div>
           </div>
         </section>
 
-        <section className="flex flex-1 flex-col rounded-t-[24px] bg-neutral-white px-8 pb-10 shadow-[0px_2px_12px_0px_rgba(116,132,155,0.25)]">
-          <div className="flex w-full">
-            <button
-              type="button"
-              onClick={() => setActiveTab("subscription")}
-              className="flex h-[57px] flex-1 flex-col items-center justify-end gap-4"
-            >
-              <span
-                className={`text-18px font-bold ${
-                  activeTab === "subscription"
-                    ? "text-secondary-1"
-                    : "text-neutral-gray-4"
-                }`}
-              >
-                요금제 구독
-              </span>
-              <span
-                className={`h-[3px] w-full ${
-                  activeTab === "subscription"
-                    ? "bg-primary"
-                    : "bg-neutral-gray-5"
-                }`}
-              />
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("voucher")}
-              className="flex h-[57px] flex-1 flex-col items-center justify-end gap-4"
-            >
-              <span
-                className={`text-18px font-bold ${
-                  activeTab === "voucher"
-                    ? "text-secondary-1"
-                    : "text-neutral-gray-4"
-                }`}
-              >
-                이용권
-              </span>
-              <span
-                className={`h-[3px] w-full ${
-                  activeTab === "voucher" ? "bg-primary" : "bg-neutral-gray-5"
-                }`}
-              />
-            </button>
-          </div>
+        <section className="flex flex-col gap-4 px-8 pb-10">
+          <MembershipSubscribeCard
+            billingCycle={billingCycle}
+            onBillingCycleChange={setBillingCycle}
+            ctaLabel={subscriptionCtaLabel}
+            onCtaClick={handleStartSubscription}
+            ctaDisabled={
+              changePlanMutation.isPending || isMembershipLoading
+            }
+            ctaLocked={isSubscriptionCtaLocked}
+            cycleDisabled={isMembershipLoading}
+          />
 
-          {activeTab === "voucher" ? (
-            <div className="mt-6 flex flex-col gap-8">
-              <button
-                type="button"
-                onClick={handleRegisterCoupon}
-                className="flex h-13 w-full items-center justify-center rounded-[12px] bg-neutral-white drop-shadow-[0px_0px_2px_rgba(148,169,201,0.5)] cursor-pointer"
-              >
-                <img
-                  src="/icons/membership/plus.svg"
-                  alt=""
-                  className="size-12"
-                  aria-hidden
-                />
-                <span className="text-14px font-bold text-secondary-1">
-                  쿠폰 등록하기
-                </span>
-              </button>
-
-              <div className="flex flex-col gap-2.5">
-                <h3 className="text-18px font-bold text-secondary-1">이용권</h3>
-                <div className="flex flex-col gap-2.5">
-                  {availableVouchers.map((voucher) => (
-                    <MembershipCouponCard
-                      key={voucher.id}
-                      title={voucher.title}
-                      eventName={voucher.eventName}
-                      period={voucher.period}
-                      status={voucher.status}
-                      periodLabel={
-                        voucher.status === "pending" ? "유효 기간" : "사용 기간"
-                      }
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2.5">
-                <p className="text-14px font-semibold leading-5 text-neutral-gray-3">
-                  사용 완료
-                </p>
-                <div className="flex flex-col gap-2.5">
-                  {COMPLETED_VOUCHERS.map((voucher) => (
-                    <MembershipCouponCard
-                      key={voucher.id}
-                      title={voucher.title}
-                      eventName={voucher.eventName}
-                      period={voucher.period}
-                      status="completed"
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="mt-10 flex flex-col items-center justify-center py-16 text-center">
-              <p className="text-14px font-bold text-secondary-2">
-                요금제 구독은 준비 중이에요
+          <div className="flex w-full flex-col gap-4 rounded-2xl bg-neutral-white px-[26px] py-6 shadow-[0px_0px_16px_-6px_rgba(0,0,0,0.2)]">
+            <div className="flex flex-col gap-1">
+              <h3 className="text-18px font-bold leading-normal text-secondary-1">
+                쿠폰이 있으신가요?
+              </h3>
+              <p className="text-12px font-normal leading-[1.4] text-neutral-gray-3">
+                이벤트나 제휴를 통해 받은 쿠폰번호를 등록하면
+                <br />
+                이용권이 지급돼요.
               </p>
             </div>
-          )}
+
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={couponCode}
+                onChange={(event) =>
+                  setCouponCode(event.target.value.toUpperCase())
+                }
+                placeholder="쿠폰 번호 입력"
+                className="h-12 min-w-0 flex-1 rounded-[12px] bg-neutral-gray-5 px-3.5 text-14px font-normal leading-[1.4] text-neutral-gray-2 outline-none placeholder:text-neutral-gray-3 focus:ring-2 focus:ring-primary/30"
+              />
+              <button
+                type="button"
+                onClick={handleLookupCoupon}
+                disabled={!canLookupCoupon}
+                className="flex h-12 w-20 shrink-0 items-center justify-center rounded-[12px] text-16px font-semibold text-neutral-white transition-colors enabled:cursor-pointer enabled:bg-primary enabled:hover:bg-secondary-2 disabled:cursor-not-allowed disabled:bg-neutral-gray-4"
+              >
+                {lookupCouponMutation.isPending ? "조회중" : "등록"}
+              </button>
+            </div>
+          </div>
         </section>
       </div>
 
       <CouponRegistrationModal
         isOpen={isCouponModalOpen}
-        onClose={() => setIsCouponModalOpen(false)}
-        onRegister={handleCouponRegister}
+        couponCode={lookedUpCouponCode}
+        coupon={lookedUpCoupon}
+        isRegistering={registerCouponMutation.isPending}
+        onClose={handleCloseCouponModal}
+        onRegister={handleRegisterCoupon}
       />
+
+      <CouponAlertModal
+        isOpen={couponAlertType !== null}
+        message={couponAlertType ? COUPON_ALERT_MESSAGES[couponAlertType] : ""}
+        onClose={() => setCouponAlertType(null)}
+      />
+
+      <CouponSuccessModal
+        isOpen={isCouponSuccessModalOpen}
+        onClose={() => setIsCouponSuccessModalOpen(false)}
+      />
+
+      <PlanChangeConfirmModal
+        isOpen={isPlanChangeConfirmOpen}
+        isPending={changePlanMutation.isPending}
+        targetCycle={planChangeTargetCycle}
+        amountLabel={MEMBERSHIP_SUBSCRIBE_PLANS[
+          planChangeTargetCycle
+        ].amount.replace("₩", "원")}
+        onClose={() => {
+          if (changePlanMutation.isPending) return;
+          setIsPlanChangeConfirmOpen(false);
+        }}
+        onConfirm={handleConfirmPlanChange}
+      />
+
+      <PlanChangeSuccessModal
+        isOpen={isPlanChangeSuccessOpen}
+        targetCycle={planChangeTargetCycle}
+        startDateLabel={planChangeSuccessDate ?? undefined}
+        onClose={() => {
+          setIsPlanChangeSuccessOpen(false);
+          setPlanChangeSuccessDate(null);
+        }}
+      />
+
       <ConfirmModal
-        isOpen={confirmModalMessage !== null}
-        onClose={() => setConfirmModalMessage(null)}
-        message={confirmModalMessage ?? ""}
+        isOpen={planChangeMessage !== null}
+        onClose={() => setPlanChangeMessage(null)}
+        message={planChangeMessage ?? ""}
         confirmText="확인"
       />
     </Layout>

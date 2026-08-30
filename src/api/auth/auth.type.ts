@@ -1,4 +1,9 @@
-export type EmailVerificationPurpose = "SIGNUP" | "PASSWORD_RESET" | "LOGIN";
+export type EmailVerificationPurpose =
+  | "SIGNUP"
+  | "PASSWORD_RESET"
+  | "LOGIN"
+  | "EMAIL_CHANGE"
+  | "BORROW";
 
 // 휴대폰 인증 코드 발송/검증 목적
 // (현재 클라이언트 대여 요청에만 사용)
@@ -23,15 +28,15 @@ export interface SendEmailCodeResponse {
 // 2-1. 이메일 인증 코드 검증 요청 바디
 export interface VerifyEmailCodeRequest {
   email: string; // 인증 코드 받았던 이메일
-  purpose: "SIGNUP"; // API 요청 목적
+  purpose: EmailVerificationPurpose; // API 요청 목적 (SIGNUP / BORROW 등)
   code: string; // 이메일로 왔던 인증코드
 }
 
 // 2-2. 이메일 인증 코드 검증 응답 바디
 export interface VerifyEmailCodeResponse {
-  tokenType: "SIGNUP"; // 토큰 용도 (회원가입용)
-  token: string; // 인증 성공 시 발급되는 토큰 (일회성/단기만료)
-  expiresInSeconds: number; // 인증 코드 유효 시간 (코드가 일치하더라도 유효 시간 이후에 인증 받으면 실패)
+  tokenType: EmailVerificationPurpose; // SIGNUP / PASSWORD_RESET / BORROW 등
+  token: string; // 인증 성공 시 발급되는 토큰 (BORROW면 대여 요청의 emailVerificationToken)
+  expiresInSeconds: number; // 토큰 유효 시간
 }
 
 // 2. 휴대폰 인증 코드 발송
@@ -53,8 +58,8 @@ export interface VerifyPhoneVerificationCodeRequest {
 }
 
 export interface VerifyPhoneVerificationCodeResponse {
-  // 서버 응답 스펙이 버전/구현에 따라 달라질 수 있어 둘 다 optional로 지원
-  // (UI에서는 Borrow 요청 생성 API로 verificationToken/verificationTokenId가 필요)
+  // 문서: verificationToken / verificationTokenId
+  // 실제 서버: rawToken / tokenId
   verificationToken?: string;
   verificationTokenId?: string;
   rawToken?: string;
@@ -110,8 +115,15 @@ export interface LogoutResponse {
 // 엔드포인트: "/api/admin/v1/account/withdraw"
 
 // 탈퇴 사유 코드 (서버 enum)
-// 확인된 값 외에도 추가될 수 있어 string 유니언으로 열어둔다
-export type WithdrawReasonCode = "ORG_CLOSED" | (string & {});
+export type WithdrawReasonCode =
+  | "ORG_CLOSED"
+  | "NO_LONGER_OPERATING_RENTAL"
+  | "MOVED_TO_OTHER_SERVICE"
+  | "PRIVACY_CONCERN"
+  | "SERVICE_UNSATISFIED"
+  | "MISSING_FEATURE"
+  | "LOW_USAGE"
+  | "OTHER";
 
 // 5-2-1. 회원 탈퇴 요청 바디
 export interface WithdrawRequest {
@@ -142,11 +154,158 @@ export const WITHDRAW_ERROR_CODE = {
 } as const;
 
 // 6. 관리자 프로필 조회
+// 엔드포인트: "/api/admin/v1/profile" (GET)
 export interface AdminProfileResponse {
-  organizationId: number; // 관리자 고유 번호
-  organizationName: string; // 관리자 이름 (단체명)
-  profileImageUrl?: string; // 프로필 사진 URL
-  email: string; // 관리자 이메일
+  organizationName: string;
+  organizationId?: number;
+  email?: string;
+  profileImageUrl?: string | null;
+}
+
+// 6-1. 관리자 이메일 인증 코드 발송
+// 엔드포인트: "/api/admin/v1/email/verification" (POST)
+export interface SendAdminEmailCodeRequest {
+  email: string;
+  passwordVerificationToken: string; // EMAIL_CHANGE 목적 비밀번호 인증 토큰
+}
+
+export interface SendAdminEmailCodeResponse {
+  expiresInSeconds: number;
+  resendAvailableInSeconds: number;
+}
+
+// 6-2. 관리자 이메일 인증 코드 검증 및 이메일 변경
+// 엔드포인트: "/api/admin/v1/email/verification/verify" (POST)
+// 성공 시 204 No Content (세션 만료)
+export interface VerifyAdminEmailCodeRequest {
+  email: string;
+  code: string;
+  passwordVerificationToken: string; // EMAIL_CHANGE 목적 비밀번호 인증 토큰
+}
+
+// 관리자 이메일 인증 공통 에러 응답 (400/429 등)
+export interface AdminEmailVerificationErrorResponse {
+  status: string; // 예: "400 BAD_REQUEST", "429 TOO_MANY_REQUESTS"
+  code: number;
+  message: string;
+  detail?: string;
+}
+
+export const ADMIN_EMAIL_VERIFICATION_ERROR_CODE = {
+  INVALID_REQUEST: 2002, // 400: 올바르지 않은 요청 값입니다.
+  TOO_MANY_REQUESTS: 7104, // 429: 인증 코드는 60초 후 재요청 가능합니다.
+  REQUEST_NOT_FOUND: 7000, // 400: 인증 요청이 존재하지 않습니다.
+} as const;
+
+// 6-3. 관리자 프로필(단체명) 수정
+// 엔드포인트: "/api/admin/v1/profile/organization-name" (PATCH)
+// - organizationName만 전달, 성공 시 204 No Content
+export interface UpdateAdminProfileRequest {
+  organizationName: string;
+}
+
+export interface UpdateAdminProfileErrorResponse {
+  status: string; // 예: "400 BAD_REQUEST", "404 NOT_FOUND"
+  code: number;
+  message: string;
+  detail?: string;
+}
+
+export const UPDATE_ADMIN_PROFILE_ERROR_CODE = {
+  INVALID_REQUEST: 2002, // 400: 올바르지 않은 요청 값입니다.
+  ORGANIZATION_NOT_FOUND: 3004, // 404: 존재하지 않는 단체입니다.
+} as const;
+
+// 6-3-1. 관리자 프로필 사진 업로드용 Presigned URL 발급
+// 엔드포인트: "/api/admin/v1/profile/images/pre-signed-upload-url" (POST)
+export type AdminProfileImageContentType =
+  | "image/jpeg"
+  | "image/jpg"
+  | "image/png"
+  | "image/webp";
+
+export interface AdminProfileImagePresignedUploadRequest {
+  imageContentType: AdminProfileImageContentType;
+}
+
+export interface AdminProfileImagePresignedUploadResponse {
+  organizationId: number;
+  uploadUrl: string;
+}
+
+export interface AdminProfileImageErrorResponse {
+  status: string;
+  code: number;
+  message: string;
+  detail?: string;
+}
+
+// 6-3-2. 관리자 프로필 이미지 수정 확정
+// 엔드포인트: "/api/admin/v1/profile/images" (PUT)
+// objectKey가 null이면 이미지 삭제
+export interface AdminProfileImageUpdateRequest {
+  objectKey: string | null;
+}
+
+export interface AdminProfileImageUpdateResponse {
+  organizationId: number;
+  downloadUrl?: string | null;
+}
+
+// 6-4. 개인정보 변경용 현재 비밀번호 확인
+// 엔드포인트: "/api/admin/v1/profile/password/verify" (POST)
+export type AdminPasswordVerificationPurpose =
+  | "EMAIL_CHANGE"
+  | "PASSWORD_CHANGE"
+  | "ADMIN_CODE_CHANGE";
+
+export interface VerifyAdminPasswordRequest {
+  password: string;
+  purpose: AdminPasswordVerificationPurpose;
+}
+
+export interface VerifyAdminPasswordResponse {
+  verificationToken: string;
+  expiresIn: number; // 토큰 유효 시간(초)
+}
+
+export interface VerifyAdminPasswordErrorResponse {
+  status: string;
+  code: number;
+  message: string;
+  detail?: string;
+}
+
+// 6-5. 관리자 비밀번호 변경
+// 엔드포인트: "/api/admin/v1/profile/password" (PATCH)
+// 성공 시 204 No Content (세션 만료)
+export interface UpdateAdminPasswordRequest {
+  newPassword: string;
+  confirmPassword: string;
+  passwordVerificationToken: string;
+}
+
+export interface UpdateAdminPasswordErrorResponse {
+  status: string;
+  code: number;
+  message: string;
+  detail?: string;
+}
+
+// 6-6. 관리자 코드 변경
+// 엔드포인트: "/api/admin/v1/profile/admin-code" (PATCH)
+// 성공 시 204 No Content (로그아웃 불필요)
+export interface UpdateAdminCodeRequest {
+  newAdminCode: string;
+  confirmAdminCode: string;
+  passwordVerificationToken: string;
+}
+
+export interface UpdateAdminCodeErrorResponse {
+  status: string;
+  code: number;
+  message: string;
+  detail?: string;
 }
 
 // 7. 홈 화면 출력 요청

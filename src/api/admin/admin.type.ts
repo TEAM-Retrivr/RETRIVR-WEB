@@ -320,3 +320,222 @@ export interface AdminVerifyCodeResponse {
   rawToken?: string;
   rentalId?: number;
 }
+
+// 쿠폰 조회 응답
+// GET /api/admin/v1/coupons/{couponCode}
+export interface AdminCouponLookupResponse {
+  isExist: boolean;
+  isUsed: boolean;
+  couponId: string;
+  name: string;
+  description: string;
+  durationDays: number;
+  activeStartDay: string; // YYYY-MM-DD
+  expiresDay: string; // YYYY-MM-DD
+  guideline: string;
+}
+
+// 쿠폰 등록 응답
+// POST /api/admin/v1/coupons/{couponId}/registrations
+export interface AdminCouponRegistrationResponse {
+  organizationId: number;
+  couponRegistrationId: string;
+  couponId: string;
+  membershipPassId: string;
+}
+
+// 쿠폰 조회/등록 실패 시 공통 에러 응답
+// - 404: code 3004 (존재하지 않는 단체)
+// - 409: code 12101 (이용 불가능한 쿠폰, 등록 API)
+export interface AdminCouponErrorResponse {
+  status: string;
+  code: number;
+  message: string;
+  detail?: string;
+}
+
+// 현재 멤버십 상태 조회 응답
+// GET /api/admin/v1/memberships/current
+// 현재 적용 중인 이용권 1장. 구독/쿠폰이 섞여 있고 사용중/사용 전 상태값은 없다.
+// 쿠폰 이용권 사용 중이어도 활성 구독이 있으면 subscriptionPlan을 반환한다.
+export interface AdminMembershipCouponInfo {
+  couponName: string;
+  couponDescription: string;
+}
+
+export interface AdminMembershipSubscriptionInfo {
+  subscriptionName: string;
+}
+
+export interface AdminMembershipResponse {
+  subscribed: boolean;
+  level: string; // 예: "PREMIUM"
+  subscriptionPlan: AdminSubscriptionPlan | null;
+  passType: string | null;
+  couponInfo?: AdminMembershipCouponInfo | null;
+  subscriptionInfo?: AdminMembershipSubscriptionInfo | null;
+  startAt: string; // YYYY-MM-DD
+  endAt: string; // YYYY-MM-DD
+  nextBillingAt?: string; // YYYY-MM-DD
+  payedAmount?: number;
+}
+
+// 멤버십 조회 실패 시 공통 에러 응답
+// - 400: code 12201 (이용권에서 쿠폰 정보를 가져올 수 없음)
+// - 400: code 12202 (이용권에서 구독 정보를 가져올 수 없음)
+// - 404: code 3004 (존재하지 않는 단체)
+export interface AdminMembershipErrorResponse {
+  status: string;
+  code: number;
+  message: string;
+  detail?: string;
+}
+
+export type AdminSubscriptionPlan = "MONTHLY" | "YEARLY";
+export type AdminSubscriptionStatus = "ACTIVE" | "CANCELED" | "PAYMENT_FAILED";
+export type AdminSubscriptionPreviewScenario =
+  | "IMMEDIATE_PURCHASE"
+  | "DEFERRED_START";
+
+// 구독 시작 전 결제 정보 조회
+// GET /api/admin/v1/subscriptions/preview
+export interface AdminSubscriptionPreviewResponse {
+  scenario: AdminSubscriptionPreviewScenario;
+  plan: AdminSubscriptionPlan;
+  amount: number;
+  immediatePaymentAmount: number | null;
+  immediatePaymentAt: string | null;
+  nextBillingAmount: number;
+  nextBillingAt: string;
+  effectiveAt: string;
+}
+
+// 구독 시작
+// POST /api/admin/v1/subscriptions
+export interface AdminSubscriptionStartRequest {
+  plan: AdminSubscriptionPlan;
+  paymentMethodId: string;
+}
+
+export interface AdminSubscriptionStartResponse {
+  subscriptionId: string;
+  plan: AdminSubscriptionPlan;
+  status: AdminSubscriptionStatus;
+  nextBillingAt?: string;
+  membershipPassId: string;
+  startAt: string;
+  expireAt: string;
+}
+
+export interface AdminSubscriptionErrorResponse {
+  status: string;
+  code: number;
+  message: string;
+  detail?: string;
+}
+
+// 구독 플랜 변경
+// PATCH /api/admin/v1/subscriptions/plans
+export interface AdminSubscriptionPlanChangeRequest {
+  plan: AdminSubscriptionPlan;
+}
+
+export interface AdminSubscriptionPlanChangeResponse {
+  subscriptionId: string;
+  plan: AdminSubscriptionPlan;
+  nextBillingAt?: string;
+}
+
+// 구독 해지
+// PATCH /api/admin/v1/subscriptions/me/cancel
+export interface AdminSubscriptionCancelResponse {
+  subscriptionId: string;
+  status: AdminSubscriptionStatus;
+  canceledAt?: string;
+  currentPassExpireAt?: string;
+}
+
+// 쿠폰 이용권 목록 조회
+// GET /api/admin/v1/memberships/coupons
+// 카드 매핑: status → 사용여부/칩, couponName → 이름,
+// description → 이벤트명, startAt+endAt → 사용 기간.
+export interface AdminCouponMembershipPassResponse {
+  membershipPassId: string;
+  couponName: string;
+  description: string;
+  durationDays: number;
+  status: string;
+  startAt: string;
+  endAt: string;
+}
+
+export interface AdminCouponMembershipPassListResponse {
+  coupons: AdminCouponMembershipPassResponse[];
+}
+
+// 이용권 및 결제 내역 조회
+// GET /api/admin/v1/memberships/history
+export type AdminMembershipHistoryType = "SUBSCRIPTION" | "COUPON";
+export type AdminMembershipHistoryPlan = "MONTHLY" | "YEARLY";
+export type AdminMembershipHistoryStatus =
+  | "REGISTERED"
+  | "ACTIVE"
+  | "EXPIRED";
+
+export interface AdminMembershipHistoryItemResponse {
+  membershipPassId: string;
+  type: AdminMembershipHistoryType;
+  title: string;
+  status: AdminMembershipHistoryStatus;
+  plan?: AdminMembershipHistoryPlan | null;
+  occurredAt: string;
+  amount: number;
+  receiptAvailable: boolean;
+}
+
+export interface AdminMembershipHistoryResponse {
+  items: AdminMembershipHistoryItemResponse[];
+  nextCursor?: number | null;
+}
+
+export interface AdminMembershipHistoryParams {
+  cursor?: number;
+  size?: number;
+  start?: string;
+  end?: string;
+}
+
+// 조직 결제수단 목록 조회
+// GET /api/admin/v1/payment-methods
+export type AdminPaymentMethodProvider = "TOSSPAY" | "KAKAOPAY" | "KGINICIS";
+export type AdminPaymentMethodStatus = "ACTIVE" | "DISABLED";
+
+export interface AdminPaymentMethodResponse {
+  paymentMethodId: string;
+  provider: AdminPaymentMethodProvider;
+  status: AdminPaymentMethodStatus;
+  isDefault: boolean;
+  registeredAt?: string;
+  disabledAt?: string;
+}
+
+export type AdminPaymentMethodListResponse = AdminPaymentMethodResponse[];
+
+export interface AdminPaymentMethodCreateRequest {
+  provider: AdminPaymentMethodProvider;
+  billingKey: string;
+  isDefault?: boolean;
+}
+
+export interface AdminPaymentMethodDeleteResponse {
+  paymentMethodId: string;
+  status: AdminPaymentMethodStatus;
+  disabledAt?: string;
+}
+
+export interface AdminPaymentMethodErrorResponse {
+  status: string;
+  code: number;
+  message: string;
+  detail?: string;
+}

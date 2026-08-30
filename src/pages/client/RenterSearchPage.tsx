@@ -5,9 +5,6 @@ import Button from "../../components/Button";
 import UserIcon from "../../components/UserIcon";
 import { useOrganizationSearch } from "../../hooks/queries/useClientQueries";
 import { useNavigate } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
-
-const CLIENT_HOME_STATE_STORAGE_KEY = "clientHomeSelectedOrganization";
 
 const escapeRegExp = (value: string) =>
   value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -60,12 +57,9 @@ const RenterSearchPage = () => {
   // 사용자가 선택한 대여지
   const [selectedOrg, setSelectedOrg] = useState<{
     organizationId: number;
-    name: string;
-    imageURL?: string;
   } | null>(null);
 
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useOrganizationSearch(keyword);
   const organizations = data?.organizations ?? [];
@@ -145,8 +139,6 @@ const RenterSearchPage = () => {
                         onClick={() => {
                           setSelectedOrg({
                             organizationId: org.organizationId,
-                            name: org.name,
-                            imageURL: org.imageURL,
                           });
                         }}
                       >
@@ -184,29 +176,8 @@ const RenterSearchPage = () => {
                 disabled={!selectedOrg}
                 onClick={() => {
                   if (!selectedOrg) return;
-                  queryClient.setQueryData(
-                    ["selectedOrganization", selectedOrg.organizationId],
-                    {
-                      name: selectedOrg.name,
-                      imageURL: selectedOrg.imageURL,
-                    },
-                  );
-                  sessionStorage.setItem(
-                    CLIENT_HOME_STATE_STORAGE_KEY,
-                    JSON.stringify({
-                      organizationId: selectedOrg.organizationId,
-                      name: selectedOrg.name,
-                      imageURL: selectedOrg.imageURL,
-                    }),
-                  );
                   navigate(
                     `/client-home?organizationId=${selectedOrg.organizationId}`,
-                    {
-                      state: {
-                        name: selectedOrg.name,
-                        imageURL: selectedOrg.imageURL,
-                      },
-                    },
                   );
                 }}
               >

@@ -22,6 +22,23 @@ import type {
   PublicApproveRentalResponse,
   PublicRejectRentalRequestBody,
   PublicRejectRentalResponse,
+  AdminCouponLookupResponse,
+  AdminCouponMembershipPassListResponse,
+  AdminCouponRegistrationResponse,
+  AdminMembershipHistoryParams,
+  AdminSubscriptionPlan,
+  AdminSubscriptionPreviewResponse,
+  AdminSubscriptionStartRequest,
+  AdminSubscriptionStartResponse,
+  AdminSubscriptionPlanChangeRequest,
+  AdminSubscriptionPlanChangeResponse,
+  AdminSubscriptionCancelResponse,
+  AdminMembershipHistoryResponse,
+  AdminMembershipResponse,
+  AdminPaymentMethodCreateRequest,
+  AdminPaymentMethodDeleteResponse,
+  AdminPaymentMethodListResponse,
+  AdminPaymentMethodResponse,
 } from "./admin.type";
 import { apiClient } from "../core";
 import type { AxiosResponse } from "axios";
@@ -357,3 +374,170 @@ export const requestAdminLedgerExcelDownload =
       },
     });
   };
+
+// 쿠폰 조회
+// - 쿠폰 코드로 존재 여부·사용 여부·혜택 정보를 조회
+// - couponCode: 사용자가 입력한 쿠폰 코드 (path)
+// GET /api/admin/v1/coupons/{couponCode}
+export const requestAdminCoupon = async (
+  couponCode: string,
+): Promise<AdminCouponLookupResponse> => {
+  const response = await apiClient.get<AdminCouponLookupResponse>(
+    `/api/admin/v1/coupons/${encodeURIComponent(couponCode)}`,
+  );
+  return response.data;
+};
+
+// 쿠폰 등록
+// - 조회 API에서 받은 couponId로 이용권 등록
+// - couponId: 쿠폰 ID (path), body 없음
+// POST /api/admin/v1/coupons/{couponId}/registrations
+export const registerAdminCoupon = async ({
+  couponId,
+}: {
+  couponId: string;
+}): Promise<AdminCouponRegistrationResponse> => {
+  const response = await apiClient.post<AdminCouponRegistrationResponse>(
+    `/api/admin/v1/coupons/${encodeURIComponent(couponId)}/registrations`,
+  );
+  return response.data;
+};
+
+// 쿠폰 이용권 목록 조회
+// - 현재 사용 중·대기 중인 쿠폰 이용권
+// GET /api/admin/v1/memberships/coupons
+export const requestAdminCouponMemberships =
+  async (): Promise<AdminCouponMembershipPassListResponse> => {
+    const response = await apiClient.get<AdminCouponMembershipPassListResponse>(
+      "/api/admin/v1/memberships/coupons",
+    );
+    return response.data;
+  };
+
+// 이용권 및 결제 내역 조회
+// GET /api/admin/v1/memberships/history
+export const requestAdminMembershipHistory = async (
+  params?: AdminMembershipHistoryParams,
+): Promise<AdminMembershipHistoryResponse> => {
+  const response = await apiClient.get<AdminMembershipHistoryResponse>(
+    "/api/admin/v1/memberships/history",
+    { params },
+  );
+  return response.data;
+};
+
+// 구독 시작 전 결제 정보 조회
+// GET /api/admin/v1/subscriptions/preview
+export const requestAdminSubscriptionPreview = async (
+  plan: AdminSubscriptionPlan,
+): Promise<AdminSubscriptionPreviewResponse> => {
+  const response = await apiClient.get<AdminSubscriptionPreviewResponse>(
+    "/api/admin/v1/subscriptions/preview",
+    { params: { plan } },
+  );
+  return response.data;
+};
+
+// 구독 시작
+// POST /api/admin/v1/subscriptions
+export const startAdminSubscription = async (
+  body: AdminSubscriptionStartRequest,
+): Promise<AdminSubscriptionStartResponse> => {
+  const response = await apiClient.post<AdminSubscriptionStartResponse>(
+    "/api/admin/v1/subscriptions",
+    body,
+  );
+  return response.data;
+};
+
+// 구독 플랜 변경
+// PATCH /api/admin/v1/subscriptions/plans
+export const changeAdminSubscriptionPlan = async (
+  body: AdminSubscriptionPlanChangeRequest,
+): Promise<AdminSubscriptionPlanChangeResponse> => {
+  const response = await apiClient.patch<AdminSubscriptionPlanChangeResponse>(
+    "/api/admin/v1/subscriptions/plans",
+    body,
+  );
+  return response.data;
+};
+
+// 구독 해지
+// PATCH /api/admin/v1/subscriptions/me/cancel
+export const cancelAdminSubscription =
+  async (): Promise<AdminSubscriptionCancelResponse> => {
+    const response = await apiClient.patch<AdminSubscriptionCancelResponse>(
+      "/api/admin/v1/subscriptions/me/cancel",
+    );
+    return response.data;
+  };
+
+// 현재 멤버십 상태 조회
+// - 이용권 목록(쿠폰/구독) 화면에서 현재 이용권 정보를 표시
+// GET /api/admin/v1/memberships/current
+export const requestAdminMembership =
+  async (): Promise<AdminMembershipResponse> => {
+    const response = await apiClient.get<AdminMembershipResponse>(
+      "/api/admin/v1/memberships/current",
+    );
+    return response.data;
+  };
+
+// 결제수단 목록 조회
+// GET /api/admin/v1/payment-methods
+export const requestAdminPaymentMethods =
+  async (): Promise<AdminPaymentMethodListResponse> => {
+    const response = await apiClient.get<AdminPaymentMethodListResponse>(
+      "/api/admin/v1/payment-methods",
+    );
+    return response.data;
+  };
+
+// 결제수단 추가
+// POST /api/admin/v1/payment-methods
+export const createAdminPaymentMethod = async (
+  body: AdminPaymentMethodCreateRequest,
+): Promise<AdminPaymentMethodResponse> => {
+  const response = await apiClient.post<AdminPaymentMethodResponse>(
+    "/api/admin/v1/payment-methods",
+    body,
+  );
+  return response.data;
+};
+
+// 기본 결제수단 변경
+// PATCH /api/admin/v1/payment-methods/{paymentMethodId}/default
+export const updateAdminDefaultPaymentMethod = async ({
+  paymentMethodId,
+}: {
+  paymentMethodId: string;
+}): Promise<AdminPaymentMethodResponse> => {
+  const response = await apiClient.patch<AdminPaymentMethodResponse>(
+    `/api/admin/v1/payment-methods/${encodeURIComponent(paymentMethodId)}/default`,
+  );
+  return response.data;
+};
+
+// 결제수단 단건 조회
+// GET /api/admin/v1/payment-methods/{paymentMethodId}
+export const requestAdminPaymentMethod = async (
+  paymentMethodId: string,
+): Promise<AdminPaymentMethodResponse> => {
+  const response = await apiClient.get<AdminPaymentMethodResponse>(
+    `/api/admin/v1/payment-methods/${encodeURIComponent(paymentMethodId)}`,
+  );
+  return response.data;
+};
+
+// 결제수단 삭제
+// DELETE /api/admin/v1/payment-methods/{paymentMethodId}
+export const deleteAdminPaymentMethod = async ({
+  paymentMethodId,
+}: {
+  paymentMethodId: string;
+}): Promise<AdminPaymentMethodDeleteResponse> => {
+  const response = await apiClient.delete<AdminPaymentMethodDeleteResponse>(
+    `/api/admin/v1/payment-methods/${encodeURIComponent(paymentMethodId)}`,
+  );
+  return response.data;
+};

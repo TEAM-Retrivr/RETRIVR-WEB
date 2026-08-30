@@ -23,10 +23,34 @@ import {
   requestAdminRentalSearch,
   approvePublicRental,
   rejectPublicRental,
+  requestAdminCoupon,
+  registerAdminCoupon,
+  requestAdminCouponMemberships,
+  requestAdminMembership,
+  requestAdminMembershipHistory,
+  requestAdminSubscriptionPreview,
+  startAdminSubscription,
+  changeAdminSubscriptionPlan,
+  cancelAdminSubscription,
+  requestAdminPaymentMethods,
+  createAdminPaymentMethod,
+  updateAdminDefaultPaymentMethod,
+  requestAdminPaymentMethod,
+  deleteAdminPaymentMethod,
 } from "../../api/admin/admin.api";
 import type {
   AdminCreateItemRequest,
   AdminItemListResponse,
+  AdminCouponMembershipPassListResponse,
+  AdminMembershipHistoryResponse,
+  AdminMembershipResponse,
+  AdminSubscriptionPlan,
+  AdminSubscriptionPreviewResponse,
+  AdminSubscriptionStartRequest,
+  AdminSubscriptionPlanChangeRequest,
+  AdminPaymentMethodCreateRequest,
+  AdminPaymentMethodListResponse,
+  AdminPaymentMethodResponse,
   AdminUpdateItemRequest,
   AdminUpdateReturnDueDateRequestBody,
   AdminVerifyCodeRequestBody,
@@ -366,5 +390,226 @@ export const useVerifyAdminCode = () => {
 export const useVerifyAdminCodeByAdmin = () => {
   return useMutation({
     mutationFn: (body: AdminVerifyCodeRequestBody) => verifyAdminCodeByAdmin(body),
+  });
+};
+
+// 쿠폰 조회
+// - 멤버십 페이지에서 쿠폰 코드로 미리보기/등록 모달 진입 전 검증
+// GET /api/admin/v1/coupons/{couponCode}
+export const useRequestAdminCoupon = () => {
+  return useMutation({
+    mutationFn: (couponCode: string) => requestAdminCoupon(couponCode),
+  });
+};
+
+// 쿠폰 등록
+// - 쿠폰 등록 모달에서 조회된 couponId로 이용권 등록
+// POST /api/admin/v1/coupons/{couponId}/registrations
+export const useRegisterAdminCoupon = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (couponId: string) => registerAdminCoupon({ couponId }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["adminMembership"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["adminCouponMemberships"],
+      });
+    },
+  });
+};
+
+// 쿠폰 이용권 목록 조회
+// - 이용권 목록 > 쿠폰 이용권 탭
+// GET /api/admin/v1/memberships/coupons
+export const useAdminCouponMemberships = () => {
+  return useQuery<AdminCouponMembershipPassListResponse>({
+    queryKey: ["adminCouponMemberships"],
+    queryFn: requestAdminCouponMemberships,
+    retry: false,
+  });
+};
+
+// 이용권 및 결제 내역 조회
+// - 이용권 목록 > 이용 내역 탭
+// GET /api/admin/v1/memberships/history
+export const useAdminMembershipHistory = (params?: {
+  start?: string;
+  end?: string;
+}) => {
+  return useInfiniteQuery<AdminMembershipHistoryResponse>({
+    queryKey: ["adminMembershipHistory", params?.start, params?.end],
+    initialPageParam: undefined as number | undefined,
+    queryFn: ({ pageParam }) =>
+      requestAdminMembershipHistory({
+        cursor: pageParam as number | undefined,
+        size: 15,
+        start: params?.start,
+        end: params?.end,
+      }),
+    getNextPageParam: (lastPage) => {
+      const nextCursor = lastPage.nextCursor;
+      if (typeof nextCursor !== "number" || nextCursor <= 0) {
+        return undefined;
+      }
+      return nextCursor;
+    },
+    retry: false,
+  });
+};
+
+// 구독 시작 전 결제 정보 조회
+// - 구독 시작 페이지 진입 시 선택 플랜 기준 결제 미리보기
+// GET /api/admin/v1/subscriptions/preview
+export const useAdminSubscriptionPreview = (plan: AdminSubscriptionPlan) => {
+  return useQuery<AdminSubscriptionPreviewResponse>({
+    queryKey: ["adminSubscriptionPreview", plan],
+    queryFn: () => requestAdminSubscriptionPreview(plan),
+    retry: false,
+  });
+};
+
+// 구독 시작
+// POST /api/admin/v1/subscriptions
+export const useStartAdminSubscription = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: AdminSubscriptionStartRequest) =>
+      startAdminSubscription(body),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["adminMembership"] }),
+        queryClient.invalidateQueries({
+          queryKey: ["adminMembershipHistory"],
+        }),
+      ]);
+    },
+  });
+};
+
+// 구독 플랜 변경
+// PATCH /api/admin/v1/subscriptions/plans
+export const useChangeAdminSubscriptionPlan = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: AdminSubscriptionPlanChangeRequest) =>
+      changeAdminSubscriptionPlan(body),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["adminMembership"] }),
+        queryClient.invalidateQueries({
+          queryKey: ["adminMembershipHistory"],
+        }),
+      ]);
+    },
+  });
+};
+
+// 구독 해지
+// PATCH /api/admin/v1/subscriptions/me/cancel
+export const useCancelAdminSubscription = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => cancelAdminSubscription(),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["adminMembership"] }),
+        queryClient.invalidateQueries({
+          queryKey: ["adminMembershipHistory"],
+        }),
+      ]);
+    },
+  });
+};
+
+// 현재 멤버십 상태 조회
+// - 멤버십 이용 현황, 이용권 목록 > 구독 이용권 탭 등에서 사용
+// GET /api/admin/v1/memberships/current
+export const useAdminMembership = () => {
+  return useQuery<AdminMembershipResponse>({
+    queryKey: ["adminMembership"],
+    queryFn: requestAdminMembership,
+    retry: false,
+  });
+};
+
+// 결제수단 목록 조회
+// GET /api/admin/v1/payment-methods
+export const useAdminPaymentMethods = () => {
+  return useQuery<AdminPaymentMethodListResponse>({
+    queryKey: ["adminPaymentMethods"],
+    queryFn: requestAdminPaymentMethods,
+    retry: false,
+  });
+};
+
+// 결제수단 단건 조회
+// GET /api/admin/v1/payment-methods/{paymentMethodId}
+export const useAdminPaymentMethod = (
+  paymentMethodId: string,
+  options?: { enabled?: boolean },
+) => {
+  const idOk = paymentMethodId.length > 0;
+  const enabled =
+    options?.enabled !== undefined ? options.enabled && idOk : idOk;
+
+  return useQuery<AdminPaymentMethodResponse>({
+    queryKey: ["adminPaymentMethod", paymentMethodId],
+    queryFn: () => requestAdminPaymentMethod(paymentMethodId),
+    enabled,
+    retry: false,
+  });
+};
+
+// 결제수단 추가
+// POST /api/admin/v1/payment-methods
+export const useCreateAdminPaymentMethod = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: AdminPaymentMethodCreateRequest) =>
+      createAdminPaymentMethod(body),
+    onSuccess: async (data) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["adminPaymentMethods"] }),
+        queryClient.invalidateQueries({
+          queryKey: ["adminPaymentMethod", data.paymentMethodId],
+        }),
+      ]);
+    },
+  });
+};
+
+// 기본 결제수단 변경
+// PATCH /api/admin/v1/payment-methods/{paymentMethodId}/default
+export const useUpdateAdminDefaultPaymentMethod = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (paymentMethodId: string) =>
+      updateAdminDefaultPaymentMethod({ paymentMethodId }),
+    onSuccess: async (_data, paymentMethodId) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["adminPaymentMethods"] }),
+        queryClient.invalidateQueries({
+          queryKey: ["adminPaymentMethod", paymentMethodId],
+        }),
+      ]);
+    },
+  });
+};
+
+// 결제수단 삭제
+// DELETE /api/admin/v1/payment-methods/{paymentMethodId}
+export const useDeleteAdminPaymentMethod = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (paymentMethodId: string) =>
+      deleteAdminPaymentMethod({ paymentMethodId }),
+    onSuccess: async (_data, paymentMethodId) => {
+      queryClient.removeQueries({
+        queryKey: ["adminPaymentMethod", paymentMethodId],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["adminPaymentMethods"],
+      });
+    },
   });
 };

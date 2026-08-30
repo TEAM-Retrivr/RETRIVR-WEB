@@ -1,114 +1,419 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useQueryClient } from "@tanstack/react-query";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import CommonInput from "../../components/CommonInput";
-import Button from "../../components/Button";
-import { getPasswordValidationError } from "../../utils/passwordValidation";
-import AdminAccountCommonFields from "../../components/admin/AdminAccountCommonFields";
+import EmailChangeBottomSheet, {
+  type EmailChangeBottomSheetHandle,
+} from "../../components/modals/admin/account/EmailChangeBottomSheet";
+import IdentityVerificationBottomSheet, {
+  type IdentityVerificationBottomSheetHandle,
+} from "../../components/modals/admin/account/IdentityVerificationBottomSheet";
+import PasswordChangeBottomSheet, {
+  type PasswordChangeBottomSheetHandle,
+} from "../../components/modals/admin/account/PasswordChangeBottomSheet";
+import AdminCodeChangeBottomSheet, {
+  type AdminCodeChangeBottomSheetHandle,
+} from "../../components/modals/admin/account/AdminCodeChangeBottomSheet";
+import ProfileChangeCompleteModal from "../../components/modals/admin/account/ProfileChangeCompleteModal";
+import {
+  useAdminProfile,
+  useUpdateAdminProfile,
+} from "../../hooks/queries/useAuthQueries";
+import type {
+  AdminPasswordVerificationPurpose,
+  UpdateAdminProfileErrorResponse,
+} from "../../api/auth/auth.type";
+import { getAdminEmail, clearAdminSession } from "../../utils/adminSession";
+
+type ChangeTarget = "email" | "password" | "adminCode";
+
+const CHANGE_TARGET_PURPOSE: Record<
+  ChangeTarget,
+  AdminPasswordVerificationPurpose
+> = {
+  email: "EMAIL_CHANGE",
+  password: "PASSWORD_CHANGE",
+  adminCode: "ADMIN_CODE_CHANGE",
+};
 
 const ProfileEditPage = () => {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const { data: profile } = useAdminProfile({ enabled: !isSigningOut });
+  const { mutate: updateProfile, isPending: isUpdatingName } =
+    useUpdateAdminProfile();
+
+  const emailSheetRef = useRef<EmailChangeBottomSheetHandle>(null);
+  const identitySheetRef = useRef<IdentityVerificationBottomSheetHandle>(null);
+  const passwordSheetRef = useRef<PasswordChangeBottomSheetHandle>(null);
+  const adminCodeSheetRef = useRef<AdminCodeChangeBottomSheetHandle>(null);
+  const pendingOpenTargetRef = useRef<ChangeTarget | null>(null);
+
   const [organizationName, setOrganizationName] = useState("");
+  const [savedOrganizationName, setSavedOrganizationName] = useState("");
   const [email, setEmail] = useState("");
-  const [authCode, setAuthCode] = useState("");
-  const [password, setPassword] = useState("");
-  const [passwordCheck, setPasswordCheck] = useState("");
-  const [adminCode, setAdminCode] = useState("");
+  const [pendingChangeTarget, setPendingChangeTarget] =
+    useState<ChangeTarget | null>(null);
+  const [passwordVerificationToken, setPasswordVerificationToken] =
+    useState("");
+  const [isIdentitySheetOpen, setIsIdentitySheetOpen] = useState(false);
+  const [isEmailSheetOpen, setIsEmailSheetOpen] = useState(false);
+  const [isPasswordSheetOpen, setIsPasswordSheetOpen] = useState(false);
+  const [isAdminCodeSheetOpen, setIsAdminCodeSheetOpen] = useState(false);
+  const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
 
-  const handleSubmit = () => {
-    if (!organizationName.trim()) return alert("이름(단체명)을 입력해주세요.");
-    if (!email.trim()) return alert("이메일을 입력해주세요.");
+  const hasHydratedProfileRef = useRef(false);
 
-    const passwordError = getPasswordValidationError(password);
-    if (passwordError) return alert(passwordError);
+  useEffect(() => {
+    // 이메일은 프로필 API에 없으므로 마운트 시 세션에서 바로 채운다
+    setEmail(getAdminEmail());
+  }, []);
 
-    if (!passwordCheck) return alert("비밀번호 확인 입력을 진행해주세요.");
-    if (password !== passwordCheck) {
-      return alert("비밀번호가 일치하지 않습니다. 다시 입력해주세요.");
+  useEffect(() => {
+    if (!profile || hasHydratedProfileRef.current) return;
+    const name = profile.organizationName ?? "";
+    setOrganizationName(name);
+    setSavedOrganizationName(name);
+    hasHydratedProfileRef.current = true;
+  }, [profile]);
+
+  const handleHeaderBack = () => {
+    if (isEmailSheetOpen) {
+      emailSheetRef.current?.requestClose();
+      return;
+    }
+    if (isPasswordSheetOpen) {
+      passwordSheetRef.current?.requestClose();
+      return;
+    }
+    if (isAdminCodeSheetOpen) {
+      adminCodeSheetRef.current?.requestClose();
+      return;
+    }
+    if (isIdentitySheetOpen) {
+      identitySheetRef.current?.requestClose();
+      return;
+    }
+    navigate("/account");
+  };
+
+  const showCompleteModal = () => {
+    setIsCompleteModalOpen(true);
+  };
+
+  const openIdentitySheet = (target: ChangeTarget) => {
+    setPendingChangeTarget(target);
+    setPasswordVerificationToken("");
+    setIsIdentitySheetOpen(true);
+  };
+
+  const persistOrganizationName = ({
+    nextName,
+    openTargetAfter,
+    showCompleteOnSuccess,
+  }: {
+    nextName: string;
+    openTargetAfter?: ChangeTarget;
+    showCompleteOnSuccess: boolean;
+  }) => {
+    updateProfile(
+      { organizationName: nextName },
+      {
+        onSuccess: () => {
+          // 204라 응답 본문이 없으므로 일단 요청값을 반영하고,
+          // invalidate 후 프로필을 다시 hydrate해 서버 정규화 값과 맞춘다
+          hasHydratedProfileRef.current = false;
+          setOrganizationName(nextName);
+          setSavedOrganizationName(nextName);
+
+          const queuedTarget = openTargetAfter ?? pendingOpenTargetRef.current;
+          pendingOpenTargetRef.current = null;
+          if (queuedTarget) {
+            openIdentitySheet(queuedTarget);
+            return;
+          }
+
+          if (showCompleteOnSuccess) {
+            showCompleteModal();
+          }
+        },
+        onError: (error) => {
+          pendingOpenTargetRef.current = null;
+          if (axios.isAxiosError(error)) {
+            const data = error.response?.data as
+              | UpdateAdminProfileErrorResponse
+              | undefined;
+            if (data?.message) {
+              alert(data.message);
+              return;
+            }
+          }
+          alert("이름(단체명) 저장에 실패했습니다. 다시 시도해주세요.");
+          setOrganizationName(savedOrganizationName);
+        },
+      },
+    );
+  };
+
+  const openIdentityFor = (target: ChangeTarget) => {
+    const nextName = organizationName.trim();
+    if (!nextName) {
+      setOrganizationName(savedOrganizationName);
+      openIdentitySheet(target);
+      return;
     }
 
-    if (!adminCode.trim()) return alert("관리자 코드를 입력해주세요.");
-    if (!/^\d{6}$/.test(adminCode)) {
-      return alert("관리자 코드는 6자리 숫자여야 합니다.");
+    if (nextName === savedOrganizationName) {
+      openIdentitySheet(target);
+      return;
     }
 
-    alert("입력값 검증이 완료되었습니다.");
+    if (isUpdatingName) {
+      pendingOpenTargetRef.current = target;
+      return;
+    }
+
+    persistOrganizationName({
+      nextName,
+      openTargetAfter: target,
+      showCompleteOnSuccess: false,
+    });
+  };
+
+  const handleIdentityVerified = (verificationToken: string) => {
+    setPasswordVerificationToken(verificationToken);
+    setIsIdentitySheetOpen(false);
+    if (pendingChangeTarget === "email") {
+      setIsEmailSheetOpen(true);
+    } else if (pendingChangeTarget === "password") {
+      setIsPasswordSheetOpen(true);
+    } else if (pendingChangeTarget === "adminCode") {
+      setIsAdminCodeSheetOpen(true);
+    }
+    setPendingChangeTarget(null);
+  };
+
+  const handleSaveOrganizationName = () => {
+    const nextName = organizationName.trim();
+    if (!nextName) {
+      setOrganizationName(savedOrganizationName);
+      return;
+    }
+    if (nextName === savedOrganizationName || isUpdatingName) {
+      return;
+    }
+
+    persistOrganizationName({
+      nextName,
+      showCompleteOnSuccess: pendingOpenTargetRef.current === null,
+    });
   };
 
   return (
     <Layout>
-      <Header pageName="개인정보 수정" backTo="/account" />
-      <div className="flex flex-col items-center w-full gap-6 pt-8 px-8 ">
-        {/* 1. 이름(단체명) 입력필드 */}
-        <div className="flex flex-col w-full gap-2">
-          <div className="flex gap-0.5">
-            <p className=" text-14px font-bold">이름(단체명)</p>
-            <p className="text-14px text-primary">*</p>
+      <Header
+        name="계정관리"
+        pageName="개인정보 수정"
+        onBackClick={handleHeaderBack}
+      />
+
+      <div className="flex w-full flex-col items-start gap-6 px-8 pt-8.75 font-[Pretendard] text-neutral-gray-1">
+        <div className="flex w-full flex-col gap-2.5">
+          <div className="flex items-center">
+            <p className="px-0.5 text-14px font-bold">이름(단체명)</p>
+            <p className="text-14px font-bold text-primary">*</p>
           </div>
           <CommonInput
             type="text"
             value={organizationName}
-            onChange={(e) => setOrganizationName(e.target.value)}
-            placeholder="한국대 도서관자치위원회"
-            className="placeholder:text-14px placeholder:font-normal placeholder:leading-[140%] "
+            onChange={(event) => setOrganizationName(event.target.value)}
+            onBlur={handleSaveOrganizationName}
+            placeholder="한국대 총학생회"
+            className="h-12 rounded-xl px-3.5 text-neutral-gray-1 placeholder:text-14px placeholder:font-normal placeholder:leading-[140%]"
           />
         </div>
 
-        {/* 2. 이메일 인증 관련 입력 필드 */}
-        <div className="flex flex-col w-full gap-2.5">
-          <div className="flex gap-0.5">
-            <p className=" text-14px font-bold ">이메일</p>
-            <p className="text-14px text-primary">*</p>
+        <div className="flex w-full flex-col gap-2.5">
+          <div className="flex items-center">
+            <p className="px-0.5 text-14px font-bold">이메일</p>
+            <p className="text-14px font-bold text-primary">*</p>
           </div>
-          <div className="flex justify-between items-center gap-1">
+          <div className="relative w-full">
             <CommonInput
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              readOnly
+              tabIndex={-1}
+              onFocus={(event) => event.currentTarget.blur()}
+              aria-readonly="true"
               placeholder="retrivr@gmail.com"
-              className="placeholder:text-14px placeholder:font-normal placeholder:leading-[140%] "
+              className="h-12 max-w-none cursor-default rounded-xl px-3.5 pr-24 text-neutral-gray-3 placeholder:text-14px placeholder:font-normal placeholder:leading-[140%] placeholder:text-neutral-gray-3 focus:ring-0"
             />
-            <Button variant="primary" size="sm" className="w-25 h-11.5">
-              인증번호 전송
-            </Button>
+            <button
+              type="button"
+              onClick={() => openIdentityFor("email")}
+              className="absolute right-2.5 top-1/2 flex h-[27px] -translate-y-1/2 items-center justify-center rounded-[6px] border border-neutral-gray-4 bg-neutral-white px-3 text-12px font-normal leading-[1.4] text-neutral-gray-3 cursor-pointer"
+            >
+              변경하기
+            </button>
           </div>
-          <div className="relative flex justify-between items-center gap-1">
+          <p className="px-0.5 text-12px font-normal leading-[130%] text-secondary-2">
+            이메일 변경 시 새로 인증이 필요해요
+          </p>
+        </div>
+
+        <div className="flex w-full flex-col gap-2.5">
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center">
+              <p className="px-0.5 text-14px font-bold">비밀번호</p>
+              <p className="text-14px font-bold text-primary">*</p>
+            </div>
+            <p className="px-0.5 text-12px font-normal leading-[130%] text-neutral-gray-3">
+              영문, 숫자, 특수문자를 포함해 8자 이상으로 설정해주세요.
+            </p>
+          </div>
+          <div className="relative w-full">
             <CommonInput
               type="text"
-              inputMode="numeric"
-              pattern="[0-9]{6}"
-              maxLength={6}
-              value={authCode}
-              onChange={(e) => setAuthCode(e.target.value)}
-              placeholder="인증번호 입력"
-              className="placeholder:text-14px placeholder:font-normal placeholder:leading-[140%] "
+              value="*******"
+              readOnly
+              tabIndex={-1}
+              onFocus={(event) => event.currentTarget.blur()}
+              aria-readonly="true"
+              className="h-12 max-w-none cursor-default rounded-xl px-3.5 pr-24 text-neutral-gray-3 focus:ring-0"
             />
-
-            <Button variant="gray" size="sm" className="w-25 h-11.5">
-              인증번호 확인
-            </Button>
+            <button
+              type="button"
+              onClick={() => openIdentityFor("password")}
+              className="absolute right-2.5 top-1/2 flex h-[27px] -translate-y-1/2 items-center justify-center rounded-[6px] border border-neutral-gray-4 bg-neutral-white px-3 text-12px font-normal leading-[1.4] text-neutral-gray-3 cursor-pointer"
+            >
+              변경하기
+            </button>
           </div>
         </div>
 
-        <AdminAccountCommonFields
-          variant="profileEdit"
-          includeOrganizationName={false}
-          organizationName={organizationName}
-          onOrganizationNameChange={setOrganizationName}
-          password={password}
-          onPasswordChange={setPassword}
-          passwordCheck={passwordCheck}
-          onPasswordCheckChange={setPasswordCheck}
-          adminCode={adminCode}
-          onAdminCodeChange={setAdminCode}
-        />
+        <div className="flex w-full flex-col gap-2.5">
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center">
+              <p className="px-0.5 text-14px font-bold">관리자 코드</p>
+              <p className="text-14px font-bold text-primary">*</p>
+            </div>
+            <p className="px-0.5 text-12px font-normal leading-[130%] text-neutral-gray-3">
+              물품 관리 등 관리자 권한이 필요한 작업에 사용하는 코드예요.
+              <br />
+              숫자만 입력할 수 있어요.
+            </p>
+          </div>
+          <div className="relative flex w-full items-center">
+            <div className="flex gap-1" aria-hidden>
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="flex size-[34px] items-center justify-center rounded-[6px] bg-neutral-gray-5 text-14px text-neutral-gray-3"
+                >
+                  *
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => openIdentityFor("adminCode")}
+              className="absolute right-0 flex h-[27px] items-center justify-center rounded-[6px] border border-neutral-gray-4 bg-neutral-white px-3 text-12px font-normal leading-[1.4] text-neutral-gray-3 cursor-pointer"
+            >
+              변경하기
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* 5. 확인 버튼 */}
-      <div className="w-full flex flex-col items-center mt-auto mb-10">
-        <Button variant="primary" size="lg" onClick={handleSubmit}>
-          확인
-        </Button>
-      </div>
+      <IdentityVerificationBottomSheet
+        ref={identitySheetRef}
+        isOpen={isIdentitySheetOpen}
+        purpose={
+          pendingChangeTarget
+            ? CHANGE_TARGET_PURPOSE[pendingChangeTarget]
+            : "EMAIL_CHANGE"
+        }
+        onClose={() => {
+          setIsIdentitySheetOpen(false);
+          setPendingChangeTarget(null);
+          setPasswordVerificationToken("");
+        }}
+        onVerified={handleIdentityVerified}
+      />
+
+      <EmailChangeBottomSheet
+        ref={emailSheetRef}
+        isOpen={isEmailSheetOpen}
+        passwordVerificationToken={passwordVerificationToken}
+        onClose={() => {
+          setIsEmailSheetOpen(false);
+          setPasswordVerificationToken("");
+        }}
+        onChanged={async () => {
+          // enabled=false가 clear() 전에 반영되도록 동기적으로 반영
+          flushSync(() => {
+            setIsSigningOut(true);
+          });
+          setIsEmailSheetOpen(false);
+          setPasswordVerificationToken("");
+          clearAdminSession();
+          await queryClient.cancelQueries();
+          alert("이메일이 변경되었습니다. 다시 로그인해주세요.");
+          navigate("/login", { replace: true });
+          queueMicrotask(() => {
+            queryClient.clear();
+          });
+        }}
+      />
+
+      <PasswordChangeBottomSheet
+        ref={passwordSheetRef}
+        isOpen={isPasswordSheetOpen}
+        passwordVerificationToken={passwordVerificationToken}
+        onClose={() => {
+          setIsPasswordSheetOpen(false);
+          setPasswordVerificationToken("");
+        }}
+        onChanged={async () => {
+          flushSync(() => {
+            setIsSigningOut(true);
+          });
+          setIsPasswordSheetOpen(false);
+          setPasswordVerificationToken("");
+          clearAdminSession();
+          await queryClient.cancelQueries();
+          alert("비밀번호가 변경되었습니다. 다시 로그인해주세요.");
+          navigate("/login", { replace: true });
+          queueMicrotask(() => {
+            queryClient.clear();
+          });
+        }}
+      />
+
+      <AdminCodeChangeBottomSheet
+        ref={adminCodeSheetRef}
+        isOpen={isAdminCodeSheetOpen}
+        passwordVerificationToken={passwordVerificationToken}
+        onClose={() => {
+          setIsAdminCodeSheetOpen(false);
+          setPasswordVerificationToken("");
+        }}
+        onChanged={() => {
+          setPasswordVerificationToken("");
+          showCompleteModal();
+        }}
+      />
+
+      <ProfileChangeCompleteModal
+        isOpen={isCompleteModalOpen}
+        onClose={() => setIsCompleteModalOpen(false)}
+      />
     </Layout>
   );
 };

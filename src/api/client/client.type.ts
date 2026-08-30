@@ -1,8 +1,10 @@
 // 1. 대여지 소유 물품 목록 조회 정보
 // 1-1. 전체 응답 바디
+// GET /api/public/v1/organizations/{organizationId}/items
 export interface ItemResponse {
   organizationId: number; // 대여지(단체) ID
   organizationName: string; // 대여지 이름
+  profileImageUrl: string | null; // 대여지 프로필 이미지 presigned URL (없으면 null)
   items: {
     itemId: number; // 물품 번호
     name: string; // 물품 이름
@@ -22,6 +24,8 @@ export interface ItemResponse {
 
 // 1-2. 물품 상세 조회 응답 바디
 // GET /api/public/v1/items/{itemId}
+export type OrganizationMembershipLevel = "PREMIUM" | "FREE";
+
 export interface ItemDetailResponse {
   itemUnits?: {
     itemUnitId: number;
@@ -29,6 +33,9 @@ export interface ItemDetailResponse {
     status?: string;
   }[];
   itemManagementType?: string;
+  // PREMIUM: 연락처 인증 UI / FREE: 이메일 인증 UI
+  // 필드가 없으면 기존처럼 연락처 인증 UI를 유지한다.
+  level?: OrganizationMembershipLevel;
   borrowerRequirements?: {
     label: string;
     required: boolean;
@@ -37,19 +44,32 @@ export interface ItemDetailResponse {
 
 // 2. 대여 요청 생성
 // 2-1. 대여 요청 생성 요청 바디
-export interface BorrowerInformationRequest {
+// 인증 방식은 전화번호/이메일 중 정확히 하나만 전달한다.
+// 상대 필드(email vs phone/token)는 키 자체를 넣지 않는다.
+type BorrowerInformationBase = {
   itemUnitId?: number | null; // Long, nullable. 개별 코드형 물품일 경우에만 사용
   name: string; // String, 필수. 대여자 이름
-  phone: string; // String, 필수. 대여자 전화번호 (예: 010-1234-5678)
   requestNote?: string; // String, 선택. 요청사항
-  // 연락처 인증 검증 성공 시 발급되는 토큰들
-  rawToken: string;
-  tokenId: string;
   renterFields: {
-    // JSON Object, 필수. 추가 대여자 정보 (자유 key-value, 입력값 그대로 전달)
-    [key: string]: string; // 학과/학번 등 자유 필드
+    // JSON Object. 추가 대여자 정보 (자유 key-value, 입력값 그대로 전달)
+    [key: string]: string;
   };
-}
+};
+
+export type PhoneAuthBorrowerInformationRequest = BorrowerInformationBase & {
+  phone: string; // 대여자 전화번호 (예: 010-1234-5678)
+  tokenId: string; // 휴대폰 인증 검증 응답의 verificationTokenId
+  rawToken: string; // 휴대폰 인증 검증 응답의 verificationToken
+};
+
+export type EmailAuthBorrowerInformationRequest = BorrowerInformationBase & {
+  email: string; // 이메일 인증을 완료한 대여자 이메일
+  emailVerificationToken: string; // 이메일 인증 검증 응답의 token (tokenType: BORROW)
+};
+
+export type BorrowerInformationRequest =
+  | PhoneAuthBorrowerInformationRequest
+  | EmailAuthBorrowerInformationRequest;
 
 // 2-2. 대여 요청 생성 응답 바디
 export interface BorrowerInformationResponse {

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import type { FormEvent } from "react";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
@@ -12,28 +12,57 @@ import {
   useSendRentalRequest,
 } from "../../hooks/queries/useClientQueries";
 import {
+  useSendEmailCode,
   useSendPhoneVerificationCode,
+  useVerifyEmailCode,
   useVerifyPhoneVerificationCode,
 } from "../../hooks/queries/useAuthQueries";
-import { useQueryClient } from "@tanstack/react-query";
+import type { BorrowerInformationRequest } from "../../api/client/client.type";
 
-const label1 =
-  "대여 물품 연체 시 안내 문자가 카카오톡으로\n발송됩니다. 이에 동의하시나요?";
+const getOverdueConsentLabel = (channel: "이메일로" | "카카오톡으로") =>
+  `대여 물품 연체 시 독촉 문자가 ${channel}\n발송됩니다. 이에 동의하시나요?`;
 
 const label2 = "대여 시 ";
 const label3 =
   "을 맡기셔야 합니다.\n물품 반납 시 반환됩니다. 이에 동의하시나요?";
 const CLIENT_RENTAL_SUBMIT_STATE_STORAGE_KEY = "clientRentalSubmitState";
+const EMAIL_FORMAT_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const formatPhoneNumber = (rawPhone: string) => {
   const digits = rawPhone.replace(/\D/g, "");
   if (!/^010\d{8}$/.test(digits)) return digits;
   return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7, 11)}`;
 };
 
+const ItemInfoRow = ({
+  label,
+  value,
+  emphasizeValue = false,
+}: {
+  label: string;
+  value: string;
+  emphasizeValue?: boolean;
+}) => (
+  <div className="flex items-center">
+    <span className="flex h-[17px] w-[17px] shrink-0 items-center justify-center">
+      <img
+        src="/icons/client/item-info-dot.svg"
+        alt=""
+        className="h-1.5 w-1.5"
+      />
+    </span>
+    <p className="text-12px text-neutral-gray-1 font-normal leading-[140%] opacity-90">
+      {label}:{" "}
+      <span className={emphasizeValue ? "text-primary" : undefined}>
+        {value}
+      </span>
+    </p>
+  </div>
+);
+
 const RentalInformationSubmitPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
   const routeState = location.state as {
     itemId?: number;
     itemUnitId?: number;
@@ -69,20 +98,25 @@ const RentalInformationSubmitPage = () => {
   const itemId = state?.itemId ?? 0;
   const itemUnitId = state?.itemUnitId; // 개별 코드형 물품일 때만 전달
   const organizationId = state?.organizationId;
-  const cachedOrganization =
-    Number.isFinite(organizationId) && (organizationId ?? 0) > 0
-      ? queryClient.getQueryData<{ name?: string; imageURL?: string }>([
-          "selectedOrganization",
-          organizationId,
-        ])
-      : undefined;
-  const organizationName =
-    state?.organizationName ?? cachedOrganization?.name ?? "대여지명";
+  const organizationName = state?.organizationName ?? "대여지명";
   const itemName = state?.name ?? "대여 물품";
   const rentalDuration = state?.rentalDuration ?? 0;
   const guaranteedGoods = state?.guaranteedGoods ?? "없음";
   const description = state?.description ?? "-";
-  const { data: itemDetail } = useItemDetail(itemId, itemId > 0);
+  const {
+    data: itemDetail,
+    isPending: isItemDetailPending,
+    isError: isItemDetailError,
+  } = useItemDetail(itemId, itemId > 0);
+  const isMembershipLevelReady =
+    itemId <= 0 || (!isItemDetailPending && !isItemDetailError);
+  const isEmailVerificationUi =
+    isMembershipLevelReady &&
+    (itemDetail?.level === "FREE" ||
+      (import.meta.env.DEV && searchParams.get("verification") === "email"));
+  const overdueConsentLabel = getOverdueConsentLabel(
+    isEmailVerificationUi ? "이메일로" : "카카오톡으로",
+  );
   const selectedItemUnitLabel = useMemo(() => {
     if (itemDetail?.itemManagementType !== "UNIT") return "";
     if (!Number.isFinite(itemUnitId) || (itemUnitId ?? 0) <= 0) return "";
@@ -101,7 +135,9 @@ const RentalInformationSubmitPage = () => {
           req.label !== "이름" &&
           req.label !== "연락처" &&
           req.label !== "전화번호" &&
+          req.label !== "이메일" &&
           req.label !== "요청사항" &&
+          req.label !== "요청 사항" &&
           arr.findIndex((item) => item.label === req.label) === index,
       ),
     [borrowerRequirements],
@@ -123,6 +159,17 @@ const RentalInformationSubmitPage = () => {
     setIsPhoneVerificationSendPermanentlyDisabled,
   ] = useState(false);
   const phoneVerificationSendLockRef = useRef(false);
+  const [email, setEmail] = useState("");
+  const [emailVerificationCode, setEmailVerificationCode] = useState("");
+  const [emailVerificationToken, setEmailVerificationToken] = useState("");
+  const [isEmailVerificationComplete, setIsEmailVerificationComplete] =
+    useState(false);
+  /** 이메일 인증번호 전송: 성공 후 새로고침 전까지 재전송 불가 */
+  const [
+    isEmailVerificationSendPermanentlyDisabled,
+    setIsEmailVerificationSendPermanentlyDisabled,
+  ] = useState(false);
+  const emailVerificationSendLockRef = useRef(false);
   const [requestment, setRequestment] = useState("");
   const [additionalFieldValues, setAdditionalFieldValues] = useState<
     Record<string, string>
@@ -131,8 +178,7 @@ const RentalInformationSubmitPage = () => {
   // 개인 정보 활용 동의 체크 여부 : boolean
   const [firstConsentChecked, setFirstConsentChecked] = useState(false);
   const [secondConsentChecked, setSecondConsentChecked] = useState(false);
-  const [isPhoneVerificationErrorOpen, setIsPhoneVerificationErrorOpen] =
-    useState(false);
+  const [isVerificationErrorOpen, setIsVerificationErrorOpen] = useState(false);
 
   // 보증 물품이 필요할 때만 두 번째 동의를 요구
   const isGuaranteedGoodsRequired =
@@ -145,6 +191,10 @@ const RentalInformationSubmitPage = () => {
   const isValidPhoneVerificationCode = /^\d{6}$/.test(
     phoneVerificationCode.trim(),
   );
+  const isValidEmail = EMAIL_FORMAT_PATTERN.test(email.trim());
+  const isValidEmailVerificationCode = /^\d{6}$/.test(
+    emailVerificationCode.trim(),
+  );
 
   const { mutate: sendPhoneVerificationCode, isPending: isSendingPhoneCode } =
     useSendPhoneVerificationCode();
@@ -152,12 +202,21 @@ const RentalInformationSubmitPage = () => {
     mutate: verifyPhoneVerificationCode,
     isPending: isVerifyingPhoneCode,
   } = useVerifyPhoneVerificationCode();
+  const { mutate: sendEmailCode, isPending: isSendingEmailCode } =
+    useSendEmailCode();
+  const { mutate: verifyEmailCode, isPending: isVerifyingEmailCode } =
+    useVerifyEmailCode();
 
   const isPhoneVerificationButtonEnabled =
     !isPhoneVerificationComplete &&
     isValidPhoneVerificationCode &&
     !!phoneVerificationId.trim() &&
     !isVerifyingPhoneCode;
+  const isEmailVerificationButtonEnabled =
+    !isEmailVerificationComplete &&
+    isValidEmailVerificationCode &&
+    isEmailVerificationSendPermanentlyDisabled &&
+    !isVerifyingEmailCode;
 
   useEffect(() => {
     if (!isGuaranteedGoodsRequired) {
@@ -211,12 +270,11 @@ const RentalInformationSubmitPage = () => {
       {
         onSuccess: (data) => {
           const verificationToken =
-            data.verificationToken ?? data.rawToken ?? "";
+            data.verificationToken?.trim() || data.rawToken?.trim() || "";
           const verificationTokenId =
-            data.verificationTokenId ?? data.tokenId ?? "";
+            data.verificationTokenId?.trim() || data.tokenId?.trim() || "";
 
-          // 토큰이 없으면 인증 완료 처리하지 않음
-          if (!verificationToken.trim() || !verificationTokenId.trim()) {
+          if (!verificationToken || !verificationTokenId) {
             alert("인증이 완료되지 않았습니다. 다시 시도해주세요.");
             return;
           }
@@ -224,6 +282,66 @@ const RentalInformationSubmitPage = () => {
           setPhoneVerificationToken(verificationToken);
           setPhoneVerificationTokenId(verificationTokenId);
           setIsPhoneVerificationComplete(true);
+          alert("인증이 완료되었습니다.");
+        },
+        onError: (error: any) => {
+          const message =
+            error?.response?.data?.message ?? "인증번호 검증에 실패했습니다.";
+          alert(message);
+        },
+      },
+    );
+  };
+
+  const handleSendEmailVerificationCode = () => {
+    if (isEmailVerificationComplete) return;
+    if (!isValidEmail) return;
+    if (emailVerificationSendLockRef.current) return;
+
+    sendEmailCode(
+      {
+        email: email.trim(),
+        purpose: "BORROW",
+      },
+      {
+        onSuccess: () => {
+          emailVerificationSendLockRef.current = true;
+          setIsEmailVerificationSendPermanentlyDisabled(true);
+          setEmailVerificationCode("");
+          alert("인증번호가 전송되었습니다.");
+        },
+        onError: (error: any) => {
+          emailVerificationSendLockRef.current = false;
+          const message =
+            error?.response?.data?.message ?? "인증번호 전송에 실패했습니다.";
+          alert(message);
+        },
+      },
+    );
+  };
+
+  const handleVerifyEmailVerificationCode = () => {
+    if (isEmailVerificationComplete) return;
+    if (!isValidEmailVerificationCode) return;
+    if (!isEmailVerificationSendPermanentlyDisabled) return;
+
+    verifyEmailCode(
+      {
+        email: email.trim(),
+        purpose: "BORROW",
+        code: emailVerificationCode.trim(),
+      },
+      {
+        onSuccess: (data) => {
+          const verificationToken = data.token?.trim() ?? "";
+
+          if (data.tokenType !== "BORROW" || !verificationToken) {
+            alert("인증이 완료되지 않았습니다. 다시 시도해주세요.");
+            return;
+          }
+
+          setEmailVerificationToken(verificationToken);
+          setIsEmailVerificationComplete(true);
           alert("인증이 완료되었습니다.");
         },
         onError: (error: any) => {
@@ -243,18 +361,21 @@ const RentalInformationSubmitPage = () => {
           requirement.required &&
           !additionalFieldValues[requirement.label]?.trim(),
       );
+    const hasMissingContact = isEmailVerificationUi
+      ? !email.trim()
+      : !phoneNumber.trim();
 
-    if (
-      !name.trim() ||
-      !phoneNumber.trim() ||
-      hasMissingRequiredAdditionalField
-    ) {
+    if (!name.trim() || hasMissingContact || hasMissingRequiredAdditionalField) {
       alert("필수 항목을 모두 입력해주세요.");
       return;
     }
 
-    if (!isPhoneVerificationComplete) {
-      setIsPhoneVerificationErrorOpen(true);
+    const isVerificationComplete = isEmailVerificationUi
+      ? isEmailVerificationComplete
+      : isPhoneVerificationComplete;
+
+    if (!isVerificationComplete) {
+      setIsVerificationErrorOpen(true);
       return;
     }
 
@@ -271,25 +392,41 @@ const RentalInformationSubmitPage = () => {
     const renterFields: Record<string, string> = {};
 
     borrowerRequirements.forEach(({ label }) => {
-      // renterFields(additionalBorrowerInfo)에는 이름/전화번호를 넣지 않는다.
-      // - 이름/전화번호는 top-level의 name, phone으로 분리 전송
-      if (label === "이름" || label === "전화번호" || label === "연락처")
+      // 이름/인증용 연락처·이메일은 top-level 필드로 보내고 renterFields에는 넣지 않는다.
+      if (
+        label === "이름" ||
+        label === "전화번호" ||
+        label === "연락처" ||
+        label === "이메일"
+      )
         return;
       const value = additionalFieldValues[label]?.trim();
       if (value) {
         renterFields[label] = value;
       }
     });
-    // POST /api/public/v1/items/{itemId}/rentals 의 Request Body
-    const body = {
+
+    const baseFields = {
       itemUnitId: itemUnitId ?? null,
       name: normalizedName,
-      phone: normalizedPhone,
       requestNote: normalizedRequestment || undefined,
       renterFields,
-      rawToken: phoneVerificationToken,
-      tokenId: phoneVerificationTokenId,
     };
+
+    // POST /api/public/v1/items/{itemId}/rentals
+    // 인증 수단에 맞는 필드만 넣고, 상대 인증 필드는 전달하지 않는다.
+    const body: BorrowerInformationRequest = isEmailVerificationUi
+      ? {
+          ...baseFields,
+          email: email.trim(),
+          emailVerificationToken,
+        }
+      : {
+          ...baseFields,
+          phone: normalizedPhone,
+          rawToken: phoneVerificationToken,
+          tokenId: phoneVerificationTokenId,
+        };
 
     sendRentalRequest(
       {
@@ -336,27 +473,29 @@ const RentalInformationSubmitPage = () => {
               : "/client-search"
           }
         />
-        <div className="w-84.5 h-44 font-[Pretendard] bg-secondary-4 border border-secondary-5 border-[0.5px] rounded-[16px] mt-6 mx-7.75">
-          <div className="pt-7.25 pl-8 pb-7.75">
+        <div className="w-84.5 font-[Pretendard] bg-secondary-4 border border-secondary-5 border-[0.5px] rounded-[18px] mt-6 mx-7.75 px-8 py-7">
+          <div className="flex flex-col gap-3.5">
             <div className="flex flex-col text-neutral-gray-1">
               <p className="w-60 truncate text-24px font-bold">{itemName}</p>
-              <p className="w-60 truncate text-neutral-gray-2 text-16px font-[500] leading-none">
-                {selectedItemUnitLabel}
-              </p>
+              {selectedItemUnitLabel ? (
+                <p className="w-60 truncate text-neutral-gray-2 text-16px font-[500] leading-none">
+                  {selectedItemUnitLabel}
+                </p>
+              ) : null}
             </div>
-            <ul className="text-12px opacity-[0.9] font-normal mt-4.25 px-0.5 leading-[130%]">
-              <li>
-                • 대여 기간 :{" "}
-                <span className="text-primary">{rentalDuration}일</span>
-              </li>
-              <li>
-                • 보증 물품 :{" "}
-                <span className="text-primary">{guaranteedGoods}</span>
-              </li>
-              <li>
-                • 물품 설명 : <span>{description}</span>
-              </li>
-            </ul>
+            <div className="flex flex-col gap-0.5">
+              <ItemInfoRow
+                label="대여 기간"
+                value={`${rentalDuration}일`}
+                emphasizeValue
+              />
+              <ItemInfoRow
+                label="담보 물품"
+                value={guaranteedGoods}
+                emphasizeValue
+              />
+              <ItemInfoRow label="물품 설명" value={description} />
+            </div>
           </div>
         </div>
         <div className="w-full flex flex-col font-[Pretendard] mt-7.5 px-8 gap-7.5">
@@ -374,72 +513,142 @@ const RentalInformationSubmitPage = () => {
               className="text-14px placeholder:text-14px placeholder:font-normal placeholder:leading-[140%]"
             />
           </div>
-          <div>
-            {/* 연락처 인증 필드 - 연락처 입력 및 인증번호 입력 */}
-            <div className="flex gap-0.5 text-neutral-gray-2 text-14px font-bold ">
-              <p>연락처</p>
-              <p className="text-primary">*</p>
-            </div>
-            <p className="text-neutral-gray-3 text-12px font-[400] mt-1.5 mb-2.5 leading-none">
-              숫자로만 적어주세요.
+          {isItemDetailError ? (
+            <p className="text-primary text-12px font-[400] leading-[140%]">
+              물품 정보를 불러오지 못했습니다. 다시 시도해주세요.
             </p>
-            <div className="flex items-center justify-between gap-1.5">
-              <CommonInput
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                maxLength={11}
-                value={phoneNumber}
-                disabled={isPhoneVerificationComplete}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder="01012345678"
-                inputSize="large"
-                className="w-54 text-14px text-neutral-gray-1 placeholder:text-14px placeholder:font-normal placeholder:leading-[140%]"
-              />
-              <Button
-                variant="primary"
-                size="sm"
-                className="w-29 h-12"
-                disabled={
-                  !isValidPhoneNumberForVerification ||
-                  isSendingPhoneCode ||
-                  isPhoneVerificationComplete ||
-                  isPhoneVerificationSendPermanentlyDisabled
-                }
-                onClick={handleSendPhoneVerificationCode}
-              >
-                인증번호 전송
-              </Button>
+          ) : isMembershipLevelReady ? (
+            isEmailVerificationUi ? (
+            <div>
+              <div className="flex gap-0.5 text-neutral-gray-2 text-14px font-bold mb-2.5">
+                <p>이메일</p>
+                <p className="text-primary">*</p>
+              </div>
+              <div className="flex items-center justify-between gap-1.5">
+                <CommonInput
+                  type="email"
+                  value={email}
+                  disabled={
+                    isEmailVerificationComplete ||
+                    isEmailVerificationSendPermanentlyDisabled
+                  }
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="retrivr@gmail.com"
+                  inputSize="large"
+                  className="w-54 text-14px text-neutral-gray-1 placeholder:text-14px placeholder:font-normal placeholder:leading-[140%]"
+                />
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="w-29 h-12"
+                  disabled={
+                    !isValidEmail ||
+                    isSendingEmailCode ||
+                    isEmailVerificationComplete ||
+                    isEmailVerificationSendPermanentlyDisabled
+                  }
+                  onClick={handleSendEmailVerificationCode}
+                >
+                  인증번호 전송
+                </Button>
+              </div>
+              <div className="flex items-center justify-between gap-1.5 mt-2.5">
+                <CommonInput
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]{6}"
+                  maxLength={6}
+                  value={emailVerificationCode}
+                  disabled={isEmailVerificationComplete}
+                  onChange={(e) => setEmailVerificationCode(e.target.value)}
+                  placeholder="인증번호를 입력해주세요"
+                  inputSize="large"
+                  className="w-51 text-14px text-neutral-gray-1 placeholder:text-14px placeholder:font-normal placeholder:leading-[140%]"
+                />
+                <Button
+                  variant={
+                    isEmailVerificationComplete ||
+                    isEmailVerificationButtonEnabled
+                      ? "primary"
+                      : "gray"
+                  }
+                  size="sm"
+                  className="w-29 h-12"
+                  disabled={!isEmailVerificationButtonEnabled}
+                  onClick={handleVerifyEmailVerificationCode}
+                >
+                  인증번호 확인
+                </Button>
+              </div>
             </div>
-            <div className="flex items-center justify-between gap-1.5 mt-2.5">
-              <CommonInput
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]{6}"
-                maxLength={6}
-                value={phoneVerificationCode}
-                disabled={isPhoneVerificationComplete}
-                onChange={(e) => setPhoneVerificationCode(e.target.value)}
-                placeholder="인증번호 입력"
-                inputSize="large"
-                className="w-51 text-14px text-neutral-gray-1 placeholder:text-14px placeholder:font-normal placeholder:leading-[140%]"
-              />
-              <Button
-                variant={
-                  isPhoneVerificationComplete ||
-                  isPhoneVerificationButtonEnabled
-                    ? "primary"
-                    : "gray"
-                }
-                size="sm"
-                className="w-29 h-12"
-                disabled={!isPhoneVerificationButtonEnabled}
-                onClick={handleVerifyPhoneVerificationCode}
-              >
-                인증번호 확인
-              </Button>
+          ) : (
+            <div>
+              <div className="flex gap-0.5 text-neutral-gray-2 text-14px font-bold ">
+                <p>연락처</p>
+                <p className="text-primary">*</p>
+              </div>
+              <p className="text-neutral-gray-3 text-12px font-[400] mt-1.5 mb-2.5 leading-none">
+                숫자로만 적어주세요.
+              </p>
+              <div className="flex items-center justify-between gap-1.5">
+                <CommonInput
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={11}
+                  value={phoneNumber}
+                  disabled={isPhoneVerificationComplete}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  placeholder="01012345678"
+                  inputSize="large"
+                  className="w-54 text-14px text-neutral-gray-1 placeholder:text-14px placeholder:font-normal placeholder:leading-[140%]"
+                />
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="w-29 h-12"
+                  disabled={
+                    !isValidPhoneNumberForVerification ||
+                    isSendingPhoneCode ||
+                    isPhoneVerificationComplete ||
+                    isPhoneVerificationSendPermanentlyDisabled
+                  }
+                  onClick={handleSendPhoneVerificationCode}
+                >
+                  인증번호 전송
+                </Button>
+              </div>
+              <div className="flex items-center justify-between gap-1.5 mt-2.5">
+                <CommonInput
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]{6}"
+                  maxLength={6}
+                  value={phoneVerificationCode}
+                  disabled={isPhoneVerificationComplete}
+                  onChange={(e) => setPhoneVerificationCode(e.target.value)}
+                  placeholder="인증번호를 입력해주세요"
+                  inputSize="large"
+                  className="w-51 text-14px text-neutral-gray-1 placeholder:text-14px placeholder:font-normal placeholder:leading-[140%]"
+                />
+                <Button
+                  variant={
+                    isPhoneVerificationComplete ||
+                    isPhoneVerificationButtonEnabled
+                      ? "primary"
+                      : "gray"
+                  }
+                  size="sm"
+                  className="w-29 h-12"
+                  disabled={!isPhoneVerificationButtonEnabled}
+                  onClick={handleVerifyPhoneVerificationCode}
+                >
+                  인증번호 확인
+                </Button>
+              </div>
             </div>
-          </div>
+          )
+          ) : null}
           {additionalBorrowerRequirements.map((requirement) => (
             <div key={requirement.label}>
               <div className="flex gap-0.5 text-neutral-gray-2 text-14px font-[700] mb-2.5">
@@ -463,14 +672,14 @@ const RentalInformationSubmitPage = () => {
           ))}
           <div>
             <div className="text-neutral-gray-2 text-14px font-[700] mb-2.5">
-              <p>요청사항</p>
+              <p>요청 사항</p>
             </div>
             <CommonInput
               type="text"
               value={requestment}
               onChange={(e) => setRequestment(e.target.value.slice(0, 30))}
               maxLength={30}
-              placeholder="요청사항을 입력하세요. ex) 반납기한 연장"
+              placeholder="ex. 반납기한 연장"
               inputSize="large"
               className="placeholder:text-14px placeholder:font-[400] placeholder:leading-[120%]"
             />
@@ -484,11 +693,13 @@ const RentalInformationSubmitPage = () => {
               개인 정보 동의
             </p>
             <div className="flex flex-col mt-4 gap-3.5">
-              <ConsentSectionCard
-                label={label1}
-                checked={firstConsentChecked}
-                onCheckedChange={setFirstConsentChecked}
-              />
+              {isMembershipLevelReady && (
+                <ConsentSectionCard
+                  label={overdueConsentLabel}
+                  checked={firstConsentChecked}
+                  onCheckedChange={setFirstConsentChecked}
+                />
+              )}
               {isGuaranteedGoodsRequired && (
                 <ConsentSectionCard
                   label={label2 + guaranteedGoods + label3}
@@ -501,19 +712,15 @@ const RentalInformationSubmitPage = () => {
         </div>
         {/* 요청하기 영역 */}
         <div className="flex flex-col w-full items-center mt-5.5 mb-12 gap-3.5">
-          <div className="flex flex-col items-center">
-            <p className="text-center text-primary text-10px font-[400] leading-[130%]">
-              관리자 승인 후 대여가 완료됩니다.
-            </p>
-            <p className="text-center text-primary text-10px font-[400] leading-[130%]">
-              대여 요청은 15분 간 유지돼요!
-            </p>
-          </div>
+          <p className="text-center text-primary text-10px font-[400] leading-[130%]">
+            관리자 승인 후 대여가 완료됩니다.
+          </p>
           <Button
             variant="primary"
             size="lg"
             type="submit"
             disabled={
+              !isMembershipLevelReady ||
               !firstConsentChecked ||
               (isGuaranteedGoodsRequired && !secondConsentChecked) ||
               isPending
@@ -524,9 +731,13 @@ const RentalInformationSubmitPage = () => {
         </div>
       </form>
       <ErrorModal
-        isOpen={isPhoneVerificationErrorOpen}
-        onClose={() => setIsPhoneVerificationErrorOpen(false)}
-        message1="연락처 인증을 진행해주세요."
+        isOpen={isVerificationErrorOpen}
+        onClose={() => setIsVerificationErrorOpen(false)}
+        message1={
+          isEmailVerificationUi
+            ? "이메일 인증을 진행해주세요."
+            : "연락처 인증을 진행해주세요."
+        }
       />
     </Layout>
   );
