@@ -310,7 +310,7 @@ export const ModalTestPage = () => {
         itemName="c타입 충전기"
         itemUnitLabel="c타입 충전기(1)"
         borrowerName="이리버"
-        borrowerPhone="01033385583"
+        contact="01033385583"
         borrowerFields={{
           additionalProp1: "컴퓨터공학과",
           additionalProp2: "202312019",
