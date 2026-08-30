@@ -15,7 +15,7 @@ interface ReturnApprovalModalProps {
   itemName?: string;
   itemUnitLabel?: string;
   borrowerName?: string;
-  borrowerPhone?: string;
+  contact?: string;
   borrowerFields?: {
     additionalProp1?: string;
     additionalProp2?: string;
@@ -93,7 +93,7 @@ const ReturnApprovalModal = ({
   itemName = "대여 물품",
   itemUnitLabel,
   borrowerName,
-  borrowerPhone,
+  contact,
   borrowerFields,
   rentalDate,
   expectedReturnDueDate,
@@ -124,8 +124,8 @@ const ReturnApprovalModal = ({
     if (borrowerName?.trim()) {
       rows.push({ label: "이름", value: borrowerName.trim() });
     }
-    if (borrowerPhone?.trim()) {
-      rows.push({ label: "연락처", value: borrowerPhone.trim() });
+    if (contact?.trim()) {
+      rows.push({ label: "연락처", value: contact.trim() });
     }
     if (borrowerFields?.additionalProp1?.trim()) {
       rows.push({
@@ -149,7 +149,7 @@ const ReturnApprovalModal = ({
       rows.push({ label: "대여 승인 관리자", value: trimmedApprovalAdminName });
     }
     return rows;
-  }, [borrowerName, borrowerPhone, borrowerFields, trimmedApprovalAdminName]);
+  }, [borrowerName, contact, borrowerFields, trimmedApprovalAdminName]);
 
   const trimmedRequestNote = requestNote?.trim().slice(0, 30) || "";
   const unitLabel = itemUnitLabel?.trim() || null;
