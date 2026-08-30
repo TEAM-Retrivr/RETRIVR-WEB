@@ -21,6 +21,7 @@ interface LongRentalApproveModalProps {
   itemUnitLabel?: string;
   count?: string;
   applicant?: string;
+  borrowerName?: string;
   contact?: string;
   time?: string;
   rentalDurationDays?: number;
@@ -122,6 +123,7 @@ const LongRentalApprovalModal = ({
   itemUnitLabel: itemUnitLabelProp,
   count: countProp,
   applicant: applicantProp,
+  borrowerName: borrowerNameProp,
   contact: contactProp,
   time: timeProp,
   rentalDurationDays,
@@ -278,12 +280,14 @@ const LongRentalApprovalModal = ({
   const applicant = useMemo(() => {
     const apiBorrowerName = rentalDetail?.borrowerName?.trim();
     if (apiBorrowerName) return apiBorrowerName;
+    if (borrowerNameProp?.trim()) return borrowerNameProp.trim();
     if (borrowerFieldNameOnly) return borrowerFieldNameOnly;
     if (applicantPropParsed.name) return applicantPropParsed.name;
     if (applicantProp?.trim()) return applicantProp.trim();
     return "대여자 정보";
   }, [
     rentalDetail?.borrowerName,
+    borrowerNameProp,
     borrowerFieldNameOnly,
     applicantPropParsed.name,
     applicantProp,
