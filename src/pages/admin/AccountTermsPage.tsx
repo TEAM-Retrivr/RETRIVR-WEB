@@ -12,9 +12,14 @@ const AccountTermsPage = () => {
             이용 약관
           </h1>
           <div className="mt-5 flex flex-col gap-6 text-12px font-normal leading-[170%] text-neutral-gray-1">
-            {ADMIN_TERMS_SECTIONS.map((section) => (
-              <section key={section.title} className="whitespace-pre-wrap">
-                <p className="font-bold">{section.title}</p>
+            {ADMIN_TERMS_SECTIONS.map((section, index) => (
+              <section
+                key={section.title || `preamble-${index}`}
+                className="whitespace-pre-wrap"
+              >
+                {section.title ? (
+                  <p className="font-bold">{section.title}</p>
+                ) : null}
                 {section.body ? (
                   <p className="font-medium">{section.body}</p>
                 ) : null}
