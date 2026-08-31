@@ -15,7 +15,6 @@ import {
 } from "../../types/paymentMethod";
 import { getAdminEmail } from "../../utils/adminSession";
 import { resolveMembershipReturnTo } from "../../utils/safeReturnTo";
-import { notifyPaymentSystemPreparing } from "../../constants/paymentSystemNotice";
 import {
   claimPortoneBillingKeySave,
   clearPortoneRegisterOption,
@@ -169,8 +168,6 @@ const PaymentMethodRegisterPage = () => {
 
   const handleRegister = async () => {
     if (isBusy || abortedRef.current) return;
-
-    notifyPaymentSystemPreparing();
 
     const cardPhoneNumber =
       selectedOption === "card" ? toPortonePhoneNumber(phoneNumber) : "";
