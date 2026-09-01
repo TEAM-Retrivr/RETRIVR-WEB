@@ -1,10 +1,8 @@
-import type { VoucherListTab } from "../../types/voucherList";
-
-const TABS: { id: VoucherListTab; label: string }[] = [
-  { id: "subscription", label: "구독 이용권" },
-  { id: "coupon", label: "쿠폰 이용권" },
-  { id: "history", label: "이용 내역" },
-];
+import {
+  VOUCHER_LIST_TAB_LABELS,
+  VOUCHER_LIST_TAB_ORDER,
+  type VoucherListTab,
+} from "../../types/voucherList";
 
 type VoucherListTabsProps = {
   activeTab: VoucherListTab;
@@ -17,14 +15,20 @@ const VoucherListTabs = ({ activeTab, onChange }: VoucherListTabsProps) => (
       className="pointer-events-none absolute inset-x-0 bottom-0 h-[3px] bg-neutral-gray-5"
       aria-hidden
     />
-    <div className="relative z-10 flex w-full items-end justify-between px-5">
-      {TABS.map((tab) => {
-        const isActive = activeTab === tab.id;
+    <div
+      className="relative z-10 flex w-full items-end justify-between px-5"
+      role="tablist"
+      aria-label="이용권 목록"
+    >
+      {VOUCHER_LIST_TAB_ORDER.map((tab) => {
+        const isActive = activeTab === tab;
         return (
           <button
-            key={tab.id}
+            key={tab}
             type="button"
-            onClick={() => onChange(tab.id)}
+            role="tab"
+            aria-selected={isActive}
+            onClick={() => onChange(tab)}
             className="relative flex w-20 flex-col items-center gap-2.5 cursor-pointer"
           >
             <span
@@ -32,7 +36,7 @@ const VoucherListTabs = ({ activeTab, onChange }: VoucherListTabsProps) => (
                 isActive ? "text-primary" : "text-neutral-gray-4"
               }`}
             >
-              {tab.label}
+              {VOUCHER_LIST_TAB_LABELS[tab]}
             </span>
             <span
               className={`h-[3px] w-full rounded-[1.5px] ${

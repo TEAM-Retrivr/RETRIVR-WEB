@@ -1,5 +1,17 @@
 export type VoucherListTab = "subscription" | "coupon" | "history";
 
+export const VOUCHER_LIST_TAB_ORDER = [
+  "subscription",
+  "coupon",
+  "history",
+] as const satisfies readonly VoucherListTab[];
+
+export const VOUCHER_LIST_TAB_LABELS: Record<VoucherListTab, string> = {
+  subscription: "구독 이용권",
+  coupon: "쿠폰 이용권",
+  history: "이용 내역",
+};
+
 export type HistoryPeriodOption = "all" | "1m" | "6m" | "1y" | "custom";
 
 export type UsageHistoryItem = {

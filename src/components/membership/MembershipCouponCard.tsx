@@ -15,6 +15,8 @@ export type MembershipCouponCardProps = {
   detailUnit?: string;
   /** 5) 다음 결제일 또는 사용 기간 */
   footerText?: string;
+  /** 구독 해지 후 혜택 종료일 등 보조 톤 */
+  footerTone?: "default" | "muted";
   /** 멤버십 홈 306px / 이용권 목록 338px 안쪽 여백 */
   size?: MembershipCouponCardSize;
 };
@@ -54,12 +56,18 @@ const FOOTER_STYLES: Record<MembershipCouponStatus, string> = {
   completed: "text-neutral-gray-4",
 };
 
+const FOOTER_TONE_STYLES = {
+  default: "",
+  muted: "text-neutral-gray-3",
+} as const;
+
 const MembershipCouponCard = ({
   status,
   title,
   detail,
   detailUnit,
   footerText,
+  footerTone = "default",
   size = "list",
 }: MembershipCouponCardProps) => {
   return (
@@ -94,7 +102,11 @@ const MembershipCouponCard = ({
 
         {footerText ? (
           <p
-            className={`mt-auto self-end text-[8px] font-semibold leading-[1.3] whitespace-nowrap ${FOOTER_STYLES[status]}`}
+            className={`mt-auto self-end text-[8px] font-semibold leading-[1.3] whitespace-nowrap ${
+              footerTone === "muted"
+                ? FOOTER_TONE_STYLES.muted
+                : FOOTER_STYLES[status]
+            }`}
           >
             {footerText}
           </p>
