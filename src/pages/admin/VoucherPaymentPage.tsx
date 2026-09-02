@@ -29,6 +29,7 @@ import { formatBillingScheduleDay } from "../../utils/couponDisplay";
 const SUMMARY_ROWS = [
   { key: "plan", label: "선택 플랜" },
   { key: "amount", label: "예상 금액" },
+  { key: "servicePeriod", label: "서비스 제공 기간" },
   { key: "nextBilling", label: "다음 결제 예정일" },
 ] as const;
 
@@ -89,6 +90,7 @@ const VoucherPaymentPage = () => {
     amount: previewAmount
       ? formatPreviewAmount(previewAmount)
       : plan.amountLabel,
+    servicePeriod: "결제일로부터 31일",
     nextBilling: preview?.nextBillingAt
       ? formatBillingScheduleDay(preview.nextBillingAt)
       : isPreviewLoading
@@ -196,6 +198,10 @@ const VoucherPaymentPage = () => {
               </div>
             ))}
           </dl>
+          <p className="text-10px font-normal leading-[1.3] text-neutral-gray-3">
+            *최초 결제일을 기준으로 31일마다 자동 결제되며 구독이
+            갱신됩니다.
+          </p>
           {isPreviewError ? (
             <p className="text-12px font-normal leading-[1.4] text-red-500">
               결제 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.
