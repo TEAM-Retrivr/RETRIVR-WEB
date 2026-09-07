@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import Button from "../../../components/Button";
+import { useGuideFadeIn } from "../useGuideFadeIn";
 
 const PLANS = [
   { name: "월간 이용권", price: "4,900원", unit: "/월" },
@@ -8,45 +8,61 @@ const PLANS = [
 
 export const GuideProSection = () => {
   const navigate = useNavigate();
+  const fade = useGuideFadeIn();
 
   return (
-    <section id="pro" className="scroll-mt-20 border-b border-neutral-gray-5 px-6 py-16">
-      <div className="mx-auto flex max-w-3xl flex-col gap-6">
-        <h2 className="text-20px font-bold">Retrivr Pro</h2>
-        <p className="text-14px leading-relaxed">
-          물품 관리·승인·반납·장부는 무료로 이용할 수 있습니다. 카카오톡 알림톡은
-          Retrivr Pro의 첫 번째 프리미엄 기능입니다.
-        </p>
-        <div className="min-h-32 rounded-lg bg-neutral-gray p-6">
-          <p className="text-12px text-neutral-gray-3">요금제 비주얼 자리</p>
+    <section
+      id="pro"
+      className="scroll-mt-8 border-t border-neutral-gray-4 bg-neutral-white px-4 py-16 md:px-6 md:py-24"
+    >
+      <div
+        ref={fade.ref}
+        className={`mx-auto grid max-w-6xl items-center gap-10 md:grid-cols-2 ${fade.className}`}
+      >
+        <div className="text-center md:text-left">
+          <span className="mb-2 block text-12px font-bold tracking-wider text-primary uppercase">
+            Retrivr Pro
+          </span>
+          <h2 className="text-24px font-bold leading-tight md:text-[32px]">
+            단체의 필요에 맞게
+            <br />
+            플랜을 선택하세요
+          </h2>
+          <p className="mt-4 text-14px leading-relaxed text-neutral-gray-3 md:text-16px">
+            물품 관리·승인·반납·장부는 무료입니다. 카카오톡 알림톡은 Pro의 첫
+            번째 프리미엄 기능이며, 언제든 구독을 관리하고 해지할 수 있습니다.
+          </p>
+          <ul className="mt-6 flex flex-col gap-3">
+            {PLANS.map((plan) => (
+              <li
+                key={plan.name}
+                className="flex items-center justify-between rounded-[12px] border border-primary bg-secondary-4 px-5 py-4 text-14px"
+              >
+                <span className="font-semibold text-primary">{plan.name}</span>
+                <span className="text-neutral-gray-1">
+                  {plan.price}
+                  <span className="text-neutral-gray-3">{plan.unit}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            className="mt-8 flex w-full cursor-pointer items-center justify-center rounded-2xl bg-secondary-1 px-6 py-4 text-16px font-bold text-neutral-white shadow-primary transition hover:-translate-y-1 md:inline-flex md:w-auto"
+            onClick={() => navigate("/register")}
+          >
+            관리자로 시작하기
+          </button>
         </div>
-        <ul className="flex flex-col gap-3">
-          {PLANS.map((plan) => (
-            <li
-              key={plan.name}
-              className="flex items-center justify-between rounded-lg border border-neutral-gray-4 px-4 py-3 text-14px"
-            >
-              <span className="font-semibold">{plan.name}</span>
-              <span>
-                {plan.price}
-                <span className="text-neutral-gray-3">{plan.unit}</span>
-              </span>
-            </li>
-          ))}
-        </ul>
-        <ul className="flex list-disc flex-col gap-2 pl-5 text-14px leading-relaxed text-neutral-gray-3">
-          <li>언제든 구독을 관리하고 해지할 수 있습니다.</li>
-          <li>이용권이 끝나면 무료 기능만 사용할 수 있습니다.</li>
-          <li>앞으로 더 많은 운영 도구가 Pro를 통해 제공될 예정입니다.</li>
-        </ul>
-        <Button
-          type="button"
-          variant="primary"
-          size="lg"
-          onClick={() => navigate("/register")}
-        >
-          관리자로 시작
-        </Button>
+        <div className="overflow-hidden rounded-2xl shadow-card">
+          <img
+            src="/guide/pro-pricing.png"
+            alt="Retrivr Pro 요금제 안내"
+            width={640}
+            height={800}
+            className="block h-auto w-full"
+          />
+        </div>
       </div>
     </section>
   );

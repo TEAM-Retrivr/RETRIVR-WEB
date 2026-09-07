@@ -1,3 +1,6 @@
+import { GuidePhonePreview } from "../GuidePhonePreview";
+import { useGuideFadeIn } from "../useGuideFadeIn";
+
 const ADMIN_STEPS = [
   {
     title: "단체 설정",
@@ -26,27 +29,35 @@ const ADMIN_STEPS = [
 ] as const;
 
 export const GuideAdminSection = () => {
+  const fade = useGuideFadeIn();
+
   return (
-    <section id="admin" className="scroll-mt-20 border-b border-neutral-gray-5 px-6 py-16">
-      <div className="mx-auto flex max-w-3xl flex-col gap-6">
-        <h2 className="text-20px font-bold">관리자 기능</h2>
-        <p className="text-14px leading-relaxed">
-          물품 등록부터 승인·반납까지, 운영 순서대로 장부가 맞춰집니다.
-        </p>
-        <div className="min-h-32 rounded-lg bg-neutral-gray p-6">
-          <p className="text-12px text-neutral-gray-3">관리자 플로우 비주얼 자리</p>
+    <section id="admin" className="scroll-mt-8 bg-neutral-white px-4 py-16 md:px-6 md:py-20">
+      <div
+        ref={fade.ref}
+        className={`mx-auto grid max-w-6xl items-center gap-10 md:grid-cols-2 ${fade.className}`}
+      >
+        <GuidePhonePreview
+          src="/guide/admin-onboarding.png"
+          alt="관리자 온보딩 화면"
+        />
+        <div>
+          <h2 className="text-24px font-bold md:text-28px">관리자 기능</h2>
+          <p className="mt-3 text-14px leading-relaxed text-neutral-gray-2">
+            물품 등록부터 승인·반납까지, 운영 순서대로 장부가 맞춰집니다.
+          </p>
+          <ol className="mt-6 flex list-decimal flex-col gap-4 pl-5 text-14px leading-relaxed">
+            {ADMIN_STEPS.map((step) => (
+              <li key={step.title}>
+                <p className="font-semibold text-secondary-1">{step.title}</p>
+                <p className="text-neutral-gray-3">{step.description}</p>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-6 text-14px text-neutral-gray-3">
+            대여·반납 이력은 장부로 내려받을 수 있습니다.
+          </p>
         </div>
-        <ol className="flex list-decimal flex-col gap-4 pl-5 text-14px leading-relaxed">
-          {ADMIN_STEPS.map((step) => (
-            <li key={step.title}>
-              <p className="font-semibold">{step.title}</p>
-              <p className="text-neutral-gray-3">{step.description}</p>
-            </li>
-          ))}
-        </ol>
-        <p className="text-14px text-neutral-gray-3">
-          대여·반납 이력은 장부로 내려받을 수 있습니다.
-        </p>
       </div>
     </section>
   );

@@ -1,5 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import Button from "../../../components/Button";
+import { GuidePhonePreview } from "../GuidePhonePreview";
+import { useGuideFadeIn } from "../useGuideFadeIn";
 
 const RENTER_STEPS = [
   {
@@ -22,33 +24,44 @@ const RENTER_STEPS = [
 
 export const GuideRenterSection = () => {
   const navigate = useNavigate();
+  const fade = useGuideFadeIn();
 
   return (
-    <section id="renter" className="scroll-mt-20 border-b border-neutral-gray-5 px-6 py-16">
-      <div className="mx-auto flex max-w-3xl flex-col gap-6">
-        <h2 className="text-20px font-bold">대여자 기능</h2>
-        <p className="text-14px leading-relaxed">
-          별도 회원가입 없이, 복잡한 절차 없이 물품을 신청할 수 있습니다.
-        </p>
-        <div className="min-h-32 rounded-lg bg-neutral-gray p-6">
-          <p className="text-12px text-neutral-gray-3">대여자 플로우 비주얼 자리</p>
+    <section id="renter" className="scroll-mt-8 bg-neutral-gray-5 px-4 py-16 md:px-6 md:py-20">
+      <div
+        ref={fade.ref}
+        className={`mx-auto grid max-w-6xl items-center gap-10 md:grid-cols-2 ${fade.className}`}
+      >
+        <div className="md:order-2">
+          <GuidePhonePreview
+            src="/guide/renter-onboarding.png"
+            alt="대여자 온보딩 화면"
+          />
         </div>
-        <ol className="flex list-decimal flex-col gap-4 pl-5 text-14px leading-relaxed">
-          {RENTER_STEPS.map((step) => (
-            <li key={step.title}>
-              <p className="font-semibold">{step.title}</p>
-              <p className="text-neutral-gray-3">{step.description}</p>
-            </li>
-          ))}
-        </ol>
-        <Button
-          type="button"
-          variant="primary"
-          size="lg"
-          onClick={() => navigate("/client-search")}
-        >
-          대여하기
-        </Button>
+        <div className="md:order-1">
+          <h2 className="text-24px font-bold md:text-28px">대여자 기능</h2>
+          <p className="mt-3 text-14px leading-relaxed text-neutral-gray-2">
+            별도 회원가입 없이, 복잡한 절차 없이 물품을 신청할 수 있습니다.
+          </p>
+          <ol className="mt-6 flex list-decimal flex-col gap-4 pl-5 text-14px leading-relaxed">
+            {RENTER_STEPS.map((step) => (
+              <li key={step.title}>
+                <p className="font-semibold text-secondary-1">{step.title}</p>
+                <p className="text-neutral-gray-3">{step.description}</p>
+              </li>
+            ))}
+          </ol>
+          <div className="mt-8">
+            <Button
+              type="button"
+              variant="primary"
+              size="lg"
+              onClick={() => navigate("/client-search")}
+            >
+              대여하기
+            </Button>
+          </div>
+        </div>
       </div>
     </section>
   );
