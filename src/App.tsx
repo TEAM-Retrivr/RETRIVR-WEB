@@ -22,6 +22,7 @@ import VoucherListPage from "./pages/admin/VoucherListPage";
 import VoucherPaymentPage from "./pages/admin/VoucherPaymentPage";
 import ProfileEditPage from "./pages/admin/ProfileEditPage";
 import LandingPage from "./pages/LandingPage";
+import GuidePage from "./pages/guide/GuidePage";
 import {
   PublicPrivacyPage,
   PublicTermsPage,
@@ -101,6 +102,7 @@ function App() {
       <Routes>
         {/* Public */}
         <Route path="/" element={<LandingPage />} />
+        <Route path="/guide" element={<GuidePage />} />
         <Route path="/legal/terms" element={<PublicTermsPage />} />
         <Route path="/legal/privacy" element={<PublicPrivacyPage />} />
         <Route path="/login" element={<LoginPage />} />
