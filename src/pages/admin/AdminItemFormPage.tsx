@@ -40,6 +40,15 @@ const OPTIONAL_LABELS = {
   major: "학과",
 } as const;
 
+function hasDuplicateUnitLabels(labels: string[]): boolean {
+  const seen = new Set<string>();
+  for (const label of labels) {
+    if (seen.has(label)) return true;
+    seen.add(label);
+  }
+  return false;
+}
+
 /** PATCH unitChanges 중 슬롯별 반영: 추가는 currentLabel null, 이름 변경만 이전·이후 문자열 */
 function buildUnitSlotChanges(
   desired: string[],
@@ -105,7 +114,9 @@ const AdminItemFormPage = ({
   const { data: homeData } = useLoadHome(); // 관리자 홈 정보(단체명 포함)
   const organizationName = homeData?.organizationName; // 헤더 상단에 표시할 단체명
 
-  const [modalType, setModalType] = useState<"confirm" | "error" | null>(null); // 결과 모달 상태(성공/실패/닫힘)
+  const [modalType, setModalType] = useState<
+    "confirm" | "error" | "duplicateUnitLabels" | null
+  >(null); // 결과 모달 상태(성공/실패/중복/닫힘)
   const [itemName, setItemName] = useState(""); // 물품명 입력값
   const [description, setDescription] = useState(""); // 물품 설명 입력값
   const [totalQuantity, setTotalQuantity] = useState(1); // 총 수량 입력값
@@ -331,6 +342,14 @@ const AdminItemFormPage = ({
 
     // 세부 물품(유닛) 이름을 쓰면 UNIT, 아니면 NON_UNIT (요청 바디 종류가 다름)
     const itemManagementType = addItemDetailName ? "UNIT" : "NON_UNIT";
+
+    if (
+      itemManagementType === "UNIT" &&
+      hasDuplicateUnitLabels(desiredUnitLabels)
+    ) {
+      setModalType("duplicateUnitLabels");
+      return;
+    }
 
     const flushPendingDeletesOnSuccess = () => {
       pendingUnitDeleteOpsRef.current = [];
@@ -792,6 +811,16 @@ const AdminItemFormPage = ({
                 : "물품 수정에 실패했습니다."
             }
             message2="다시 시도해주세요."
+            confirmText="확인"
+          />
+        )}
+
+        {modalType === "duplicateUnitLabels" && (
+          <ErrorModal
+            isOpen={true}
+            onClose={() => setModalType(null)}
+            message1="세부 물품 이름이 중복됩니다."
+            message2="다른 이름으로 수정한 뒤 다시 저장해주세요."
             confirmText="확인"
           />
         )}
