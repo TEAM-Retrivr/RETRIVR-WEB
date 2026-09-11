@@ -820,7 +820,7 @@ const AdminItemFormPage = ({
             isOpen={true}
             onClose={() => setModalType(null)}
             message1="세부 물품 이름이 중복됩니다."
-            message2="다른 이름으로 수정한 뒤 다시 저장해주세요."
+            message2="다른 이름으로 수정해주세요."
             confirmText="확인"
           />
         )}
