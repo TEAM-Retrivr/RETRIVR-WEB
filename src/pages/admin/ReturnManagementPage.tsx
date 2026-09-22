@@ -2,6 +2,7 @@ import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import StockCheckCard from "../../components/cards/admin/management/StockCheckCard";
 import ReturnConfirmCard from "../../components/cards/admin/return/ReturnConfirmCard";
+import ReturnSearchResultCard from "../../components/cards/admin/return/ReturnSearchResultCard";
 import {
   useAdminRentalItemSummaryList,
   useAdminOverdueRentalList,
@@ -134,7 +135,7 @@ const ReturnManagementPage = () => {
                 </div>
               )}
               {keyword && (
-                <div className="flex flex-col">
+                <div className="flex flex-col gap-3">
                   {isRentalSearchLoading && (
                     <p className="text-14px text-neutral-gray-3 py-2">
                       검색 중...
@@ -155,20 +156,12 @@ const ReturnManagementPage = () => {
                   {!isRentalSearchLoading &&
                     !rentalSearchError &&
                     searchedRentals.map((rental) => (
-                      <div
+                      <ReturnSearchResultCard
                         key={rental.rentalId}
-                        className="py-4 border-b border-neutral-gray-4/70 last:border-b-0"
-                      >
-                        <p className="text-20px text-neutral-gray-1 font-[700] leading-[130%]">
-                          {rental.contact}
-                        </p>
-                        <p className="mt-1 text-14px text-neutral-gray-3 font-[600] leading-[130%]">
-                          {rental.borrowerName}
-                        </p>
-                        <p className="mt-0.5 text-14px text-secondary-2 opacity-[0.85] font-[600] leading-[130%]">
-                          {rental.itemName}
-                        </p>
-                      </div>
+                        keyword={keyword}
+                        rental={rental}
+                        organizationName={organizationName}
+                      />
                     ))}
                   {!isRentalSearchLoading && hasNextPage && (
                     <div ref={searchLoadMoreRef} className="h-3" />

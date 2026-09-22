@@ -75,6 +75,19 @@ export interface AdminRentalSearchItem {
   borrowerName: string;
   contact: string;
   itemName: string;
+  // 검색 응답에 포함되면 카드와 반납 확인 모달에 표시
+  itemId?: number;
+  itemUnitLabel?: string;
+  isOverdue?: boolean;
+  borrowerFields?: {
+    additionalProp1?: string;
+    additionalProp2?: string;
+    additionalProp3?: string;
+  };
+  rentalDate?: string;
+  expectedReturnDueDate?: string;
+  requestNote?: string;
+  approvalAdminName?: string;
 }
 
 export interface AdminRentalSearchResponse {
