@@ -9,7 +9,7 @@ const LandingPage = () => {
   const navigate = useNavigate();
 
   return (
-    <Layout overflowVisible>
+    <Layout>
       <div className="flex flex-1 flex-col ">
         <div className="mt-50 flex flex-1 flex-col items-center justify-center gap-4">
           {/* 아이콘, 로고 영역 */}
