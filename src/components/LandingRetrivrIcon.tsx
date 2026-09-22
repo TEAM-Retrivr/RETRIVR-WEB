@@ -10,7 +10,6 @@ const LandingRetrivrIcon = () => {
       >
         <DotLottieReact
           src="/animations/landing-retrivr-icon.lottie"
-          loop
           autoplay
           width={200}
           height={200}
