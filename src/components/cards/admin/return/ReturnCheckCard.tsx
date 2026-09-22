@@ -123,7 +123,7 @@ const ReturnCheckCard = ({
               !rental.isOverdue ? "opacity-60 cursor-not-allowed" : ""
             }`}
             disabled={!rental.isOverdue}
-            onClick={() => setIsOverdueMessageOpen(true)}
+            onClick={() => setIsReturnApprovalOpen(true)}
           >
             연체 문자 전송
           </Button>

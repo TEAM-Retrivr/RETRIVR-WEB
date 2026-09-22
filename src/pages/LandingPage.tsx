@@ -1,6 +1,7 @@
-import { Layout } from "../components/Layout";
-import Button from "../components/Button";
 import { useNavigate } from "react-router-dom";
+import Button from "../components/Button";
+import LandingRetrivrIcon from "../components/LandingRetrivrIcon";
+import { Layout } from "../components/Layout";
 
 const footerUnderlineClass = "text-inherit underline";
 
@@ -8,13 +9,11 @@ const LandingPage = () => {
   const navigate = useNavigate();
 
   return (
-    <Layout>
-      <div className="flex flex-1 flex-col">
-        <div className="mt-58 flex flex-1 flex-col items-center justify-center gap-4">
+    <Layout overflowVisible>
+      <div className="flex flex-1 flex-col ">
+        <div className="mt-50 flex flex-1 flex-col items-center justify-center gap-4">
           {/* 아이콘, 로고 영역 */}
-          <div className="w-full max-w-[146px] max-h-[164px]">
-            <img src="/icons/symbol.svg" alt="리트리버 캐릭터 로고" />
-          </div>
+          <LandingRetrivrIcon />
           <div className="w-full max-w-[240px]">
             <img
               className="w-full"
@@ -40,7 +39,7 @@ const LandingPage = () => {
           </Button>
         </div>
         <p className="w-full px-4 pb-12 text-center text-10px font-normal leading-[1.3] text-neutral-gray-3 whitespace-pre">
-          Retrivr  |  대표자: 박다솔  |  사업자등록번호: 870-64-00978
+          Retrivr | 대표자: 박다솔 | 사업자등록번호: 870-64-00978
           {"\n"}
           <button
             type="button"
