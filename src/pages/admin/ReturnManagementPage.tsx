@@ -2,6 +2,7 @@ import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import StockCheckCard from "../../components/cards/admin/management/StockCheckCard";
 import ReturnConfirmCard from "../../components/cards/admin/return/ReturnConfirmCard";
+import ReturnSearchResultCard from "../../components/cards/admin/return/ReturnSearchResultCard";
 import {
   useAdminRentalItemSummaryList,
   useAdminOverdueRentalList,
@@ -41,8 +42,7 @@ const ReturnManagementPage = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setKeyword(inputValue.trim());
-    setIsSearchOpen(true);
+    // 실시간 검색으로 동작하므로 엔터 제출 시에는 기본 동작만 막음
   };
 
   const { data: homeData } = useLoadHome();
@@ -107,7 +107,12 @@ const ReturnManagementPage = () => {
             className="flex-1 text-14px text-neutral-gray-1 font-[600] border-none outline-none pl-3 py-3 placeholder:text-neutral-gray-3 placeholder:text-14px"
             type="text"
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={(e) => {
+              const next = e.target.value;
+              setInputValue(next);
+              setKeyword(next.trim());
+              setIsSearchOpen(true);
+            }}
             placeholder="대여자 정보로 찾기"
             onFocus={() => setIsSearchOpen(true)}
           />
@@ -116,7 +121,7 @@ const ReturnManagementPage = () => {
           </button>
         </form>
         {isSearchOpen && (
-          <div className="z-20 w-full bg-neutral-gray-6 font-[Pretendard] rounded-[14px] py-6.5 px-5.5 -mt-4">
+          <div className="z-20 w-full bg-neutral-gray-5 font-[Pretendard] rounded-[14px] py-6.5 px-5.5 -mt-4">
             <p className="text-16px text-secondary-2 opacity-[0.9] font-[600]">
               {keyword ? "검색 결과" : "입력 예시"}
             </p>
@@ -134,7 +139,7 @@ const ReturnManagementPage = () => {
                 </div>
               )}
               {keyword && (
-                <div className="flex flex-col">
+                <div className="flex flex-col gap-3">
                   {isRentalSearchLoading && (
                     <p className="text-14px text-neutral-gray-3 py-2">
                       검색 중...
@@ -155,20 +160,12 @@ const ReturnManagementPage = () => {
                   {!isRentalSearchLoading &&
                     !rentalSearchError &&
                     searchedRentals.map((rental) => (
-                      <div
+                      <ReturnSearchResultCard
                         key={rental.rentalId}
-                        className="py-4 border-b border-neutral-gray-4/70 last:border-b-0"
-                      >
-                        <p className="text-20px text-neutral-gray-1 font-[700] leading-[130%]">
-                          {rental.contact}
-                        </p>
-                        <p className="mt-1 text-14px text-neutral-gray-3 font-[600] leading-[130%]">
-                          {rental.borrowerName}
-                        </p>
-                        <p className="mt-0.5 text-14px text-secondary-2 opacity-[0.85] font-[600] leading-[130%]">
-                          {rental.itemName}
-                        </p>
-                      </div>
+                        keyword={keyword}
+                        rental={rental}
+                        organizationName={organizationName}
+                      />
                     ))}
                   {!isRentalSearchLoading && hasNextPage && (
                     <div ref={searchLoadMoreRef} className="h-3" />

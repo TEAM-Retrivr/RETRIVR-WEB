@@ -362,6 +362,7 @@ export const useUpdateAdminRentalReturnDueDate = () => {
       const invalidations: Array<Promise<void>> = [
         queryClient.invalidateQueries({ queryKey: ["adminRentalItemSummary"] }),
         queryClient.invalidateQueries({ queryKey: ["adminOverdueRentals"] }),
+        queryClient.invalidateQueries({ queryKey: ["adminRentalSearch"] }),
       ];
 
       if (variables.itemId && Number.isFinite(variables.itemId)) {
