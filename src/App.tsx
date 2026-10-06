@@ -10,6 +10,7 @@ import {
 import TestPage from "./pages/TestPage";
 import { ModalTestPage } from "./pages/ModalTestPage";
 import LoginPage from "./pages/admin/LoginPage";
+import ResetPasswordPage from "./pages/admin/ResetPasswordPage";
 import HomePage from "./pages/admin/HomePage";
 import AccountPage from "./pages/admin/AccountPage";
 import AccountTermsPage from "./pages/admin/AccountTermsPage";
@@ -23,10 +24,7 @@ import VoucherPaymentPage from "./pages/admin/VoucherPaymentPage";
 import ProfileEditPage from "./pages/admin/ProfileEditPage";
 import LandingPage from "./pages/LandingPage";
 import GuidePage from "./pages/guide/GuidePage";
-import {
-  PublicPrivacyPage,
-  PublicTermsPage,
-} from "./pages/LegalDocumentPage";
+import { PublicPrivacyPage, PublicTermsPage } from "./pages/LegalDocumentPage";
 import RegisterPage from "./pages/admin/RegisterPage";
 import TermsConsentPage from "./pages/TermsConsentPage";
 import RentalRequestPage from "./pages/admin/RentalRequestPage";
@@ -106,6 +104,7 @@ function App() {
         <Route path="/legal/terms" element={<PublicTermsPage />} />
         <Route path="/legal/privacy" element={<PublicPrivacyPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/terms" element={<TermsConsentPage />} />
         <Route path="/test" element={<TestPage />} />
         <Route path="/modal-test" element={<ModalTestPage />} />
