@@ -114,7 +114,7 @@ const LoginPage = () => {
           <button
             className="text-center text-[#9c9c9c] text-[0.875rem] font-normal leading-none cursor-pointer hover:text-neutral-dark"
             type="button"
-            onClick={() => navigate("")}
+            onClick={() => navigate("/reset-password")}
           >
             이메일 / 비밀번호 찾기
           </button>
