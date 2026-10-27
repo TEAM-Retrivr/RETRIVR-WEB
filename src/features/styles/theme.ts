@@ -1,8 +1,8 @@
-import { tokens } from "./tokens";
+import { colors, fontFamily, fontWeight, typography } from "./tokens";
 
-// 예시
 export const theme = {
-  ...tokens,
-};
-
-export type AppTheme = typeof theme;
+  colors,
+  fontFamily,
+  fontWeight,
+  typography,
+} as const;
