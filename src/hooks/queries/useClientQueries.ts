@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 import {
   requestItemDetail,
   requestItemList,
@@ -9,30 +9,35 @@ import {
 import type {
   BorrowerInformationRequest,
   ItemDetailResponse,
-  ItemResponse,
   OrganizationSearchResponse,
   RentalDetailResponse,
 } from "../../api/client/client.type";
 
 interface UseItemListParams {
   organizationId: number;
-  cursor?: number;
   size?: number;
   enabled?: boolean;
 }
 
 export const useItemList = ({
   organizationId,
-  cursor,
   size,
   enabled = true,
 }: UseItemListParams) => {
-  return useQuery<ItemResponse>({
-    // queryKey: 쿼리를 고유 식별하는 Cache Key로 사용
-    // clientItems: 네임스페이스 역할 -> 쿼리의 종류를 나타냄
-    // oragnizationId, cursor, size: 파라미터 값이 달라질 때 다른 캐시로 구분되도록 하기 위해 사용
-    queryKey: ["clientItems", organizationId, cursor, size],
-    queryFn: () => requestItemList(organizationId, { cursor, size }),
+  return useInfiniteQuery({
+    queryKey: ["clientItems", organizationId, size],
+    initialPageParam: undefined as number | undefined,
+    queryFn: ({ pageParam }) =>
+      requestItemList(organizationId, {
+        cursor: pageParam,
+        size,
+      }),
+    getNextPageParam: (lastPage) => {
+      const nextCursor = lastPage.nextCursor;
+      return typeof nextCursor === "number" && nextCursor > 0
+        ? nextCursor
+        : undefined;
+    },
     retry: false,
     enabled,
     // 재고 수량이 자주 변할 수 있으므로 너무 오래 캐싱하지 않아야 한다.
@@ -68,7 +73,7 @@ export const useSendRentalRequest = () => {
     onSuccess: () => {
       console.log("인증 성공");
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.log("인증 실패", error);
     },
   });
@@ -102,7 +107,8 @@ export const useRentalDetail = (
   return useQuery<RentalDetailResponse>({
     queryKey: ["clientRentalDetail", rentalId, token],
     queryFn: () => requestRentalDetail(rentalId, token),
-    enabled: enabled && Number.isFinite(rentalId) && rentalId > 0 && !!token.trim(),
+    enabled:
+      enabled && Number.isFinite(rentalId) && rentalId > 0 && !!token.trim(),
     retry: false,
   });
 };

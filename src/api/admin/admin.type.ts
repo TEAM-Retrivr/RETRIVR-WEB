@@ -15,7 +15,7 @@ export interface AdminItemListResponse {
     useMessageAlarmService?: boolean;
     borrowerRequirements: AdminBorrowerRequirementResponse[];
   }[];
-  nextCursor?: number;
+  nextCursor?: number | null;
 }
 
 // 반납 화면에서의 물품 리스트 조회 응답
