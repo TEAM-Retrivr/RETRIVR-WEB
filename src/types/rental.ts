@@ -14,4 +14,5 @@ export interface RentalRequest {
   rentalDuration?: number; // 대여 기간(일)
   guaranteedGoods?: string | null; // 보증 물품 (없으면 null)
   applicantInfo: ApplicantInfo; // 대여자 정보
+  borrowerFields?: Record<string, string>; // 추가 대여자 정보
 }

@@ -21,6 +21,7 @@ interface RentRequestCardData {
   rentalDuration?: number;
   guaranteedGoods?: string | null;
   itemUnitLabel?: string;
+  borrowerFields?: Record<string, string>;
 }
 
 const PRODUCTION_WEB_ORIGIN = "https://www.retrivr.kr";
@@ -65,6 +66,7 @@ const Home = () => {
       rentalDuration: req.rentalDuration,
       guaranteedGoods: req.guaranteedGoods,
       itemUnitLabel: req.itemUnitLabel,
+      borrowerFields: req.borrowerFields ?? req.borrowerField,
     })) ?? [];
 
   const rentalPageUrl = useMemo(() => {
@@ -174,6 +176,7 @@ const Home = () => {
                     rentalDuration={items.rentalDuration}
                     guaranteedGoods={items.guaranteedGoods}
                     itemUnitLabel={items.itemUnitLabel}
+                    borrowerFields={items.borrowerFields}
                   />
                 ))}
               </div>

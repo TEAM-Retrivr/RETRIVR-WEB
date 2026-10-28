@@ -47,6 +47,7 @@ const RentalRequestPage = () => {
                 name: request.borrowerName,
                 phone: request.contact,
               },
+              borrowerFields: request.borrowerFields ?? request.borrowerField,
             };
 
             return (

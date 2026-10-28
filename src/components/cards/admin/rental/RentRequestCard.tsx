@@ -13,6 +13,7 @@ interface RentRequestCardProps {
   rentalDuration?: number;
   guaranteedGoods?: string | null;
   itemUnitLabel?: string;
+  borrowerFields?: Record<string, string>;
 }
 
 export const RentRequestCard = ({
@@ -26,6 +27,7 @@ export const RentRequestCard = ({
   rentalDuration,
   guaranteedGoods,
   itemUnitLabel,
+  borrowerFields,
 }: RentRequestCardProps) => {
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
   return (
@@ -59,6 +61,7 @@ export const RentRequestCard = ({
         rentalDurationDays={rentalDuration}
         guaranteedGoodsProp={guaranteedGoods}
         itemUnitLabel={itemUnitLabel}
+        borrowerFields={borrowerFields}
       />
     </>
   );

@@ -98,6 +98,8 @@ export interface AdminRentalRequestItem {
   availableQuantity: number;
   borrowerName: string;
   contact: string;
+  borrowerFields?: Record<string, string>;
+  borrowerField?: Record<string, string>;
   guaranteedGoods: string | null;
   requestedAt: string;
 }
@@ -257,11 +259,7 @@ export interface AdminActiveRentalItemUnit {
   borrowerName: string; //대여자 이름 (필수 입력 사항)
   contact: string; // 대여자 연락처 (필수 입력사항)
   // borrowerFields: 선택적 요구사항
-  borrowerFields?: {
-    additionalProp1?: string;
-    additionalProp2?: string;
-    additionalProp3?: string;
-  };
+  borrowerFields?: Record<string, string>;
   rentalDate: string; // ISO date string (대여 일자)
   expectedReturnDueDate: string; // ISO date string (반납 예정 일자)
   requestNote?: string; // 대여자 요청사항

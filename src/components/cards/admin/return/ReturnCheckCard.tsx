@@ -21,11 +21,7 @@ export interface ReturnCheckCardRentalInfo {
   borrowerName: string; // 대여자 이름
   contact: string; // 대여자 연락처
   // 대여자 추가 입력 사항
-  borrowerFields?: {
-    additionalProp1?: string;
-    additionalProp2?: string;
-    additionalProp3?: string;
-  };
+  borrowerFields?: Record<string, string>;
 
   // 대여/반납 일자
   rentalDate: string;
@@ -49,6 +45,9 @@ const ReturnCheckCard = ({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const { mutate: confirmReturn, isPending: isConfirming } =
     useConfirmAdminReturn();
+  const borrowerFields = Object.entries(rental.borrowerFields ?? {}).filter(
+    ([, value]) => typeof value === "string" && value.trim(),
+  );
 
   return (
     <>
@@ -81,19 +80,18 @@ const ReturnCheckCard = ({
             </button>
           </div>
           {/* 대여자 정보 및 대여 일자, 반납 일자 영역 */}
-          <div className="w-full h-32.5 bg-secondary-4 pt-4.5 px-5.5 rounded-[10px]">
+          <div className="w-full min-h-32.5 bg-secondary-4 pt-4.5 px-5.5 pb-4.5 rounded-[10px]">
             <div className="flex flex-col gap-2.5">
-              {/* 대여자 정보 영역 - 이름, 학과, 학번  */}
+              {/* 대여자 정보 영역 */}
               <div className="text-12px text-neutral-gray-1 font-normal leading-[140%]">
                 <p>이름: {rental.borrowerName}</p>
                 <p>연락처: {rental.contact}</p>
 
-                {rental.borrowerFields?.additionalProp1 && (
-                  <p>학과: {rental.borrowerFields?.additionalProp1}</p>
-                )}
-                {rental.borrowerFields?.additionalProp2 && (
-                  <p>학번: {rental.borrowerFields?.additionalProp2}</p>
-                )}
+                {borrowerFields.map(([label, value]) => (
+                  <p key={label}>
+                    {label}: {value}
+                  </p>
+                ))}
               </div>
               {/* 대여 일자, 반납 일자 표시 영역 */}
               <div className="w-30.75 text-12px text-secondary-2">
