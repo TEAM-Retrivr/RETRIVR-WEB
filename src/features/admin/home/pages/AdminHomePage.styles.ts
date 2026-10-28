@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 
 export const InformationSection = styled.div`
   display: flex;
-  width: full;
+  width: 100%;
   justify-content: center;
   algin-items: center;
 `;

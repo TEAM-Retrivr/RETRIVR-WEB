@@ -11,7 +11,7 @@ export const Description = styled.section`
 export const AdminInfoSection = styled.div`
   display: flex;
   gap: 16px;
-  width: full;
+  width: 100%;
   height: 52px;
   align-items: center;
 `;
