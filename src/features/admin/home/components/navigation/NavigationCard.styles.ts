@@ -10,15 +10,14 @@ export const CardButton = styled.button`
   justify-content: center;
   gap: 6px;
   padding: 12px 25px;
-  border: 0;
+  border: none;
   border-radius: 8px;
   background-color: ${theme.colors.gray[50]};
   color: ${theme.colors.gray[900]};
   cursor: pointer;
-
-  &:focus-visible {
-    outline: 2px solid ${theme.colors.sky[500]};
-    outline-offset: 2px;
+  transition: all 0.2s ease-in-out;
+  &:hover {
+    background-color: ${theme.colors.gray[200]};
   }
 `;
 
