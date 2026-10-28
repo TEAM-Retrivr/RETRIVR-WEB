@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { Layout } from "../../components/Layout";
 import RentalAvailableItemCard from "../../components/cards/client/RentalAvailableItemCard";
 import type { ItemRequest } from "../../types/item";
@@ -14,18 +15,45 @@ const ClientHome = () => {
     ? Number(organizationIdParam)
     : NaN;
 
-  const { data, isLoading, error } = useItemList({
+  const {
+    data,
+    isLoading,
+    isError,
+    hasNextPage,
+    isFetchingNextPage,
+    isFetchNextPageError,
+    fetchNextPage,
+  } = useItemList({
     organizationId,
     size: 10,
     enabled: Number.isFinite(organizationId) && organizationId > 0,
   });
-  const displayOrganizationName = data?.organizationName ?? "";
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const displayOrganizationName = data?.pages[0]?.organizationName ?? "";
 
   const itemRequests: ItemRequest[] =
-    data?.items?.map((item) => ({
-      item,
-      nextCursor: data.nextCursor ?? 0,
-    })) ?? [];
+    data?.pages.flatMap((page) =>
+      page.items.map((item) => ({
+        item,
+        nextCursor: page.nextCursor ?? 0,
+      })),
+    ) ?? [];
+
+  useEffect(() => {
+    if (!hasNextPage || isFetchingNextPage || isFetchNextPageError) return;
+    const target = loadMoreRef.current;
+    if (!target) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) void fetchNextPage();
+      },
+      { threshold: 0.2 },
+    );
+
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage]);
 
   if (!Number.isFinite(organizationId) || organizationId <= 0) {
     return (
@@ -43,7 +71,7 @@ const ClientHome = () => {
       </Layout>
     );
   }
-  if (error) {
+  if (isError && !data) {
     return (
       <Layout>
         <div className="p-6">에러가 발생했습니다.</div>
@@ -69,7 +97,7 @@ const ClientHome = () => {
           {/* 프로필 사진 */}
           <UserIcon
             usage="home"
-            imageURL={data?.profileImageUrl}
+            imageURL={data?.pages[0]?.profileImageUrl}
             alt={displayOrganizationName || "대여지"}
           />
           <div />
@@ -95,26 +123,42 @@ const ClientHome = () => {
           {isLoading && (
             <span className="text-sm text-neutral-gray-3">불러오는 중...</span>
           )}
-          {error && (
-            <span className="text-sm text-red-500">
-              대여 가능 물품을 불러오는 중 오류가 발생했습니다.
-            </span>
-          )}
-          {!isLoading && !error && itemRequests.length === 0 && (
-            <span className="text-sm text-neutral-gray-3">
-              대여 가능한 물품이 없습니다.
-            </span>
-          )}
           {!isLoading &&
-            !error &&
-            itemRequests.map((itemRequest) => (
-              <RentalAvailableItemCard
-                key={itemRequest.item.itemId}
-                itemInfo={itemRequest}
-                organizationId={organizationId}
-                organizationName={displayOrganizationName}
-              />
-            ))}
+            !hasNextPage &&
+            !isFetchNextPageError &&
+            itemRequests.length === 0 && (
+              <span className="text-sm text-neutral-gray-3">
+                대여 가능한 물품이 없습니다.
+              </span>
+            )}
+          {itemRequests.map((itemRequest) => (
+            <RentalAvailableItemCard
+              key={itemRequest.item.itemId}
+              itemInfo={itemRequest}
+              organizationId={organizationId}
+              organizationName={displayOrganizationName}
+            />
+          ))}
+          {isFetchNextPageError && (
+            <button
+              type="button"
+              onClick={() => void fetchNextPage()}
+              disabled={isFetchingNextPage}
+              className="py-3 text-sm text-secondary-2 disabled:text-neutral-gray-3"
+            >
+              {isFetchingNextPage
+                ? "물품을 불러오는 중..."
+                : "물품을 더 불러오지 못했습니다. 다시 시도"}
+            </button>
+          )}
+          {hasNextPage && !isFetchNextPageError && (
+            <div
+              ref={loadMoreRef}
+              className="py-3 text-center text-sm text-neutral-gray-3"
+            >
+              {isFetchingNextPage ? "물품을 불러오는 중..." : ""}
+            </div>
+          )}
         </div>
       </div>
     </Layout>
