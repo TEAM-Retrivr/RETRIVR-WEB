@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { RentalRequest } from "../../../../types/rental";
-import { ShortRentalApprovalModal } from "../../../modals/admin/rentalApprovalModal/ShortRentalApprovalModal";
+import LongRentalApprovalModal from "../../../modals/admin/rentalApprovalModal/LongRentalApprovalModal";
 // 대여 확인 카드에 들어갈 값
 
 interface RentalConfirmCardProps {
@@ -17,7 +17,12 @@ const RentalConfirmCard = ({ rental }: RentalConfirmCardProps) => {
     rentalDuration,
     guaranteedGoods,
     applicantInfo,
+    borrowerFields,
   } = rental;
+  const additionalBorrowerFields = Object.entries(borrowerFields ?? {}).filter(
+    ([key, value]) =>
+      key.trim() && typeof value === "string" && value.trim(),
+  );
   const guaranteedGoodsLabel =
     guaranteedGoods === null || !guaranteedGoods?.trim()
       ? "없음"
@@ -34,10 +39,10 @@ const RentalConfirmCard = ({ rental }: RentalConfirmCardProps) => {
 
   return (
     <>
-      <div className="flex w-87.5 h-85 justify-center font-[Pretendard]">
+      <div className="flex w-87.5 min-h-85 justify-center font-[Pretendard]">
         <div className="w-full rounded-[24px] border-secondary-3 p-1">
           {/* 실제 카드 영역 */}
-          <div className="flex h-85 w-full flex-col rounded-[20px] bg-neutral-white px-5 pt-6 pb-5 shadow-card">
+          <div className="flex min-h-85 w-full flex-col rounded-[20px] bg-neutral-white px-5 pt-6 pb-5 shadow-card">
             {/* 상단 정보 영역 */}
             <div className="flex flex-col px-2.5 gap-1">
               <p className="text-12px font-[300] text-primary">
@@ -58,7 +63,7 @@ const RentalConfirmCard = ({ rental }: RentalConfirmCardProps) => {
               )}
             </div>
 
-            {/* 대여 기간 / 보증 물품 (하드코딩) */}
+            {/* 대여 기간 / 보증 물품 */}
             <div className="mt-2.5 pl-2.5">
               <ul className="list-disc pl-5 text-14px font-normal leading-[140%] text-neutral-gray-1">
                 <li>대여 기간 : {rentalDuration ?? "-"}일</li>
@@ -70,6 +75,11 @@ const RentalConfirmCard = ({ rental }: RentalConfirmCardProps) => {
             <div className="mt-5 border-t border-neutral-gray-4/50 pt-4.5 pl-2.5 text-14px font-normal leading-[140%] text-secondary-1">
               <p>이름: {applicantInfo.name}</p>
               <p>연락처: {applicantInfo.phone}</p>
+              {additionalBorrowerFields.map(([label, value]) => (
+                <p key={label}>
+                  {label}: {value}
+                </p>
+              ))}
             </div>
 
             {/* 버튼 영역 */}
@@ -83,16 +93,18 @@ const RentalConfirmCard = ({ rental }: RentalConfirmCardProps) => {
         </div>
       </div>
 
-      <ShortRentalApprovalModal
+      <LongRentalApprovalModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         rentalId={rentalId}
-        itemData={{
-          name: itemName,
-          borrower: applicantInfo.name,
-          duration: `${rentalDuration ?? "-"}일`,
-          guaranteedGoods: guaranteedGoodsLabel,
-        }}
+        itemName={itemName}
+        count={itemCount}
+        borrowerName={applicantInfo.name}
+        contact={applicantInfo.phone}
+        time={requestedAt}
+        rentalDurationDays={rentalDuration}
+        guaranteedGoodsProp={guaranteedGoods}
+        borrowerFields={borrowerFields}
       />
     </>
   );

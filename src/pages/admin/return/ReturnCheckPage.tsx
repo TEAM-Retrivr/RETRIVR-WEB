@@ -31,13 +31,7 @@ const ReturnCheckPage = () => {
         itemUnitLabel: unit.itemUnitLabel,
         borrowerName: unit.borrowerName,
         contact: unit.contact,
-        borrowerFields: unit.borrowerFields
-          ? {
-              additionalProp1: unit.borrowerFields.additionalProp1,
-              additionalProp2: unit.borrowerFields.additionalProp2,
-              additionalProp3: unit.borrowerFields.additionalProp3,
-            }
-          : undefined,
+        borrowerFields: unit.borrowerFields,
         rentalDate: unit.rentalDate,
         expectedReturnDueDate: unit.expectedReturnDueDate,
         requestNote: unit.requestNote,
