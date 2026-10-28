@@ -19,7 +19,7 @@ export interface ItemResponse {
       required: boolean;
     }[]; // 추가 대여자 정보 요구 항목
   }[];
-  nextCursor?: number; // (무한스크롤) 사용자에게 보여줄 페이지 단위. nextCursor가 null이면 다음 페이지가 없음.
+  nextCursor?: number | null; // 다음 페이지 조회용 커서. null이면 다음 페이지가 없음.
 }
 
 // 1-2. 물품 상세 조회 응답 바디
