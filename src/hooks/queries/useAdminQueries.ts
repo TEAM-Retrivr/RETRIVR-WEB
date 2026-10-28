@@ -40,7 +40,6 @@ import {
 } from "../../api/admin/admin.api";
 import type {
   AdminCreateItemRequest,
-  AdminItemListResponse,
   AdminCouponMembershipPassListResponse,
   AdminMembershipHistoryResponse,
   AdminMembershipResponse,
@@ -60,9 +59,17 @@ import type {
 // - 물품 관리 페이지에서 사용
 // - 서버 캐시 키: ["adminItems"]
 export const useAdminItemList = () => {
-  return useQuery<AdminItemListResponse>({
+  return useInfiniteQuery({
     queryKey: ["adminItems"],
-    queryFn: requestAdminItemList,
+    initialPageParam: undefined as number | undefined,
+    queryFn: ({ pageParam }) =>
+      requestAdminItemList({ cursor: pageParam, size: 15 }),
+    getNextPageParam: (lastPage) => {
+      const nextCursor = lastPage.nextCursor;
+      return typeof nextCursor === "number" && nextCursor > 0
+        ? nextCursor
+        : undefined;
+    },
     retry: false,
   });
 };

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { Layout } from "../../components/Layout";
 import Header from "../../components/Header";
 import { useAdminItemList } from "../../hooks/queries/useAdminQueries";
@@ -50,12 +51,38 @@ const ItemManagementPage = () => {
     }
   };
 
-  const { data, isLoading, error } = useAdminItemList();
+  const {
+    data,
+    isLoading,
+    isError,
+    hasNextPage,
+    isFetchingNextPage,
+    isFetchNextPageError,
+    fetchNextPage,
+  } = useAdminItemList();
   const { data: homeData } = useLoadHome();
   const organizationName = homeData?.organizationName;
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
-  const items: AdminItemListResponse["items"] = data?.items ?? [];
+  const items: AdminItemListResponse["items"] =
+    data?.pages.flatMap((page) => page.items) ?? [];
   const hasItems = items.length > 0;
+
+  useEffect(() => {
+    if (!hasNextPage || isFetchingNextPage || isFetchNextPageError) return;
+    const target = loadMoreRef.current;
+    if (!target) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) void fetchNextPage();
+      },
+      { threshold: 0.2 },
+    );
+
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage]);
 
   // 로딩 화면
   if (isLoading) {
@@ -67,7 +94,7 @@ const ItemManagementPage = () => {
   }
 
   // 에러 화면
-  if (error) {
+  if (isError && !data) {
     return (
       <Layout>
         <div>에러가 발생했습니다.</div>
@@ -97,7 +124,7 @@ const ItemManagementPage = () => {
           </button>
         }
       />
-      {!hasItems ? (
+      {!hasItems && !hasNextPage && !isFetchNextPageError ? (
         <div className="flex flex-col w-full mt-48 items-center font-[Pretendard] font-normal">
           <img className="w-42" src="/icons/symbol.svg" alt="심볼 로고" />
           <p className="text-[#000] opacity-[0.39] text-16px ">
@@ -124,6 +151,26 @@ const ItemManagementPage = () => {
               itemManagementType={item.itemManagementType}
             />
           ))}
+          {isFetchNextPageError && (
+            <button
+              type="button"
+              onClick={() => void fetchNextPage()}
+              disabled={isFetchingNextPage}
+              className="py-3 text-sm text-secondary-2 disabled:text-neutral-gray-3"
+            >
+              {isFetchingNextPage
+                ? "물품을 불러오는 중..."
+                : "물품을 더 불러오지 못했습니다. 다시 시도"}
+            </button>
+          )}
+          {hasNextPage && !isFetchNextPageError && (
+            <div
+              ref={loadMoreRef}
+              className="w-full py-3 text-center text-sm text-neutral-gray-3"
+            >
+              {isFetchingNextPage ? "물품을 불러오는 중..." : ""}
+            </div>
+          )}
         </div>
       )}
       <div className="flex justify-end mt-auto mb-11">
