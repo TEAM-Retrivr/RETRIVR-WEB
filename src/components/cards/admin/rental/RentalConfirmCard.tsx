@@ -20,8 +20,7 @@ const RentalConfirmCard = ({ rental }: RentalConfirmCardProps) => {
     borrowerFields,
   } = rental;
   const additionalBorrowerFields = Object.entries(borrowerFields ?? {}).filter(
-    ([key, value]) =>
-      key.trim() && typeof value === "string" && value.trim(),
+    ([key, value]) => key.trim() && typeof value === "string" && value.trim(),
   );
   const guaranteedGoodsLabel =
     guaranteedGoods === null || !guaranteedGoods?.trim()
@@ -72,7 +71,7 @@ const RentalConfirmCard = ({ rental }: RentalConfirmCardProps) => {
             </div>
 
             {/* 대여자 정보 영역 */}
-            <div className="mt-5 border-t border-neutral-gray-4/50 pt-4.5 pl-2.5 text-14px font-normal leading-[140%] text-secondary-1">
+            <div className="mt-5 border-t border-neutral-gray-4/50 pt-4.5 pb-5 pl-2.5 text-14px font-normal leading-[140%] text-secondary-1">
               <p>이름: {applicantInfo.name}</p>
               <p>연락처: {applicantInfo.phone}</p>
               {additionalBorrowerFields.map(([label, value]) => (
