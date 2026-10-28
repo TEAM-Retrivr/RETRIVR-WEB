@@ -45,15 +45,19 @@ import type { AxiosResponse } from "axios";
 
 // 관리자 물품 목록 조회 (기존 물품 관리 페이지용)
 // - 물품 관리 페이지에서 사용하는 기본 아이템 목록 조회
-// - 페이징 cursor, size는 서버 기본값 사용
+// - cursor: 마지막으로 조회된 itemId (다음 페이지 조회 시 사용)
+// - size: 한 번에 가져올 물품 개수
 // GET /api/admin/v1/items
-export const requestAdminItemList =
-  async (): Promise<AdminItemListResponse> => {
-    const response = await apiClient.get<AdminItemListResponse>(
-      "/api/admin/v1/items",
-    );
-    return response.data;
-  };
+export const requestAdminItemList = async (params?: {
+  cursor?: number;
+  size?: number;
+}): Promise<AdminItemListResponse> => {
+  const response = await apiClient.get<AdminItemListResponse>(
+    "/api/admin/v1/items",
+    { params },
+  );
+  return response.data;
+};
 
 // 반납 화면에서의 물품 리스트 조회
 // - 반납 관리 페이지 하단 "물품별 관리" 영역에서 사용

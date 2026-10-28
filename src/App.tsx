@@ -23,10 +23,7 @@ import VoucherPaymentPage from "./pages/admin/VoucherPaymentPage";
 import ProfileEditPage from "./pages/admin/ProfileEditPage";
 import LandingPage from "./pages/LandingPage";
 import GuidePage from "./pages/guide/GuidePage";
-import {
-  PublicPrivacyPage,
-  PublicTermsPage,
-} from "./pages/LegalDocumentPage";
+import { PublicPrivacyPage, PublicTermsPage } from "./pages/LegalDocumentPage";
 import RegisterPage from "./pages/admin/RegisterPage";
 import TermsConsentPage from "./pages/TermsConsentPage";
 import RentalRequestPage from "./pages/admin/RentalRequestPage";
@@ -40,6 +37,7 @@ import RentalInformationSubmitPage from "./pages/client/RentalInformationSubmitP
 import RenterSearchPage from "./pages/client/RenterSearchPage";
 import RentalConfirmationPage from "./pages/client/RentalConfirmationPage";
 import { hasTermsConsent, trackPageView } from "./lib/analytics";
+import AdminHomePage from "./features/admin/home/pages/AdminHomePage";
 
 type UserType = "admin" | "client";
 
@@ -124,7 +122,8 @@ function App() {
             element={<RentalInformationSubmitPage />}
           />
         </Route>
-
+        {/* Renewal */}
+        <Route path="/renewal/admin-home" element={<AdminHomePage />} />
         {/* Auth-required */}
         <Route element={<AuthGate />}>
           <Route path="/home" element={<HomePage />} />
