@@ -1,11 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { PageLayout } from "../../../common/layouts/PageLayout";
-import { HomeHeader } from "../components/header/HomeHeader";
+import { CommonHeader } from "../../../common/components/header/CommonHeader";
 import { DescriptionInfo } from "../components/description/DescriptionInfo";
 import { NavigationCard } from "../components/navigation/NavigationCard";
 import { NavigationButton } from "../components/navigation/NavigationButton";
 import HomeShortcut from "../components/home-shortcut/HomeShortcut";
-import HeaderLogo from "../assets/header-logo.svg";
 import returnManagementIcon from "../assets/return-management.svg";
 import itemManagementIcon from "../assets/item-management.svg";
 import lockerManagementIcon from "../assets/locker-management.svg";
@@ -21,7 +20,7 @@ const AdminHomePage = () => {
 
   return (
     <PageLayout>
-      <HomeHeader icon={<img src={HeaderLogo} alt="RETRIVR" />} />
+      <CommonHeader />
       <InformationSection>
         <DescriptionInfo
           icon={<img src={TestIcon} alt="프로필 아이콘" />}
