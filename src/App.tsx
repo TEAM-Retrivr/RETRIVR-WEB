@@ -38,6 +38,7 @@ import RenterSearchPage from "./pages/client/RenterSearchPage";
 import RentalConfirmationPage from "./pages/client/RentalConfirmationPage";
 import { hasTermsConsent, trackPageView } from "./lib/analytics";
 import AdminHomePage from "./features/admin/home/pages/AdminHomePage";
+import PlaceSearchPage from "./features/guest/place-search/pages/PlaceSearchPage";
 
 type UserType = "admin" | "client";
 
@@ -123,6 +124,7 @@ function App() {
           />
         </Route>
         {/* Renewal */}
+        <Route path="/renewal/place-search" element={<PlaceSearchPage />} />
         <Route path="/renewal/admin-home" element={<AdminHomePage />} />
         {/* Auth-required */}
         <Route element={<AuthGate />}>

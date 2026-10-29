@@ -6,7 +6,7 @@ export const PageViewport = styled.div`
   min-height: 100vh;
   min-height: 100dvh;
   place-items: center;
-  background-color: ${theme.colors.gray[100]};
+  background-color: ${theme.colors.gray[50]};
 `;
 
 export const PageFrame = styled.main`
