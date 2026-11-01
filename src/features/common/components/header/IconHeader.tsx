@@ -1,11 +1,11 @@
-import { Header, HeaderButton } from "./CommonHeader.styles";
+import { Header, HeaderButton } from "./IconHeader.styles";
 import HeaderLogo from "./header-logo.svg";
 
 type HeaderProps = {
   onClick?: () => void;
 };
 
-export const CommonHeader = ({ onClick }: HeaderProps) => {
+export const IconHeader = ({ onClick }: HeaderProps) => {
   const logo = <img src={HeaderLogo} alt="RETRIVR" />;
 
   return (
