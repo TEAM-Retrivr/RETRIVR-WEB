@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { theme } from "../../../../common/styles/theme";
+import { theme } from "../../../../../common/styles/theme";
 
 export const Wrapper = styled.div`
   width: 350px;

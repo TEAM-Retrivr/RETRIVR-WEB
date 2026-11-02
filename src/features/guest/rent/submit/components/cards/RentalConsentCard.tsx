@@ -14,12 +14,12 @@ type RentalConsentCardProps = {
 };
 const RentalConsentCard = ({
   description,
-  checked,
+  checked = false,
   disabled,
   onChange,
 }: RentalConsentCardProps) => {
   return (
-    <Wrapper>
+    <Wrapper $checked={checked}>
       <CheckBox
         type="checkbox"
         aria-label="대여 및 반납 안내를 확인하고 동의합니다."

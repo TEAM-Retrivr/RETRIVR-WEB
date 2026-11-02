@@ -1,17 +1,20 @@
 import styled from "@emotion/styled";
-import { theme } from "../../../../common/styles/theme";
+import { theme } from "../../../../../common/styles/theme";
 import checkboxChecked from "../../assets/checkbox-checked.svg";
 import checkboxUnchecked from "../../assets/checkbox-unchecked.svg";
 
-export const Wrapper = styled.div`
+export const Wrapper = styled.div<{ $checked: boolean }>`
   width: 350px;
-  min- height: 120px;
+  min-height: 120px;
   display: flex;
   gap: 11px;
   padding: 16px;
-  background-color: ${theme.colors.sky[50]};
+  background-color: ${({ $checked }) =>
+    $checked ? theme.colors.sky[50] : theme.colors.gray[0]};
   border: 1px solid;
-  border-color: ${theme.colors.sky[100]};
+  border-color: ${({ $checked }) =>
+    $checked ? theme.colors.sky[500] : theme.colors.gray[200]};
+  transition: all 0.3s ease;
   border-radius: 12px;
 `;
 
@@ -22,15 +25,22 @@ export const CheckBox = styled.input`
   flex: 0 0 20px;
   width: 20px;
   height: 20px;
+  box-sizing: border-box;
   margin: 2px 0;
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: url(${checkboxUnchecked}) center / 20px 20px no-repeat;
+  background-color: ${theme.colors.gray[0]};
+  background-image: url("${checkboxUnchecked}");
+  transition: all 0.3s ease;
+  background-position: center;
+  background-size: 20px 20px;
+  background-repeat: no-repeat;
   cursor: pointer;
 
   &:checked {
-    background-image: url(${checkboxChecked});
+    background-image: url("${checkboxChecked}");
+    transition: background-image 0.3s ease;
   }
 
   &:disabled {

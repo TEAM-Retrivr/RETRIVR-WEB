@@ -39,7 +39,7 @@ import RentalConfirmationPage from "./pages/client/RentalConfirmationPage";
 import { hasTermsConsent, trackPageView } from "./lib/analytics";
 import AdminHomePage from "./features/admin/home/pages/AdminHomePage";
 import PlaceSearchPage from "./features/guest/place-search/pages/PlaceSearchPage";
-import RentalSubmitPage from "./features/guest/rent/pages/RentalSubmitPage";
+import RentalSubmitPage from "./features/guest/rent/submit/pages/RentalSubmitPage";
 
 type UserType = "admin" | "client";
 

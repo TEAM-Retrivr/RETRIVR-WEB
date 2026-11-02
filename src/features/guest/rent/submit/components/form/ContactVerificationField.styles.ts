@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { theme } from "../../../../common/styles/theme";
+import { theme } from "../../../../../common/styles/theme";
 
 export const Wrapper = styled.div`
   width: 100%;
@@ -26,6 +26,8 @@ export const VerificationButton = styled.button<{
   white-space: nowrap;
   cursor: pointer;
   ${theme.typography.label3};
+
+  transition: all 0.3s ease;
 
   &:disabled {
     border-color: transparent;

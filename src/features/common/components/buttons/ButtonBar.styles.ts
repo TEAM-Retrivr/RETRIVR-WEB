@@ -23,7 +23,7 @@ export const Wrapper = styled.button<{
   font-family: ${theme.fontFamily.primary};
   ${theme.typography.button.large};
   cursor: pointer;
-
+  transition: background-color 0.3s ease;
   &:disabled {
     border-color: transparent;
     background-color: ${theme.colors.gray[200]};

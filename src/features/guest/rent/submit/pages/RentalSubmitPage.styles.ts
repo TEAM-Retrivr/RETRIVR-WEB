@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { theme } from "../../../common/styles/theme";
+import { theme } from "../../../../common/styles/theme";
 
 export const Padding = styled.div`
   padding: 12px 20px 0 20px;
