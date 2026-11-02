@@ -27,6 +27,8 @@ export const VerificationButton = styled.button<{
   cursor: pointer;
   ${theme.typography.label3};
 
+  transition: all 0.3s ease;
+
   &:disabled {
     border-color: transparent;
     background-color: ${theme.colors.gray[0]};
