@@ -4,14 +4,14 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
   useItemDetail,
   useSendRentalRequest,
-} from "../../../../hooks/queries/useClientQueries";
-import type { BorrowerInformationRequest } from "../../../../api/client/client.type";
-import { PageLayout } from "../../../common/layouts/PageLayout";
-import { TitleHeader } from "../../../common/components/header/TitleHeader";
-import TextField from "../../../common/components/form/TextField";
+} from "../../../../../hooks/queries/useClientQueries";
+import type { BorrowerInformationRequest } from "../../../../../api/client/client.type";
+import { PageLayout } from "../../../../common/layouts/PageLayout";
+import { TitleHeader } from "../../../../common/components/header/TitleHeader";
+import TextField from "../../../../common/components/form/TextField";
 import InformationCard from "../components/cards/InformationCard";
 import ContactVerificationField from "../components/form/ContactVerificationField";
-import ButtonBar from "../../../common/components/buttons/ButtonBar";
+import ButtonBar from "../../../../common/components/buttons/ButtonBar";
 import type { RentalVerificationCredentials } from "../hooks/useRentalVerification";
 import RentalConsentCard from "../components/cards/RentalConsentCard";
 import {

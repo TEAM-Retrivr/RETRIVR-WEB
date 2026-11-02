@@ -5,11 +5,11 @@ import {
   useSendPhoneVerificationCode,
   useVerifyEmailCode,
   useVerifyPhoneVerificationCode,
-} from "../../../../hooks/queries/useAuthQueries";
+} from "../../../../../hooks/queries/useAuthQueries";
 import type {
   EmailAuthBorrowerInformationRequest,
   PhoneAuthBorrowerInformationRequest,
-} from "../../../../api/client/client.type";
+} from "../../../../../api/client/client.type";
 
 export type VerificationMethod = "phone" | "email";
 export type RentalVerificationCredentials =

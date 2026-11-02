@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { theme } from "../../../../common/styles/theme";
+import { theme } from "../../../../../common/styles/theme";
 import checkboxChecked from "../../assets/checkbox-checked.svg";
 import checkboxUnchecked from "../../assets/checkbox-unchecked.svg";
 
