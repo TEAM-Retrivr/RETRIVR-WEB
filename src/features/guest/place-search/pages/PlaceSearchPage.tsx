@@ -46,8 +46,16 @@ const PlaceSearchPage = () => {
   };
 
   const selectPlace = (place: PlaceResult) => {
-    if (place.organizationId) {
-      navigate(`/client-home?organizationId=${place.organizationId}`);
+    if (
+      Number.isSafeInteger(place.organizationId) &&
+      (place.organizationId ?? 0) > 0
+    ) {
+      navigate("/renewal/rental-listing", {
+        state: {
+          organizationId: place.organizationId,
+          organizationName: place.name,
+        },
+      });
       return;
     }
 

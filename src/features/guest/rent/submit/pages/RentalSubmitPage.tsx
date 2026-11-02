@@ -5,7 +5,10 @@ import {
   useItemDetail,
   useSendRentalRequest,
 } from "../../../../../hooks/queries/useClientQueries";
-import type { BorrowerInformationRequest } from "../../../../../api/client/client.type";
+import type {
+  BorrowerInformationRequest,
+  ItemResponse,
+} from "../../../../../api/client/client.type";
 import { PageLayout } from "../../../../common/layouts/PageLayout";
 import { TitleHeader } from "../../../../common/components/header/TitleHeader";
 import TextField from "../../../../common/components/form/TextField";
@@ -35,12 +38,12 @@ type RentalSubmitPageProps = {
   itemId?: number;
   onVerificationComplete?: (credentials: RentalVerificationCredentials) => void;
 };
-const itemLabel = {
+const previewItemLabel = {
   name: "구형 노트북 충전기",
   description: "어댑터 미포함",
 };
 
-const informationLabel = {
+const previewInformationLabel = {
   item: "C타입 충전기 소형(3)",
   duration: { day: 3, range: "(2026.10.17 ~ 2026.10.20)" },
   guaranteedGoods: "학생증 또는 신분증",
@@ -50,6 +53,9 @@ type RentalRouteState = {
   itemId?: number;
   itemUnitId?: number;
   organizationId?: number;
+  organizationName?: string;
+  rentalItem?: ItemResponse["items"][number];
+  itemUnitLabel?: string;
   guaranteedGoods?: string;
   borrowerRequirements?: { label: string; required: boolean }[];
 };
@@ -80,6 +86,20 @@ const RentalSubmitPage = ({
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const routeState = location.state as RentalRouteState | null;
+  const rentalItem = routeState?.rentalItem;
+  const itemLabel = rentalItem
+    ? { name: rentalItem.name, description: rentalItem.description }
+    : previewItemLabel;
+  const informationLabel = rentalItem
+    ? {
+        item: routeState?.itemUnitLabel ?? rentalItem.name,
+        duration: {
+          day: rentalItem.rentalDuration,
+          range: "",
+        },
+        guaranteedGoods: rentalItem.guaranteedGoods?.trim() || "없음",
+      }
+    : previewInformationLabel;
   const requestedItemId = Number(
     providedItemId ?? routeState?.itemId ?? searchParams.get("itemId") ?? 0,
   );
@@ -222,7 +242,11 @@ const RentalSubmitPage = ({
 
   return (
     <PageLayout>
-      <TitleHeader placeName={placeName} pageName={pageName}></TitleHeader>
+      <TitleHeader
+        placeName={routeState?.organizationName ?? placeName}
+        pageName={pageName}
+        onClick={() => navigate(-1)}
+      />
       <Padding>
         <InformationCard
           itemLabel={itemLabel}
