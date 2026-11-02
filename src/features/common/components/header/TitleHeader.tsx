@@ -9,19 +9,29 @@ import {
 import LeftChevronIcon from "./left-chevron.svg";
 type TitleHeaderProps = {
   placeName?: string;
-  pageName: string;
+  pageName?: string;
   onClick?: () => void;
 };
 
-export const TitleHeader = ({ placeName, pageName }: TitleHeaderProps) => {
+export const TitleHeader = ({
+  placeName,
+  pageName,
+  onClick,
+}: TitleHeaderProps) => {
   return (
     <HeaderWrapper>
-      <IconSlot>
+      <IconSlot type="button" aria-label="뒤로가기" onClick={onClick}>
         <Icon src={LeftChevronIcon} alt="" />
       </IconSlot>
       <InformationSection>
-        <PlaceName>{placeName}</PlaceName>
-        <PageName>{pageName}</PageName>
+        {pageName ? (
+          <>
+            {placeName && <PlaceName>{placeName}</PlaceName>}
+            <PageName>{pageName}</PageName>
+          </>
+        ) : (
+          <PageName>{placeName}</PageName>
+        )}
       </InformationSection>
     </HeaderWrapper>
   );
