@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { PageLayout } from "../../../common/layouts/PageLayout";
-import { CommonHeader } from "../../../common/components/header/CommonHeader";
+import { IconHeader } from "../../../common/components/header/IconHeader";
 import { DescriptionInfo } from "../components/description/DescriptionInfo";
 import { NavigationCard } from "../components/navigation/NavigationCard";
 import { NavigationButton } from "../components/navigation/NavigationButton";
@@ -20,7 +20,7 @@ const AdminHomePage = () => {
 
   return (
     <PageLayout>
-      <CommonHeader />
+      <IconHeader />
       <InformationSection>
         <DescriptionInfo
           icon={<img src={TestIcon} alt="프로필 아이콘" />}

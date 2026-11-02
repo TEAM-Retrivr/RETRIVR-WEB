@@ -17,6 +17,11 @@ export const PageFrame = styled.main`
   height: min(844px, 100vh);
   height: min(844px, 100dvh);
   overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
+  }
   background-color: ${theme.colors.gray[0]};
   border: 0.5px solid;
   border-color: ${theme.colors.gray[200]};

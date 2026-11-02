@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CommonHeader } from "../../../common/components/header/CommonHeader";
+import { IconHeader } from "../../../common/components/header/IconHeader";
 import { PageLayout } from "../../../common/layouts/PageLayout";
 import clearIcon from "../assets/clear-icon.svg";
 import leftArrow from "../assets/left-arrow.svg";
@@ -65,7 +65,7 @@ const PlaceSearchPage = () => {
           inert={isSearching}
           aria-hidden={isSearching}
         >
-          <CommonHeader onClick={() => navigate("/login")} />
+          <IconHeader onClick={() => navigate("/login")} />
           <Heading>
             대여 기관을
             <br />
