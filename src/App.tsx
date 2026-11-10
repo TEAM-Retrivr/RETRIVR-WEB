@@ -41,10 +41,10 @@ import RenterSearchPage from "./pages/client/RenterSearchPage";
 import RentalConfirmationPage from "./pages/client/RentalConfirmationPage";
 import { hasTermsConsent, trackPageView } from "./lib/analytics";
 
-type UserType = "admin" | "client";
+import AdminAuthGate from "./components/AdminAuthGate";
+import { hasValidAdminSession } from "./utils/adminSession";
 
-const isAuthenticated = () =>
-  typeof window !== "undefined" && Boolean(localStorage.getItem("accessToken"));
+type UserType = "admin" | "client";
 
 const RouteChangeTracker = () => {
   const location = useLocation();
@@ -66,7 +66,7 @@ const TermsGate = () => {
   if (userType === "client" && hasTermsConsent("client")) return <Outlet />;
 
   // admin 플로우는 관리자 약관 동의 또는 로그인 세션이 있으면 통과.
-  if (userType === "admin" && (hasTermsConsent("admin") || isAuthenticated())) {
+  if (userType === "admin" && (hasTermsConsent("admin") || hasValidAdminSession())) {
     return <Outlet />;
   }
 
@@ -84,15 +84,6 @@ const TermsGate = () => {
       }}
     />
   );
-};
-
-const AuthGate = () => {
-  const location = useLocation();
-
-  if (isAuthenticated()) return <Outlet />;
-
-  const nextPath = `${location.pathname}${location.search}`;
-  return <Navigate to="/login" replace state={{ nextPath }} />;
 };
 
 function App() {
@@ -126,7 +117,7 @@ function App() {
         </Route>
 
         {/* Auth-required */}
-        <Route element={<AuthGate />}>
+        <Route element={<AdminAuthGate />}>
           <Route path="/home" element={<HomePage />} />
           <Route path="/account" element={<AccountPage />} />
           <Route path="/account/terms" element={<AccountTermsPage />} />
