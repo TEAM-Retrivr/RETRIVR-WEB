@@ -4,6 +4,7 @@ import {
   useRentalVerification,
   type RentalVerificationCredentials,
   type VerificationMethod,
+  type RentalVerificationApi,
 } from "../../hooks/useRentalVerification";
 import {
   Wrapper,
@@ -15,6 +16,7 @@ import {
 } from "./ContactVerificationField.styles";
 
 type ContactVerificationFieldProps = {
+  api?: Partial<RentalVerificationApi>;
   method: VerificationMethod;
   onVerified?: (credentials: RentalVerificationCredentials) => void;
   onVerificationChange?: (
@@ -23,11 +25,12 @@ type ContactVerificationFieldProps = {
 };
 
 const ContactVerificationField = ({
+  api,
   method,
   onVerified,
   onVerificationChange,
 }: ContactVerificationFieldProps) => {
-  const verification = useRentalVerification(method, onVerified);
+  const verification = useRentalVerification(method, onVerified, api);
   const isPhone = method === "phone";
 
   useEffect(() => {

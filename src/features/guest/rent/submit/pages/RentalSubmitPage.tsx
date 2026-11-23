@@ -14,6 +14,9 @@ import ContactVerificationField from "../components/form/ContactVerificationFiel
 import ButtonBar from "../../../../common/components/buttons/ButtonBar";
 import type { RentalVerificationCredentials } from "../hooks/useRentalVerification";
 import RentalConsentCard from "../components/cards/RentalConsentCard";
+import { LockerRentalFlow } from "../../../locker-rental/LockerRentalFlow";
+import { RentalPlaceProvider } from "../../../rental-home/components/RentalPlaceProvider";
+import { getRentalType } from "../../../rental-home/routes";
 import {
   Padding,
   Border,
@@ -348,4 +351,15 @@ const RentalSubmitPage = ({
   );
 };
 
-export default RentalSubmitPage;
+const RentalSubmitEntry = (props: RentalSubmitPageProps) => {
+  const [params] = useSearchParams();
+  return getRentalType(params) !== "item" ? (
+    <RentalPlaceProvider>
+      <LockerRentalFlow screen="request" />
+    </RentalPlaceProvider>
+  ) : (
+    <RentalSubmitPage {...props} />
+  );
+};
+
+export default RentalSubmitEntry;

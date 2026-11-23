@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { isAxiosError } from "axios";
+import { useMutation } from "@tanstack/react-query";
 import {
-  useSendEmailCode,
-  useSendPhoneVerificationCode,
-  useVerifyEmailCode,
-  useVerifyPhoneVerificationCode,
-} from "../../../../../hooks/queries/useAuthQueries";
+  sendEmailCode,
+  sendPhoneVerificationCode,
+  verifyEmailCode,
+  verifyPhoneVerificationCode,
+} from "../../../../../api/auth/auth.api";
 import type {
   EmailAuthBorrowerInformationRequest,
   PhoneAuthBorrowerInformationRequest,
@@ -18,6 +19,19 @@ export type RentalVerificationCredentials =
       EmailAuthBorrowerInformationRequest,
       "email" | "emailVerificationToken"
     >;
+export type RentalVerificationApi = {
+  sendPhone: (body: {
+    phoneNumber: string;
+    purpose: "BORROW";
+  }) => ReturnType<typeof sendPhoneVerificationCode>;
+  verifyPhone: (body: {
+    verificationId: string;
+    purpose: "BORROW";
+    rawCode: string;
+  }) => ReturnType<typeof verifyPhoneVerificationCode>;
+  sendEmail: typeof sendEmailCode;
+  verifyEmail: typeof verifyEmailCode;
+};
 
 const getErrorMessage = (error: unknown, fallback: string) => {
   if (isAxiosError<{ message?: string }>(error)) {
@@ -32,6 +46,7 @@ const formatPhoneNumber = (value: string) =>
 export const useRentalVerification = (
   method: VerificationMethod,
   onVerified?: (credentials: RentalVerificationCredentials) => void,
+  api?: Partial<RentalVerificationApi>,
 ) => {
   const [contact, setContact] = useState("");
   const [code, setCode] = useState("");
@@ -50,10 +65,18 @@ export const useRentalVerification = (
     };
   }, []);
 
-  const sendPhone = useSendPhoneVerificationCode();
-  const verifyPhone = useVerifyPhoneVerificationCode();
-  const sendEmail = useSendEmailCode();
-  const verifyEmail = useVerifyEmailCode();
+  const sendPhone = useMutation({
+    mutationFn: api?.sendPhone ?? sendPhoneVerificationCode,
+  });
+  const verifyPhone = useMutation({
+    mutationFn: api?.verifyPhone ?? verifyPhoneVerificationCode,
+  });
+  const sendEmail = useMutation({
+    mutationFn: api?.sendEmail ?? sendEmailCode,
+  });
+  const verifyEmail = useMutation({
+    mutationFn: api?.verifyEmail ?? verifyEmailCode,
+  });
   const isSending = sendPhone.isPending || sendEmail.isPending;
   const isVerifying = verifyPhone.isPending || verifyEmail.isPending;
   const isBusy = isSending || isVerifying;
