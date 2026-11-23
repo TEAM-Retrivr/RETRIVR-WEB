@@ -7,19 +7,21 @@ import {
 } from "./RentalConsentCard.styles";
 
 type RentalConsentCardProps = {
+  className?: string;
   description: string;
   checked?: boolean;
   disabled?: boolean;
   onChange?: (checked: boolean) => void;
 };
 const RentalConsentCard = ({
+  className,
   description,
   checked = false,
   disabled,
   onChange,
 }: RentalConsentCardProps) => {
   return (
-    <Wrapper $checked={checked}>
+    <Wrapper className={className} $checked={checked}>
       <CheckBox
         type="checkbox"
         aria-label="대여 및 반납 안내를 확인하고 동의합니다."

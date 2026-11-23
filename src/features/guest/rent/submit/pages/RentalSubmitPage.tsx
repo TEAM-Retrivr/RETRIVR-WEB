@@ -14,6 +14,7 @@ import ContactVerificationField from "../components/form/ContactVerificationFiel
 import ButtonBar from "../../../../common/components/buttons/ButtonBar";
 import type { RentalVerificationCredentials } from "../hooks/useRentalVerification";
 import RentalConsentCard from "../components/cards/RentalConsentCard";
+import { LockerRentalFlow } from "../../../locker-rental/LockerRentalFlow";
 import {
   Padding,
   Border,
@@ -348,4 +349,13 @@ const RentalSubmitPage = ({
   );
 };
 
-export default RentalSubmitPage;
+const RentalSubmitEntry = (props: RentalSubmitPageProps) => {
+  const [params] = useSearchParams();
+  return params.get("type") === "locker" ? (
+    <LockerRentalFlow screen="request" />
+  ) : (
+    <RentalSubmitPage {...props} />
+  );
+};
+
+export default RentalSubmitEntry;
