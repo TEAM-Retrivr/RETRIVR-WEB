@@ -2,22 +2,21 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { LockerHomePage } from "../../locker-rental/pages/LockerHomePage";
 import { LockerFeedback } from "../components/LockerFeedback";
 import { lockerErrorMessage } from "../model/locker.errors";
-import {
-  useLockerLayout,
-  useLockerOrganization,
-  useLockerZones,
-} from "../hooks/useLockerQueries";
+import { useLockerLayout, useLockerZones } from "../hooks/useLockerQueries";
 import { mapLockerLayout, mapLockerZone } from "../model/locker.mappers";
-import { rentalHomePath } from "../routes";
+import {
+  getSelectedLockerId,
+  rentalHomePath,
+  rentalSubmitPath,
+} from "../routes";
+import { useRentalPlace } from "../model/rental-place.context";
 
 export const LockerRentalHomeRoute = () => {
-  const [params, setParams] = useSearchParams();
+  const [params] = useSearchParams();
   const navigate = useNavigate();
-  const organizationId = Number(params.get("organizationId"));
-  const validOrganization =
-    Number.isSafeInteger(organizationId) && organizationId > 0;
+  const { place, navigationState } = useRentalPlace();
+  const organizationId = place.id;
   const zones = useLockerZones(organizationId);
-  const organization = useLockerOrganization(organizationId);
   const summaries = zones.data?.zones ?? [];
   const selectedZone =
     summaries.find((zone) => zone.zoneId === params.get("zone")) ??
@@ -31,10 +30,6 @@ export const LockerRentalHomeRoute = () => {
   );
   const onBack = () => navigate("/renewal/place-search");
 
-  if (!validOrganization)
-    return (
-      <LockerFeedback message="대여지를 먼저 선택해주세요." onBack={onBack} />
-    );
   if (zones.isPending)
     return (
       <LockerFeedback
@@ -56,10 +51,10 @@ export const LockerRentalHomeRoute = () => {
 
   return (
     <LockerHomePage
-      placeName={organization.data?.name || "사물함 대여"}
+      placeName={place.name}
       zones={mappedZones}
       zoneId={zoneId}
-      lockerId={params.get("locker") ?? undefined}
+      lockerId={getSelectedLockerId(params)}
       loading={Boolean(zoneId) && layout.isPending}
       error={
         layout.isError
@@ -68,28 +63,35 @@ export const LockerRentalHomeRoute = () => {
       }
       onRetry={() => void layout.refetch()}
       onBack={onBack}
-      onItems={() => navigate(rentalHomePath(params, "item"))}
+      onItems={() =>
+        navigate(rentalHomePath(params, "item"), { state: navigationState })
+      }
       onZoneChange={(id) => {
         const next = new URLSearchParams(params);
         next.set("zone", id);
-        next.delete("locker");
-        setParams(next, { replace: true });
+        next.delete("lockerId");
+        navigate(rentalHomePath(next, "locker"), {
+          replace: true,
+          state: navigationState,
+        });
       }}
       onSelectLocker={(id) => {
         const next = new URLSearchParams(params);
         next.set("zone", zoneId);
-        if (id) next.set("locker", id);
-        else next.delete("locker");
-        setParams(next, { replace: true });
+        if (id) next.set("lockerId", id);
+        else next.delete("lockerId");
+        navigate(rentalHomePath(next, "locker"), {
+          replace: true,
+          state: navigationState,
+        });
       }}
       onRequest={({ zone, locker }) => {
         const next = new URLSearchParams(params);
         next.set("zone", zone.id);
-        next.set("locker", locker.id);
-        next.set("type", "locker");
+        next.set("lockerId", locker.id);
         next.delete("publicId");
         next.delete("preview");
-        navigate(`/renewal/rental-submit?${next}`);
+        navigate(rentalSubmitPath(next), { state: navigationState });
       }}
     />
   );

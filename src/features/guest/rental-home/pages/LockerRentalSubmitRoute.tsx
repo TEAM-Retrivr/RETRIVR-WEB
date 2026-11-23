@@ -9,18 +9,27 @@ import {
 } from "../hooks/useLockerQueries";
 import { mapLocker, mapLockerZone } from "../model/locker.mappers";
 import { lockerRequestBody } from "../model/locker.request";
-import { rentalHomePath } from "../routes";
+import {
+  getSelectedLockerId,
+  rentalHomePath,
+  rentalSubmitPath,
+} from "../routes";
+import { useRentalPlace } from "../model/rental-place.context";
 import { LockerRentalStatusRoute } from "./LockerRentalStatusRoute";
 
 export const LockerRentalSubmitRoute = () => {
   const [params] = useSearchParams();
   const navigate = useNavigate();
+  const { navigationState } = useRentalPlace();
   const publicId = params.get("publicId") ?? "";
-  const lockerId = params.get("locker") ?? "";
+  const lockerId = getSelectedLockerId(params);
   const form = useLockerRentalForm(publicId ? "" : lockerId);
   const createRental = useCreateLockerRental();
   const onBack = () =>
-    navigate(rentalHomePath(params, "locker"), { replace: true });
+    navigate(rentalHomePath(params, "locker"), {
+      replace: true,
+      state: navigationState,
+    });
 
   if (publicId)
     return <LockerRentalStatusRoute key={publicId} publicId={publicId} />;
@@ -79,7 +88,10 @@ export const LockerRentalSubmitRoute = () => {
         next.set("publicId", result.publicId);
         next.delete("preview");
         next.delete("step");
-        navigate(`/renewal/rental-submit?${next}`, { replace: true });
+        navigate(rentalSubmitPath(next), {
+          replace: true,
+          state: navigationState,
+        });
       }}
     />
   );

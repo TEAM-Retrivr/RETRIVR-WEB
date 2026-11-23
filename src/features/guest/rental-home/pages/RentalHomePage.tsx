@@ -1,15 +1,20 @@
 import { useSearchParams } from "react-router-dom";
-import ClientHomePage from "../../../../pages/client/ClientHomePage";
 import { LockerRentalFlow } from "../../locker-rental/LockerRentalFlow";
+import { RentalPlaceProvider } from "../components/RentalPlaceProvider";
+import { getRentalType } from "../routes";
+import { ItemRentalHomeRoute } from "./ItemRentalHomeRoute";
 
-// type이 없거나 지원하지 않는 값이면 기존 물품 홈을 기본 화면으로 사용한다.
-// 물품 홈의 디자인 리뉴얼은 이 사물함 화면 작업과 별도로 연결할 수 있다.
+// 이름 기반 주소를 내부 대여지 식별자로 해석한 뒤 대여 종류에 맞는 화면을 표시한다.
 const RentalHomePage = () => {
   const [params] = useSearchParams();
-  return params.get("type") === "locker" ? (
-    <LockerRentalFlow screen="home" />
-  ) : (
-    <ClientHomePage />
+  return (
+    <RentalPlaceProvider>
+      {getRentalType(params) === "locker" ? (
+        <LockerRentalFlow screen="home" />
+      ) : (
+        <ItemRentalHomeRoute />
+      )}
+    </RentalPlaceProvider>
   );
 };
 

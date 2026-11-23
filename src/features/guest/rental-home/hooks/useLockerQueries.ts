@@ -12,7 +12,6 @@ import {
   completeLockerApproval,
   type LockerManagerApproval,
 } from "../api/approval.api";
-import { getRentalOrganization } from "../api/organization.api";
 
 export const lockerKeys = {
   all: ["renewal", "lockers"] as const,
@@ -27,13 +26,6 @@ export const useLockerZones = (organizationId: number) =>
   useQuery({
     queryKey: lockerKeys.zones(organizationId),
     queryFn: ({ signal }) => getLockerZones(organizationId, signal),
-    enabled: Number.isSafeInteger(organizationId) && organizationId > 0,
-    retry: false,
-  });
-export const useLockerOrganization = (organizationId: number) =>
-  useQuery({
-    queryKey: ["renewal", "rental-organization", organizationId],
-    queryFn: ({ signal }) => getRentalOrganization(organizationId, signal),
     enabled: Number.isSafeInteger(organizationId) && organizationId > 0,
     retry: false,
   });

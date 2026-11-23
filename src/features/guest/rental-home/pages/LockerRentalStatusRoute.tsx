@@ -10,10 +10,12 @@ import {
 } from "../hooks/useLockerQueries";
 import { rentalHomePath } from "../routes";
 import type { LockerRentalStatus } from "../api/locker.types";
+import { useRentalPlace } from "../model/rental-place.context";
 
 export const LockerRentalStatusRoute = ({ publicId }: { publicId: string }) => {
   const [params] = useSearchParams();
   const navigate = useNavigate();
+  const { place, navigationState } = useRentalPlace();
   const [open, setOpen] = useState(false);
   const [processed, setProcessed] = useState<LockerRentalStatus | null>(null);
   const approval = useApproveLockerRental(publicId);
@@ -21,8 +23,11 @@ export const LockerRentalStatusRoute = ({ publicId }: { publicId: string }) => {
   const onHome = () => {
     const next = new URLSearchParams(params);
     next.delete("publicId");
-    next.delete("locker");
-    navigate(rentalHomePath(next, "locker"), { replace: true });
+    next.delete("lockerId");
+    navigate(rentalHomePath(next, "locker"), {
+      replace: true,
+      state: navigationState,
+    });
   };
   if (status.isPending)
     return (
@@ -56,7 +61,7 @@ export const LockerRentalStatusRoute = ({ publicId }: { publicId: string }) => {
             if (!approval.isPending) setOpen(false);
           }}
           onSubmit={async (input) => {
-            const organizationId = Number(params.get("organizationId"));
+            const organizationId = place.id;
             try {
               const result = await approval.mutateAsync({
                 ...input,

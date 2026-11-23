@@ -11,6 +11,7 @@ import {
   type PlaceResult,
 } from "../components/PlaceResultList";
 import { usePlaceSearch } from "../hooks/usePlaceSearch";
+import { rentalHomePath } from "../../rental-home/routes";
 import {
   ClearButton,
   Heading,
@@ -47,7 +48,9 @@ const PlaceSearchPage = () => {
 
   const selectPlace = (place: PlaceResult) => {
     if (place.organizationId) {
-      navigate(`/client-home?organizationId=${place.organizationId}`);
+      navigate(rentalHomePath(new URLSearchParams(), "item", place.name), {
+        state: { rentalPlace: { id: place.organizationId, name: place.name } },
+      });
       return;
     }
 
