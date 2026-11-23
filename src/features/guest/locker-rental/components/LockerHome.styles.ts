@@ -117,18 +117,22 @@ export const Board = styled.div<{ $columns: number }>`
 `;
 export const LockerButton = styled.button<{
   $selected: boolean;
-  $status: "available" | "rented" | "unavailable";
+  $status: "available" | "rented" | "unavailable" | "pending" | "disabled";
   $row?: number;
   $column?: number;
+  $rowSpan?: number;
+  $columnSpan?: number;
 }>`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: space-between;
-  grid-row: ${({ $row }) => $row ?? "auto"};
-  grid-column: ${({ $column }) => $column ?? "auto"};
-  width: 90px;
-  height: 100px;
+  grid-row: ${({ $row, $rowSpan = 1 }) =>
+    $row ? `${$row} / span ${$rowSpan}` : "auto"};
+  grid-column: ${({ $column, $columnSpan = 1 }) =>
+    $column ? `${$column} / span ${$columnSpan}` : "auto"};
+  width: ${({ $columnSpan = 1 }) => 90 * $columnSpan + 8 * ($columnSpan - 1)}px;
+  height: ${({ $rowSpan = 1 }) => 100 * $rowSpan + 8 * ($rowSpan - 1)}px;
   padding: 8px 12px 12px;
   border: 1px solid ${theme.colors.gray[200]};
   border-radius: 8px;

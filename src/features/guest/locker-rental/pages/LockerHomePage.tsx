@@ -7,43 +7,46 @@ import { LockerViewSwitch } from "../components/LockerViewSwitch";
 import { LockerZoneTabs } from "../components/LockerZoneTabs";
 import { RentalTypeTabs } from "../components/RentalTypeTabs";
 import { Toolbar, ToolbarTitle } from "../components/LockerHome.styles";
-import type {
-  LockerRentalPlace,
-  LockerSelection,
-  LockerView,
-  LockerZone,
-} from "../types";
+import type { LockerSelection, LockerView, LockerZone } from "../types";
 
 export type LockerHomePageProps = {
-  place: LockerRentalPlace;
+  placeName: string;
   zones: LockerZone[];
-  initialZoneId?: string;
-  initialLockerId?: string;
+  zoneId?: string;
+  lockerId?: string;
+  loading?: boolean;
+  error?: string;
+  onRetry: () => void;
+  onZoneChange: (id: string) => void;
+  onSelectLocker: (id: string | undefined) => void;
   onBack: () => void;
   onItems: () => void;
   onRequest: (selection: LockerSelection) => void;
 };
 
 export const LockerHomePage = ({
-  place,
+  placeName,
   zones,
-  initialZoneId,
-  initialLockerId,
+  zoneId,
+  lockerId,
+  loading,
+  error,
+  onRetry,
+  onZoneChange,
+  onSelectLocker,
   onBack,
   onItems,
   onRequest,
 }: LockerHomePageProps) => {
-  const [zoneId, setZoneId] = useState(initialZoneId ?? zones[0]?.id);
-  const [lockerId, setLockerId] = useState(initialLockerId);
   const [view, setView] = useState<LockerView>("list");
-  const zone = zones.find((candidate) => candidate.id === zoneId) ?? zones[0];
+  const zone = zones.find((candidate) => candidate.id === zoneId);
   const selected = zone?.lockers.find(
     (locker) => locker.id === lockerId && locker.status === "available",
   );
 
   return (
     <LockerLayout>
-      <LockerHeader placeName={place.name} onBack={onBack} />
+      <LockerHeader placeName={placeName} onBack={onBack} />
       <RentalTypeTabs onItems={onItems} />
       <Toolbar>
         <ToolbarTitle>
@@ -57,21 +60,21 @@ export const LockerHomePage = ({
         <LockerZoneTabs
           zones={zones}
           selectedId={zone?.id}
-          onSelect={(id) => {
-            setZoneId(id);
-            setLockerId(undefined);
-          }}
+          onSelect={onZoneChange}
         />
       </Toolbar>
       <LockerBoard
         zone={zone}
         view={view}
         selectedId={selected?.id}
+        loading={loading}
+        error={error}
+        onRetry={onRetry}
         onSelect={(locker) =>
-          setLockerId(locker.id === lockerId ? undefined : locker.id)
+          onSelectLocker(locker.id === lockerId ? undefined : locker.id)
         }
       />
-      {zone && selected && (
+      {zone && selected && !loading && !error && (
         <LockerActionBar
           floating
           label={`${zone.name} ${selected.number} 대여하기`}

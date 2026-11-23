@@ -17,9 +17,7 @@ export const LockerZoneTabs = ({
 }) => (
   <ZoneList role="group" aria-label="사물함 구역">
     {zones.map((zone) => {
-      const available = zone.lockers.filter(
-        (locker) => locker.status === "available",
-      ).length;
+      const available = zone.availableCount;
       const selected = zone.id === selectedId;
       return (
         <ZoneButton
@@ -27,13 +25,13 @@ export const LockerZoneTabs = ({
           type="button"
           $active={selected}
           aria-pressed={selected}
-          aria-label={`${zone.name}, ${zone.lockers.length}개 중 ${available}개 대여 가능`}
+          aria-label={`${zone.name}, ${zone.totalCount}개 중 ${available}개 대여 가능`}
           onClick={() => onSelect(zone.id)}
         >
           {zone.name}
           <AvailableCount $empty={available === 0}>
             {available}
-            {selected && <TotalCount> / {zone.lockers.length}</TotalCount>}
+            {selected && <TotalCount> / {zone.totalCount}</TotalCount>}
           </AvailableCount>
         </ZoneButton>
       );

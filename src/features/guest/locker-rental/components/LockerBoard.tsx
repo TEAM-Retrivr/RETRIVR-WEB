@@ -7,11 +7,17 @@ export const LockerBoard = ({
   view,
   selectedId,
   onSelect,
+  loading = false,
+  error,
+  onRetry,
 }: {
   zone?: LockerZone;
   view: LockerView;
   selectedId?: string;
   onSelect: (locker: Locker) => void;
+  loading?: boolean;
+  error?: string;
+  onRetry?: () => void;
 }) => (
   <BoardViewport
     key={zone?.id}
@@ -22,7 +28,17 @@ export const LockerBoard = ({
     }
     tabIndex={0}
   >
-    {zone?.lockers.length ? (
+    {loading ? (
+      <EmptyMessage role="status">사물함을 불러오고 있습니다.</EmptyMessage>
+    ) : error ? (
+      <EmptyMessage role="alert">
+        {error}
+        <br />
+        <button type="button" onClick={onRetry}>
+          다시 시도
+        </button>
+      </EmptyMessage>
+    ) : zone?.lockers.length ? (
       <Board $columns={Math.max(1, zone.columns)}>
         {[...zone.lockers]
           .sort((a, b) => a.row - b.row || a.column - b.column)

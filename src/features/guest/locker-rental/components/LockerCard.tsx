@@ -5,6 +5,8 @@ const statusLabel = {
   available: "대여 가능",
   rented: "대여 중",
   unavailable: "이용 불가",
+  pending: "승인 대기",
+  disabled: "사용 중지",
 };
 
 export const LockerCard = ({
@@ -24,6 +26,8 @@ export const LockerCard = ({
     $status={locker.status}
     $row={positioned ? locker.row : undefined}
     $column={positioned ? locker.column : undefined}
+    $rowSpan={positioned ? locker.rowSpan : undefined}
+    $columnSpan={positioned ? locker.columnSpan : undefined}
     aria-pressed={selected}
     aria-label={`${locker.number}번 사물함, ${statusLabel[locker.status]}`}
     disabled={locker.status !== "available"}

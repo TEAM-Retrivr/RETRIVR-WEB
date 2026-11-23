@@ -1,5 +1,4 @@
 import { useState } from "react";
-import type { VerificationMethod } from "../../rent/submit/hooks/useRentalVerification";
 import { LockerActionBar } from "../components/LockerActionBar";
 import { LockerBorrowerFields } from "../components/LockerBorrowerFields";
 import { LockerHeader } from "../components/LockerHeader";
@@ -15,44 +14,46 @@ import {
 } from "../components/LockerRequest.styles";
 import { useLockerRequest } from "../hooks/useLockerRequest";
 import type {
+  LockerBorrowerField,
   LockerRentalPlace,
   LockerSelection,
   SubmitLockerRental,
 } from "../types";
-import { LockerRequestPendingPage } from "./LockerRequestPendingPage";
+import type { LockerRentalResponse } from "../../rental-home/api/locker.types";
 
 export type LockerRequestPageProps = {
   place: LockerRentalPlace;
   selection: LockerSelection;
+  fields: LockerBorrowerField[];
+  terms: string;
+  termsVersion: number;
   onBack: () => void;
-  onSubmit?: SubmitLockerRental;
-  onApprove?: () => void;
-  verificationMethod?: VerificationMethod;
-  startsAt?: Date;
+  onSubmit: SubmitLockerRental;
+  onRequested: (result: LockerRentalResponse) => void;
 };
 
 export const LockerRequestPage = ({
   place,
   selection,
+  fields,
+  terms,
+  termsVersion,
   onBack,
   onSubmit,
-  onApprove,
-  verificationMethod = "phone",
-  startsAt,
+  onRequested,
 }: LockerRequestPageProps) => {
-  const [startDate] = useState(() => startsAt ?? new Date());
-  const form = useLockerRequest(selection, onSubmit);
-  const hasCollateral =
-    place.guaranteedGoods && place.guaranteedGoods !== "없음";
-  const description = `대여 물품 연체 시 ${verificationMethod === "phone" ? "카카오톡" : "이메일"}으로 반납 안내가 발송됩니다.${hasCollateral ? " 대여 시 보증물품을 맡겨야하며, 맡기신 물품은 대여 물품 반납 시 돌려드립니다." : ""}`;
-
-  if (form.isRequested)
-    return (
-      <LockerRequestPendingPage
-        onApprove={onApprove}
-        verificationMethod={verificationMethod}
-      />
-    );
+  const [startDate] = useState(() => new Date());
+  const form = useLockerRequest(
+    selection,
+    fields,
+    termsVersion,
+    onSubmit,
+    onRequested,
+  );
+  const consentTitle = "대여 및 반납 안내를 확인하고 동의합니다.";
+  const consentDescription = terms.startsWith(consentTitle)
+    ? terms.slice(consentTitle.length).trim()
+    : terms;
   return (
     <LockerLayout scrollable>
       <LockerHeader placeName={place.name} request onBack={onBack} />
@@ -72,21 +73,26 @@ export const LockerRequestPage = ({
         </SummaryArea>
         <LockerBorrowerFields
           values={form.values}
+          fields={fields}
           onChange={form.setValues}
-          verificationMethod={verificationMethod}
           onVerificationChange={form.updateCredentials}
           disabled={form.isSubmitting}
         />
         <ConsentSection aria-labelledby="locker-consent-title">
           <h2 id="locker-consent-title">대여 유의사항</h2>
           <ConsentCard
-            description={description}
+            description={consentDescription}
             checked={form.consented}
             disabled={form.isSubmitting}
             onChange={form.setConsented}
           />
           <ApprovalNotice>관리자 승인 후 대여가 완료됩니다</ApprovalNotice>
         </ConsentSection>
+        {selection.locker.status !== "available" && (
+          <SubmitError role="alert">
+            현재 대여할 수 없는 사물함입니다. 목록에서 다시 선택해주세요.
+          </SubmitError>
+        )}
         {form.error && <SubmitError role="alert">{form.error}</SubmitError>}
         <LockerActionBar
           submit

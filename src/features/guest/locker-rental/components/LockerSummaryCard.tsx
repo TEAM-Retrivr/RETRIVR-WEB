@@ -26,7 +26,8 @@ export const LockerSummaryCard = ({
           <dd>
             {place.rentalDays}일{" "}
             <span>
-              ({formatDate(startsAt)} ~ {formatDate(endsAt)})
+              ({place.startDate?.replaceAll("-", ".") ?? formatDate(startsAt)} ~{" "}
+              {place.dueDate?.replaceAll("-", ".") ?? formatDate(endsAt)})
             </span>
           </dd>
         </div>

@@ -4,6 +4,8 @@ export const rentalHomePath = (params: URLSearchParams, type: RentalType) => {
   const next = new URLSearchParams(params);
   next.set("type", type);
   next.delete("step");
+  next.delete("publicId");
+  next.delete("preview");
   if (type === "item") {
     next.delete("zone");
     next.delete("locker");
